@@ -11,6 +11,44 @@ import confetti from "canvas-confetti";
 
 type UserType = "candidate" | "company" | null;
 
+const roles = [
+  "Software Engineer",
+  "Data Scientist",
+  "Product Manager",
+  "UI/UX Designer",
+  "DevOps / Cloud",
+  "Marketing",
+  "Sales / BD",
+  "Finance / CA",
+  "Operations",
+  "HR / People Ops",
+  "Content / Writing",
+  "Legal / Compliance",
+  "Supply Chain",
+  "Other",
+];
+
+const candidateLevels = [
+  "College / Internship",
+  "Entry Level (0-1 yr)",
+  "Early Career (2-4 yrs)",
+  "Mid Level (5-7 yrs)",
+  "Senior (8+ yrs)",
+  "Lead / Manager",
+  "Director+",
+];
+
+const companyLevels = [
+  "Interns",
+  "Freshers (0-1 yr)",
+  "Junior (2-4 yrs)",
+  "Mid Level (5-7 yrs)",
+  "Senior (8+ yrs)",
+  "Lead / Manager",
+  "Director+",
+  "Any Level",
+];
+
 export default function Waitlist() {
   const ref = useRef(null);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -26,7 +64,9 @@ export default function Waitlist() {
   const [phone, setPhone] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [hiringRole, setHiringRole] = useState("");
+  const [hiringLevel, setHiringLevel] = useState("");
   const [lookingFor, setLookingFor] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -46,7 +86,9 @@ export default function Waitlist() {
           user_type: userType,
           company_name: companyName || null,
           hiring_role: hiringRole || null,
+          hiring_level: hiringLevel || null,
           looking_for: lookingFor || null,
+          experience_level: experienceLevel || null,
         }),
       });
 
@@ -274,7 +316,7 @@ export default function Waitlist() {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Priya Krishnan"
+                      placeholder="Vikas Kumar"
                       required
                       className={inputClass}
                       style={inputStyle}
@@ -332,7 +374,7 @@ export default function Waitlist() {
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
-                      className="space-y-4 overflow-hidden"
+                      className="space-y-5 overflow-hidden"
                     >
                       <div>
                         <label
@@ -361,16 +403,93 @@ export default function Waitlist() {
                             textTransform: "uppercase",
                           }}
                         >
-                          Role you are hiring for
+                          Hiring for
                         </label>
-                        <input
-                          type="text"
-                          value={hiringRole}
-                          onChange={(e) => setHiringRole(e.target.value)}
-                          placeholder="Senior Backend Engineer"
-                          className={inputClass}
-                          style={inputStyle}
-                        />
+                        <div className="flex flex-wrap gap-2">
+                          {roles.map((role) => (
+                            <motion.button
+                              key={role}
+                              type="button"
+                              onClick={() =>
+                                setHiringRole(hiringRole === role ? "" : role)
+                              }
+                              whileHover={reducedMotion ? {} : { scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="px-3 py-1.5 rounded-full text-xs transition-all duration-200"
+                              style={{
+                                fontFamily: "var(--font-dm-sans)",
+                                fontWeight: 500,
+                                background:
+                                  hiringRole === role
+                                    ? "var(--teal)"
+                                    : "var(--surface)",
+                                color:
+                                  hiringRole === role
+                                    ? "white"
+                                    : "var(--muted2)",
+                                border:
+                                  hiringRole === role
+                                    ? "1px solid var(--teal)"
+                                    : "1px solid var(--border)",
+                                boxShadow:
+                                  hiringRole === role
+                                    ? "0 0 12px rgba(16,185,129,0.25)"
+                                    : "none",
+                              }}
+                            >
+                              {role}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label
+                          className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
+                          style={{
+                            fontFamily: "var(--font-dm-mono)",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Experience level needed
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {companyLevels.map((level) => (
+                            <motion.button
+                              key={level}
+                              type="button"
+                              onClick={() =>
+                                setHiringLevel(
+                                  hiringLevel === level ? "" : level
+                                )
+                              }
+                              whileHover={reducedMotion ? {} : { scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="px-3 py-1.5 rounded-full text-xs transition-all duration-200"
+                              style={{
+                                fontFamily: "var(--font-dm-sans)",
+                                fontWeight: 500,
+                                background:
+                                  hiringLevel === level
+                                    ? "var(--teal)"
+                                    : "var(--surface)",
+                                color:
+                                  hiringLevel === level
+                                    ? "white"
+                                    : "var(--muted2)",
+                                border:
+                                  hiringLevel === level
+                                    ? "1px solid var(--teal)"
+                                    : "1px solid var(--border)",
+                                boxShadow:
+                                  hiringLevel === level
+                                    ? "0 0 12px rgba(16,185,129,0.25)"
+                                    : "none",
+                              }}
+                            >
+                              {level}
+                            </motion.button>
+                          ))}
+                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -382,25 +501,106 @@ export default function Waitlist() {
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
+                      className="space-y-5 overflow-hidden"
                     >
-                      <label
-                        className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
-                        style={{
-                          fontFamily: "var(--font-dm-mono)",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        What role are you looking for?
-                      </label>
-                      <input
-                        type="text"
-                        value={lookingFor}
-                        onChange={(e) => setLookingFor(e.target.value)}
-                        placeholder="Full Stack Developer, React, Node.js"
-                        className={inputClass}
-                        style={inputStyle}
-                      />
+                      <div>
+                        <label
+                          className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
+                          style={{
+                            fontFamily: "var(--font-dm-mono)",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          What role are you looking for?
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {roles.map((role) => (
+                            <motion.button
+                              key={role}
+                              type="button"
+                              onClick={() =>
+                                setLookingFor(
+                                  lookingFor === role ? "" : role
+                                )
+                              }
+                              whileHover={reducedMotion ? {} : { scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="px-3 py-1.5 rounded-full text-xs transition-all duration-200"
+                              style={{
+                                fontFamily: "var(--font-dm-sans)",
+                                fontWeight: 500,
+                                background:
+                                  lookingFor === role
+                                    ? "var(--accent)"
+                                    : "var(--surface)",
+                                color:
+                                  lookingFor === role
+                                    ? "white"
+                                    : "var(--muted2)",
+                                border:
+                                  lookingFor === role
+                                    ? "1px solid var(--accent)"
+                                    : "1px solid var(--border)",
+                                boxShadow:
+                                  lookingFor === role
+                                    ? "0 0 12px rgba(99,102,241,0.25)"
+                                    : "none",
+                              }}
+                            >
+                              {role}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label
+                          className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
+                          style={{
+                            fontFamily: "var(--font-dm-mono)",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Experience level
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {candidateLevels.map((level) => (
+                            <motion.button
+                              key={level}
+                              type="button"
+                              onClick={() =>
+                                setExperienceLevel(
+                                  experienceLevel === level ? "" : level
+                                )
+                              }
+                              whileHover={reducedMotion ? {} : { scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="px-3 py-1.5 rounded-full text-xs transition-all duration-200"
+                              style={{
+                                fontFamily: "var(--font-dm-sans)",
+                                fontWeight: 500,
+                                background:
+                                  experienceLevel === level
+                                    ? "var(--accent)"
+                                    : "var(--surface)",
+                                color:
+                                  experienceLevel === level
+                                    ? "white"
+                                    : "var(--muted2)",
+                                border:
+                                  experienceLevel === level
+                                    ? "1px solid var(--accent)"
+                                    : "1px solid var(--border)",
+                                boxShadow:
+                                  experienceLevel === level
+                                    ? "0 0 12px rgba(99,102,241,0.25)"
+                                    : "none",
+                              }}
+                            >
+                              {level}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -11,7 +11,7 @@ function getSupabase() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, phone, user_type, company_name, hiring_role, looking_for } = body;
+    const { name, email, phone, user_type, company_name, hiring_role, hiring_level, looking_for, experience_level } = body;
 
     if (!name || !email || !user_type) {
       return NextResponse.json(
@@ -35,7 +35,9 @@ export async function POST(req: NextRequest) {
       user_type,
       company_name: company_name || null,
       hiring_role: hiring_role || null,
+      hiring_level: hiring_level || null,
       looking_for: looking_for || null,
+      experience_level: experience_level || null,
     });
 
     if (error) {
