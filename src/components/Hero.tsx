@@ -151,7 +151,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              India&apos;s smartest
+              What if hiring
             </motion.span>
           </span>
           <span className="block overflow-hidden">
@@ -162,22 +162,30 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.35, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              hiring platform.
+              actually worked?
             </motion.span>
           </span>
         </h1>
 
-        {/* Sub — explains the product */}
+        {/* Sub — the turn */}
         <motion.p
           initial={reducedMotion ? false : { opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.7 }}
-          className="text-[1.1rem] text-[var(--muted2)] mb-4 max-w-2xl mx-auto"
+          className="text-[1.15rem] text-[var(--muted2)] mb-3 max-w-2xl mx-auto"
+          style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 400, lineHeight: 1.6 }}
+        >
+          Get hired faster. Hire smarter.
+        </motion.p>
+        <motion.p
+          initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.85 }}
+          className="text-[0.95rem] text-[var(--muted)] mb-4 max-w-xl mx-auto"
           style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300, lineHeight: 1.6 }}
         >
-          SViam connects India&apos;s best candidates to the companies that need
-          them. AI interviews that test real skill, job matching that
-          actually works, and F-1 visa prep that gets you through the window.
+          AI-powered matching, interviews, and visa prep.
+          One platform built for India.
         </motion.p>
 
         {/* Proof line */}
