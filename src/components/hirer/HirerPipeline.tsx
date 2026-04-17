@@ -179,8 +179,9 @@ export default function HirerPipeline() {
               ))}
             </motion.div>
 
-            <motion.div
-              className="flex items-center gap-3"
+            <motion.a
+              href="#waitlist"
+              className="inline-flex items-center gap-3"
               initial={reducedMotion ? false : { opacity: 0 }}
               animate={inView ? { opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.6 }}
@@ -188,15 +189,15 @@ export default function HirerPipeline() {
             >
               <span
                 className="live-dot"
-                style={{ background: "var(--gold)" }}
+                style={{ background: "var(--accent)" }}
               />
               <span
-                className="text-sm font-medium text-[var(--gold)] opacity-70"
+                className="text-sm font-medium text-[var(--accent2)]"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
-                Post a Role. Coming Soon
+                Join the Waitlist
               </span>
-            </motion.div>
+            </motion.a>
           </motion.div>
 
           {/* Right — dashboard */}

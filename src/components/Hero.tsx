@@ -151,7 +151,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              What if hiring
+              Get hired faster.
             </motion.span>
           </span>
           <span className="block overflow-hidden">
@@ -162,21 +162,23 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.35, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              actually worked?
+              Hire smarter.
+            </motion.span>
+          </span>
+          <span className="block overflow-hidden">
+            <motion.span
+              className="inline-block text-[var(--muted2)]"
+              initial={reducedMotion ? false : { y: "110%", rotateX: -40, opacity: 0 }}
+              animate={{ y: 0, rotateX: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.55, ease: [0.33, 1, 0.68, 1] }}
+              style={{ transformOrigin: "bottom", fontSize: "0.55em" }}
+            >
+              Built for India.
             </motion.span>
           </span>
         </h1>
 
-        {/* Sub — the turn */}
-        <motion.p
-          initial={reducedMotion ? false : { opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          className="text-[1.15rem] text-[var(--muted2)] mb-3 max-w-2xl mx-auto"
-          style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 400, lineHeight: 1.6 }}
-        >
-          Get hired faster. Hire smarter.
-        </motion.p>
+        {/* Sub */}
         <motion.p
           initial={reducedMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -184,8 +186,8 @@ export default function Hero() {
           className="text-[0.95rem] text-[var(--muted)] mb-4 max-w-xl mx-auto"
           style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300, lineHeight: 1.6 }}
         >
-          AI-powered matching, interviews, and visa prep.
-          One platform built for India.
+          AI-powered job matching, interviews, and F-1 visa prep.
+          One platform for candidates and companies.
         </motion.p>
 
         {/* Proof line */}
