@@ -151,7 +151,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              Stop applying.
+              Jobs that actually fit.
             </motion.span>
           </span>
           <span className="block overflow-hidden">
@@ -162,7 +162,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.35, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              Start getting picked.
+              Hires that actually last.
             </motion.span>
           </span>
         </h1>

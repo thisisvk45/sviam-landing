@@ -9,7 +9,7 @@ const companies = [
   "McKinsey",
   "Aditya Birla",
   "Airtel",
-  "Indamani",
+  "INDmoney",
 ];
 
 export default function TrustedBy() {
