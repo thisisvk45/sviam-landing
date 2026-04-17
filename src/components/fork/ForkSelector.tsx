@@ -8,7 +8,7 @@ const paths = [
   {
     id: "seeker" as const,
     title: "I need\na job",
-    sub: "Stop applying into the void. Get matched, interviewed, and hired — faster than Naukri ever could.",
+    sub: "Stop applying into the void. Get matched, interviewed, and hired. Faster than Naukri ever could.",
     accent: "#6c63ff",
     accentRgb: "108,99,255",
     icon: (

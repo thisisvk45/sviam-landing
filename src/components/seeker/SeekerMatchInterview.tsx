@@ -168,7 +168,7 @@ export default function SeekerMatchInterview() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               Every role you see comes with a fit score. No more guessing,
-              no more praying — you know exactly where you stand before applying.
+              no more praying. You know exactly where you stand before applying.
             </motion.p>
             <DashboardMockup url="sviam.in/dashboard">
               <motion.div

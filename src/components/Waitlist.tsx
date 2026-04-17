@@ -126,7 +126,7 @@ export default function Waitlist() {
         >
           SViam is in private beta. We&apos;re letting people in wave by wave.
           <br />
-          Drop your email — you&apos;ll hear from us exactly once, when it&apos;s your turn.
+          Drop your email. You&apos;ll hear from us exactly once, when it&apos;s your turn.
         </motion.p>
 
         <motion.div

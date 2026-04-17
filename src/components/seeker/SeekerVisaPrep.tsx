@@ -328,7 +328,7 @@ export default function SeekerVisaPrep() {
             animate={inView ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 1.6 }}
           >
-            GradPilot India Visa Data, Aug 2025 — SEVIS + MRV + Visa
+            GradPilot India Visa Data, Aug 2025 · SEVIS + MRV + Visa
             Integrity Fee, 2026
           </motion.p>
         </motion.div>

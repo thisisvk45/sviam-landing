@@ -22,7 +22,7 @@ const stats: StatItem[] = [
   {
     value: 160,
     suffix: " hrs",
-    label: "burned per job search — gone",
+    label: "burned per job search. Gone.",
     source: "LinkedIn Hiring Posts, 2025",
     accent: "var(--accent)",
   },

@@ -412,7 +412,7 @@ export default function HirerInterviewConfig() {
               animate={reducedMotion ? {} : { opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              Live preview — {selectedStack} / {selectedDifficulty}
+              Live preview · {selectedStack} / {selectedDifficulty}
             </motion.p>
           </motion.div>
         </div>

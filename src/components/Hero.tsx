@@ -128,7 +128,7 @@ export default function Hero() {
         >
           <span className="live-dot" />
           <span className="text-xs text-[var(--teal)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
-            Early access — 200+ on the waitlist
+            Early access. 200+ on the waitlist
           </span>
         </motion.div>
 
@@ -151,7 +151,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              Talent is everywhere.
+              Get hired faster.
             </motion.span>
           </span>
           <span className="block overflow-hidden">
@@ -162,7 +162,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.35, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              Opportunity shouldn&apos;t be.
+              Hire smarter.
             </motion.span>
           </span>
         </h1>
@@ -176,7 +176,7 @@ export default function Hero() {
           style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300, lineHeight: 1.6 }}
         >
           SViam connects India&apos;s best candidates to the companies that need
-          them — with AI interviews that test real skill, job matching that
+          them. AI interviews that test real skill, job matching that
           actually works, and F-1 visa prep that gets you through the window.
         </motion.p>
 

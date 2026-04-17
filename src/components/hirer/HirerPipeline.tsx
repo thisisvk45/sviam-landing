@@ -143,7 +143,7 @@ export default function HirerPipeline() {
             >
               Your engineers are wasting 300+ hours a year on interviews that go
               nowhere. SViam pre-screens every candidate with an AI interview
-              built to your exact spec — so the only people who reach your
+              built to your exact spec. The only people who reach your
               calendar are worth the meeting.
             </motion.p>
 
@@ -167,7 +167,7 @@ export default function HirerPipeline() {
                     <span className="font-medium text-[var(--text)]">
                       {p.label}
                     </span>
-                    {" \u2014 "}
+                    {" · "}
                     <span
                       className="text-[var(--muted2)]"
                       style={{ fontWeight: 300 }}
@@ -194,7 +194,7 @@ export default function HirerPipeline() {
                 className="text-sm font-medium text-[var(--gold)] opacity-70"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
-                Post a Role — Coming Soon
+                Post a Role. Coming Soon
               </span>
             </motion.div>
           </motion.div>

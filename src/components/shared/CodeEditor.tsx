@@ -204,7 +204,7 @@ export default function CodeEditor({
               className="ml-3 text-[11px] text-[var(--muted)]"
               style={{ fontFamily: "var(--font-dm-mono)" }}
             >
-              {fileName} — SViam Interview
+              {fileName} · SViam Interview
             </span>
           </div>
 
