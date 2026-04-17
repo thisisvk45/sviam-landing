@@ -7,8 +7,8 @@ import { useState, useRef, useCallback } from "react";
 const paths = [
   {
     id: "seeker" as const,
-    title: "I\u2019m looking\nfor work",
-    sub: "AI matching. Live interviews. Visa prep.",
+    title: "I need\na job",
+    sub: "Stop applying into the void. Get matched, interviewed, and hired — faster than Naukri ever could.",
     accent: "#6c63ff",
     accentRgb: "108,99,255",
     icon: (
@@ -22,8 +22,8 @@ const paths = [
   },
   {
     id: "hirer" as const,
-    title: "I\u2019m\nhiring",
-    sub: "Pre-screened candidates. Structured signal.",
+    title: "I need\ntalent",
+    sub: "Stop wasting 300 engineering hours on bad interviews. Get pre-screened candidates with real signal.",
     accent: "#00d4aa",
     accentRgb: "0,212,170",
     icon: (

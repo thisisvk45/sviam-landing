@@ -1,33 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f8f8ff;
+  --bg: #fafaf9;
   --surface: #ffffff;
-  --card: #f2f2fa;
-  --border: rgba(0, 0, 0, 0.07);
-  --border2: rgba(0, 0, 0, 0.13);
-  --text: #0a0a1a;
-  --muted: #8888a0;
-  --muted2: #555568;
-  --accent: #6c63ff;
-  --accent2: #9b8fff;
-  --teal: #00d4aa;
-  --teal2: #00f5c4;
-  --orange: #ff6b35;
-  --pink: #ff3d8e;
-  --gold: #ffd166;
-  --green: #06d6a0;
+  --card: #f4f4f5;
+  --border: rgba(0, 0, 0, 0.06);
+  --border2: rgba(0, 0, 0, 0.12);
+  --text: #09090b;
+  --muted: #71717a;
+  --muted2: #3f3f46;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --teal: #10b981;
+  --teal2: #34d399;
+  --orange: #f97316;
+  --pink: #ec4899;
+  --gold: #f59e0b;
+  --green: #22c55e;
 }
 
 .dark {
-  --bg: #080810;
-  --surface: #0f0f1a;
-  --card: #13131f;
-  --border: rgba(255, 255, 255, 0.07);
-  --border2: rgba(255, 255, 255, 0.13);
-  --text: #f0f0fa;
-  --muted: #6b6b88;
-  --muted2: #a0a0bc;
+  --bg: #050507;
+  --surface: #0b0b10;
+  --card: #101018;
+  --border: rgba(255, 255, 255, 0.06);
+  --border2: rgba(255, 255, 255, 0.12);
+  --text: #ededf0;
+  --muted: #63637a;
+  --muted2: #9494ad;
 }
 
 @theme inline {
@@ -132,13 +132,13 @@ body::after {
 }
 
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(108,99,255,0.3); }
-  50% { box-shadow: 0 0 40px rgba(108,99,255,0.6), 0 0 80px rgba(108,99,255,0.2); }
+  0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,0.3); }
+  50% { box-shadow: 0 0 40px rgba(99,102,241,0.6), 0 0 80px rgba(99,102,241,0.2); }
 }
 
 @keyframes borderGlow {
-  0%, 100% { border-color: rgba(108,99,255,0.2); }
-  50% { border-color: rgba(108,99,255,0.5); }
+  0%, 100% { border-color: rgba(99,102,241,0.2); }
+  50% { border-color: rgba(99,102,241,0.5); }
 }
 
 @keyframes ripple {
@@ -152,8 +152,8 @@ body::after {
 }
 
 @keyframes textGlow {
-  0%, 100% { text-shadow: 0 0 10px rgba(108,99,255,0.3); }
-  50% { text-shadow: 0 0 20px rgba(108,99,255,0.6), 0 0 40px rgba(0,212,170,0.2); }
+  0%, 100% { text-shadow: 0 0 10px rgba(99,102,241,0.3); }
+  50% { text-shadow: 0 0 20px rgba(99,102,241,0.6), 0 0 40px rgba(16,185,129,0.2); }
 }
 
 .gradient-text {
@@ -209,6 +209,22 @@ body::after {
 }
 .glow-border:hover::before {
   opacity: 1;
+}
+
+/* Section divider — glowing gradient line */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent) 20%, var(--teal) 80%, transparent);
+  opacity: 0.15;
+  margin: 0 auto;
+  max-width: 80%;
+}
+
+/* Elevated section — slightly different background for rhythm */
+.section-elevated {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 /* Scanline effect for terminal elements */

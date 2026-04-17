@@ -65,7 +65,8 @@ export default function Footer() {
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "1.8rem",
-                fontStyle: "italic",
+                fontWeight: 700,
+                letterSpacing: "-0.03em",
               }}
               whileHover={reducedMotion ? {} : { scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -124,11 +125,11 @@ export default function Footer() {
                 fontWeight: 300,
               }}
             >
-              Built by someone who has sent 200 applications,
+              Built by someone who got ghosted 200 times,
               <br />
-              failed three visa interviews,
+              failed three visa interviews back-to-back,
               <br />
-              and never wants anyone to go through that alone.
+              and decided the system needed to burn and rebuild.
             </p>
           </motion.div>
         </div>

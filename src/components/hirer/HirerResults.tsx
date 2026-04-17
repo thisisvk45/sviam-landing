@@ -81,7 +81,7 @@ export default function HirerResults() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.4 }}
           >
-            WHAT YOU GET BACK
+            KILL THE GUESSWORK
           </motion.span>
           <div className="overflow-hidden">
             <motion.h2
@@ -95,9 +95,9 @@ export default function HirerResults() {
               animate={inView ? { y: 0, rotateX: 0 } : {}}
               transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
             >
-              Structured signal.
+              Every hire backed by data.
               <br />
-              <span className="text-[var(--muted2)]">Not a gut feeling.</span>
+              <span className="text-[var(--muted2)]">Not a 45-minute vibe check.</span>
             </motion.h2>
           </div>
         </motion.div>

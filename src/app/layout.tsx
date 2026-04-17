@@ -1,31 +1,30 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, DM_Sans, DM_Mono } from "next/font/google";
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 
-const instrumentSerif = Instrument_Serif({
+const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
+  weight: ["500", "600", "700"],
 });
 
-const dmSans = DM_Sans({
+const inter = Inter({
   variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500"],
 });
 
-const dmMono = DM_Mono({
+const jetbrainsMono = JetBrains_Mono({
   variable: "--font-dm-mono",
   subsets: ["latin"],
   weight: ["400"],
 });
 
 export const metadata: Metadata = {
-  title: "SViam — India's AI Hiring Platform",
+  title: "SViam — AI-Powered Hiring for India",
   description:
-    "AI-powered job matching, interviews, and F-1 visa prep for India. For candidates and companies.",
+    "Where India's best talent meets the companies that need them. AI interviews, instant job matching, and F-1 visa prep — one platform, both sides of the table.",
 };
 
 export default function RootLayout({
@@ -36,7 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrumentSerif.variable} ${dmSans.variable} ${dmMono.variable} antialiased dark`}
+      className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased dark`}
       suppressHydrationWarning
     >
       <head>

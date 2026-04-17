@@ -146,7 +146,7 @@ export default function HirerInterviewConfig() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.4 }}
           >
-            INTERVIEW CONFIG
+            YOUR WEAPON
           </motion.span>
           <div className="overflow-hidden">
             <motion.h2
@@ -160,9 +160,9 @@ export default function HirerInterviewConfig() {
               animate={inView ? { y: 0, rotateX: 0 } : {}}
               transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
             >
-              Your interview.
+              Build the interview no one can BS.
               <br />
-              <span className="text-[var(--muted2)]">Your rules.</span>
+              <span className="text-[var(--muted2)]">In under 60 seconds.</span>
             </motion.h2>
           </div>
           <motion.p
@@ -176,8 +176,9 @@ export default function HirerInterviewConfig() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Choose the stack, set the difficulty. This is what your candidates
-            experience.
+            Pick the stack. Crank the difficulty. Add follow-up depth so deep
+            that tutorial-memorizers crumble. This is what separates real
+            engineers from resume artists.
           </motion.p>
         </motion.div>
 

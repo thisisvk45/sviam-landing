@@ -83,7 +83,8 @@ export default function Navbar() {
           style={{
             fontFamily: "var(--font-display)",
             fontSize: "1.5rem",
-            fontStyle: "italic",
+            fontWeight: 700,
+            letterSpacing: "-0.03em",
           }}
           whileHover={reducedMotion ? {} : { scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

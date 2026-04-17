@@ -85,7 +85,7 @@ export default function Waitlist() {
               transformOrigin: "bottom",
             }}
           >
-            SViam is in private beta.
+            The old way is dying.
           </motion.h2>
         </div>
         <div className="overflow-hidden mb-8">
@@ -109,7 +109,7 @@ export default function Waitlist() {
               transformOrigin: "bottom",
             }}
           >
-            Get early access.
+            Be first in line for what replaces it.
           </motion.h2>
         </div>
 
@@ -124,9 +124,9 @@ export default function Waitlist() {
             lineHeight: 1.6,
           }}
         >
-          We&apos;re onboarding candidates and companies in batches.
+          SViam is in private beta. We&apos;re letting people in wave by wave.
           <br />
-          Drop your email — one message when your spot is ready.
+          Drop your email — you&apos;ll hear from us exactly once, when it&apos;s your turn.
         </motion.p>
 
         <motion.div

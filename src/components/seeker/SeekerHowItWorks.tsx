@@ -13,17 +13,17 @@ const steps = [
   {
     num: "01",
     title: "Drop your resume",
-    desc: "SViam reads your experience and builds an AI profile. No forms. No 45-minute onboarding.",
+    desc: "Drop it once. SViam reads your experience, builds your AI profile, and starts matching. No forms. No retyping your resume into 12 fields.",
   },
   {
     num: "02",
     title: "See real matches",
-    desc: "Ranked roles with fit scores. One-click autofill. Referral contacts surface automatically.",
+    desc: "Not job board spam. Ranked roles with fit scores you can trust. One-click apply. Referral contacts surface automatically.",
   },
   {
     num: "03",
     title: "Interview and land the offer",
-    desc: "Practice with AI, take the live interview, get feedback. Visa prep is built in.",
+    desc: "Practice with AI that fights back. Take the real interview. Get a score, get feedback, get the offer. Visa prep is baked in.",
   },
 ];
 
@@ -99,9 +99,9 @@ export default function SeekerHowItWorks() {
               animate={inView ? { y: 0, rotateX: 0 } : {}}
               transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
             >
-              Simple for you.
+              Three steps. No busywork.
               <br />
-              Powerful underneath.
+              No 45-minute onboarding.
             </motion.h2>
           </div>
         </motion.div>

@@ -181,10 +181,10 @@ export default function SeekerVisaPrep() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              You&apos;ve already paid &#8377;65,000 in fees before you walk
-              in.
+              You&apos;ve paid &#8377;65,000 in fees before you even walk into
+              the consulate. One wrong answer and it&apos;s gone.
               <br />
-              SViam lets you practice until your answers are airtight.
+              SViam drills you until your story is bulletproof.
             </motion.p>
           </motion.div>
         </div>

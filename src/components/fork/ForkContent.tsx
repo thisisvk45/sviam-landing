@@ -64,7 +64,9 @@ function SeekerSections() {
       exit="exit"
     >
       <SeekerMatchInterview />
+      <div className="section-divider" />
       <SeekerVisaPrep />
+      <div className="section-divider" />
       <SeekerHowItWorks />
     </motion.div>
   );
@@ -81,7 +83,9 @@ function HirerSections() {
       exit="exit"
     >
       <HirerPipeline />
+      <div className="section-divider" />
       <HirerInterviewConfig />
+      <div className="section-divider" />
       <HirerResults />
     </motion.div>
   );

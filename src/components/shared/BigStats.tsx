@@ -22,14 +22,14 @@ const stats: StatItem[] = [
   {
     value: 160,
     suffix: " hrs",
-    label: "wasted per job search",
+    label: "burned per job search — gone",
     source: "LinkedIn Hiring Posts, 2025",
     accent: "var(--accent)",
   },
   {
     value: 150000,
     suffix: "",
-    label: "cost per hire",
+    label: "flushed per bad hire",
     source: "SheWork India, 2025",
     format: "rupee",
     accent: "var(--orange)",
@@ -37,14 +37,14 @@ const stats: StatItem[] = [
   {
     value: 74,
     suffix: "%",
-    label: "F-1 rejection rate",
+    label: "crushed at the visa window",
     source: "GradPilot, Aug 2025",
     accent: "var(--teal)",
   },
   {
     value: 47,
     suffix: " days",
-    label: "to fill one role",
+    label: "to fill one damn role",
     source: "Quantalent India, 2026",
     accent: "var(--gold)",
   },
@@ -190,12 +190,12 @@ export default function BigStats() {
               fontSize: "clamp(2rem, 4vw, 3.2rem)",
               lineHeight: 1.1,
               letterSpacing: "-0.03em",
-              fontStyle: "italic",
+              fontWeight: 600,
               color: "var(--muted2)",
               transformOrigin: "bottom",
             }}
           >
-            The hiring system in India is broken.
+            Everyone knows the system is rigged. Here are the receipts.
           </motion.h2>
         </div>
 

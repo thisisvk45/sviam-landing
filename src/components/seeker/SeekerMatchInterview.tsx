@@ -110,7 +110,7 @@ export default function SeekerMatchInterview() {
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.5 }}
           >
-            YOUR JOB SEARCH
+            STOP APPLYING BLIND
           </motion.span>
           <h2
             style={{
@@ -120,7 +120,7 @@ export default function SeekerMatchInterview() {
               letterSpacing: "-0.025em",
             }}
           >
-            {"Matched. Interviewed.".split(" ").map((word, i) => (
+            {"You deserve to know your odds before you apply.".split(" ").map((word, i) => (
               <motion.span
                 key={i}
                 className="inline-block mr-[0.2em]"
@@ -134,7 +134,7 @@ export default function SeekerMatchInterview() {
             ))}
             <br />
             <span className="text-[var(--muted2)]">
-              {"In one place.".split(" ").map((word, i) => (
+              {"SViam shows you.".split(" ").map((word, i) => (
                 <motion.span
                   key={i}
                   className="inline-block mr-[0.2em]"
@@ -167,8 +167,8 @@ export default function SeekerMatchInterview() {
               animate={inView ? { opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              Your resume matched against real roles using AI — not keyword
-              overlap. You see a fit score before you apply.
+              Every role you see comes with a fit score. No more guessing,
+              no more praying — you know exactly where you stand before applying.
             </motion.p>
             <DashboardMockup url="sviam.in/dashboard">
               <motion.div
@@ -267,8 +267,8 @@ export default function SeekerMatchInterview() {
               animate={inView ? { opacity: 1 } : {}}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              Then interview live. The AI asks follow-ups mid-answer — not a
-              recording you submit and hope for the best.
+              No more recording yourself and hoping for the best. Our AI
+              interviews you live, asks follow-ups, and actually listens.
             </motion.p>
             <CodeEditor interactive showCameraFeeds />
           </motion.div>

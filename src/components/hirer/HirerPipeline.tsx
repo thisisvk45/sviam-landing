@@ -7,15 +7,15 @@ import DashboardMockup from "../shared/DashboardMockup";
 const points = [
   {
     label: "Pre-screened",
-    desc: "Every applicant has passed an AI interview before you see their name.",
+    desc: "No more unqualified resumes flooding your inbox. Every name you see has already proved they can do the job.",
   },
   {
     label: "Your spec",
-    desc: "You set the topics, difficulty, and follow-up depth. SViam runs round one.",
+    desc: "React + system design + senior-level follow-ups? Done. You define the bar, SViam enforces it.",
   },
   {
     label: "Scored reports",
-    desc: "A structured hiring signal on every candidate. Not a recruiter\u2019s gut feeling.",
+    desc: "Topic-by-topic breakdown with scores, AI reasoning, and a clear hire/no-hire recommendation. No more gut feelings.",
   },
 ];
 
@@ -123,10 +123,10 @@ export default function HirerPipeline() {
                 animate={inView ? { y: 0, rotateX: 0 } : {}}
                 transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
               >
-                Hire smarter.
+                Stop burning ₹1.5L per hire.
                 <br />
                 <span className="text-[var(--muted2)]">
-                  Pay less than Naukri.
+                  Start seeing who&apos;s actually good.
                 </span>
               </motion.h2>
             </div>
@@ -141,10 +141,10 @@ export default function HirerPipeline() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              SViam sends you candidates who&apos;ve already passed an AI
-              interview configured to your stack. No more 300 hours of
-              engineering time on people who shouldn&apos;t have made it past
-              round one.
+              Your engineers are wasting 300+ hours a year on interviews that go
+              nowhere. SViam pre-screens every candidate with an AI interview
+              built to your exact spec — so the only people who reach your
+              calendar are worth the meeting.
             </motion.p>
 
             <motion.div
