@@ -19,7 +19,7 @@ export default function Navbar() {
   const borderOpacity = useTransform(scrollY, [0, 60], [0, 0.07]);
   const reducedMotion = useReducedMotion();
 
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   // Magnetic hover for CTA button
   const ctaRef = useRef<HTMLAnchorElement>(null);
@@ -68,7 +68,7 @@ export default function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
       style={{
-        backgroundColor: useTransform(bgOpacity, (v) => `rgba(8,8,16,${v})`),
+        backgroundColor: useTransform(bgOpacity, (v) => `color-mix(in srgb, var(--bg) ${Math.round(v * 100)}%, transparent)`),
         backdropFilter: useTransform(blur, (v) => `blur(${v}px)`),
         borderBottom: useTransform(
           borderOpacity,

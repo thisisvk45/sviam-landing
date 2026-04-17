@@ -151,7 +151,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              Get hired faster.
+              Stop applying.
             </motion.span>
           </span>
           <span className="block overflow-hidden">
@@ -162,18 +162,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.35, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              Hire smarter.
-            </motion.span>
-          </span>
-          <span className="block overflow-hidden">
-            <motion.span
-              className="inline-block text-[var(--muted2)]"
-              initial={reducedMotion ? false : { y: "110%", rotateX: -40, opacity: 0 }}
-              animate={{ y: 0, rotateX: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.55, ease: [0.33, 1, 0.68, 1] }}
-              style={{ transformOrigin: "bottom", fontSize: "0.55em" }}
-            >
-              Built for India.
+              Start getting picked.
             </motion.span>
           </span>
         </h1>
