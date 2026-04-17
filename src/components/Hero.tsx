@@ -151,7 +151,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.15, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              Get hired faster.
+              India&apos;s smartest
             </motion.span>
           </span>
           <span className="block overflow-hidden">
@@ -162,7 +162,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.35, ease: [0.33, 1, 0.68, 1] }}
               style={{ transformOrigin: "bottom" }}
             >
-              Hire smarter.
+              hiring platform.
             </motion.span>
           </span>
         </h1>

@@ -7,32 +7,35 @@ import { useState, useRef, useCallback } from "react";
 const paths = [
   {
     id: "seeker" as const,
-    title: "I need\na job",
-    sub: "Stop applying into the void. Get matched, interviewed, and hired. Faster than Naukri ever could.",
-    accent: "#6c63ff",
-    accentRgb: "108,99,255",
+    title: "Land the\nrole",
+    sub: "AI matches you to jobs you'll actually get. Practice interviews that fight back. Visa prep that works. No more 200 applications into silence.",
+    accent: "#6366f1",
+    accentRgb: "99,102,241",
+    cta: "Show me how",
+    stats: "10x faster than job boards",
     icon: (
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="18" cy="18" r="12" />
-        <path d="M35 35l-8-8" />
-        <path d="M18 12v12" opacity="0.4" />
-        <path d="M12 18h12" opacity="0.4" />
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 6l4 8 9 1.3-6.5 6.3L30 31 22 26.5 14 31l1.5-9.4L9 15.3l9-1.3z" />
+        <circle cx="22" cy="22" r="18" opacity="0.2" />
       </svg>
     ),
   },
   {
     id: "hirer" as const,
-    title: "I need\ntalent",
-    sub: "Stop wasting 300 engineering hours on bad interviews. Get pre-screened candidates with real signal.",
-    accent: "#00d4aa",
-    accentRgb: "0,212,170",
+    title: "Build the\nteam",
+    sub: "Every candidate pre-screened by AI before they reach your calendar. Real scores, real signal, real time saved. Your engineers interview only the best.",
+    accent: "#10b981",
+    accentRgb: "16,185,129",
+    cta: "See the pipeline",
+    stats: "4x cheaper than Naukri",
     icon: (
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="8" width="32" height="24" rx="4" />
-        <path d="M4 16h32" />
-        <circle cx="14" cy="24" r="3" />
-        <circle cx="26" cy="24" r="3" />
-        <path d="M17 24h6" strokeDasharray="2 2" />
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="16" cy="16" r="6" />
+        <circle cx="30" cy="16" r="6" />
+        <path d="M6 36c0-6 4.5-10 10-10" />
+        <path d="M38 36c0-6-4.5-10-10-10" />
+        <path d="M22 26v10" opacity="0.4" />
+        <path d="M17 31h10" opacity="0.4" />
       </svg>
     ),
   },
@@ -99,7 +102,7 @@ export default function ForkSelector() {
             textTransform: "uppercase",
           }}
         >
-          Choose your side
+          Which side of the table?
         </motion.p>
 
         {/* Split-screen container */}
@@ -233,26 +236,43 @@ export default function ForkSelector() {
                   </h3>
 
                   <motion.p
-                    className="text-[var(--muted2)]"
+                    className="text-[var(--muted2)] mb-4"
                     style={{
                       fontFamily: "var(--font-dm-sans)",
                       fontWeight: 300,
                       fontSize: "0.95rem",
+                      lineHeight: 1.5,
                     }}
                     animate={reducedMotion ? {} : { opacity: isHovered ? 1 : 0.7 }}
                     transition={{ duration: 0.3 }}
                   >
                     {p.sub}
                   </motion.p>
+
+                  {/* Stats pill */}
+                  <motion.span
+                    className="inline-block text-[0.7rem] px-3 py-1.5 rounded-full"
+                    style={{
+                      background: `rgba(${p.accentRgb}, 0.08)`,
+                      color: p.accent,
+                      border: `1px solid rgba(${p.accentRgb}, 0.15)`,
+                      fontFamily: "var(--font-dm-mono)",
+                    }}
+                    animate={reducedMotion ? {} : { scale: isHovered ? 1.05 : 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  >
+                    {p.stats}
+                  </motion.span>
                 </div>
 
-                {/* Arrow */}
+                {/* CTA Arrow */}
                 <motion.div
                   className="relative z-10 mt-8 flex items-center gap-2"
                   style={{
                     color: p.accent,
-                    fontFamily: "var(--font-dm-mono)",
-                    fontSize: "0.75rem",
+                    fontFamily: "var(--font-dm-sans)",
+                    fontSize: "0.85rem",
+                    fontWeight: 500,
                   }}
                   animate={
                     reducedMotion
@@ -261,7 +281,7 @@ export default function ForkSelector() {
                   }
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
-                  <span>Enter</span>
+                  <span>{p.cta}</span>
                   <motion.svg
                     width="16"
                     height="16"
