@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 const faqs = [
   {
     q: "Is SViam free to use?",
-    a: "For candidates, yes. Job matching, AI interview practice, and visa prep are completely free. Companies pay per successful hire, and it costs a fraction of what traditional recruiters charge.",
+    a: "For candidates, yes. Job matching and AI interview practice are completely free. Companies pay per successful hire, and it costs a fraction of what traditional recruiters charge.",
   },
   {
     q: "How does the AI interview work?",

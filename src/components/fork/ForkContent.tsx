@@ -5,7 +5,6 @@ import { useFork } from "./ForkContext";
 import ForkSelector from "./ForkSelector";
 import PathToggle from "./PathToggle";
 import SeekerMatchInterview from "../seeker/SeekerMatchInterview";
-import SeekerVisaPrep from "../seeker/SeekerVisaPrep";
 import SeekerHowItWorks from "../seeker/SeekerHowItWorks";
 import HirerPipeline from "../hirer/HirerPipeline";
 import HirerInterviewConfig from "../hirer/HirerInterviewConfig";
@@ -64,8 +63,6 @@ function SeekerSections() {
       exit="exit"
     >
       <SeekerMatchInterview />
-      <div className="section-divider" />
-      <SeekerVisaPrep />
       <div className="section-divider" />
       <SeekerHowItWorks />
     </motion.div>

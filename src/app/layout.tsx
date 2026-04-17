@@ -26,7 +26,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "SViam | AI-Powered Hiring for India",
   description:
-    "Where India's best talent meets the companies that need them. AI interviews, instant job matching, and F-1 visa prep. One platform, both sides of the table.",
+    "Where India's best talent meets the companies that need them. AI interviews and instant job matching. One platform, both sides of the table.",
 };
 
 export default function RootLayout({

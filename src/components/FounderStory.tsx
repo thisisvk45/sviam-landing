@@ -63,10 +63,10 @@ export default function FounderStory() {
                 fontWeight: 300,
               }}
             >
-              I sent 200+ applications. Got ghosted by most. Failed three F-1
-              visa interviews back to back. Watched friends with better resumes
-              get rejected because they froze for 30 seconds in front of a
-              consulate officer.
+              I sent 200+ applications. Got ghosted by most. Watched friends
+              with better skills get passed over because their resume didn&apos;t
+              have the right keywords. The system wasn&apos;t broken for some
+              people. It was broken for everyone.
             </p>
             <p
               className="text-[var(--text)] mb-6"

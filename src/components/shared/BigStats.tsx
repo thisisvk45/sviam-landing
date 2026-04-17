@@ -35,10 +35,10 @@ const stats: StatItem[] = [
     accent: "var(--orange)",
   },
   {
-    value: 74,
+    value: 85,
     suffix: "%",
-    label: "crushed at the visa window",
-    source: "GradPilot, Aug 2025",
+    label: "of resumes never seen by a human",
+    source: "Harvard Business School, 2025",
     accent: "var(--teal)",
   },
   {

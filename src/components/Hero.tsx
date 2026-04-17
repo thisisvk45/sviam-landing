@@ -186,7 +186,7 @@ export default function Hero() {
           className="text-[0.95rem] text-[var(--muted)] mb-4 max-w-xl mx-auto"
           style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300, lineHeight: 1.6 }}
         >
-          AI-powered job matching, interviews, and F-1 visa prep.
+          AI-powered job matching and interviews.
           One platform for candidates and companies.
         </motion.p>
 
@@ -198,7 +198,7 @@ export default function Hero() {
           className="text-xs text-[var(--muted)] mb-10"
           style={{ fontFamily: "var(--font-dm-mono)" }}
         >
-          AI interviews &middot; Job matching &middot; F-1 visa prep &middot; Hiring pipeline
+          AI interviews &middot; Job matching &middot; Hiring pipeline
         </motion.p>
 
         {/* Dual CTA */}

@@ -23,7 +23,7 @@ const steps = [
   {
     num: "03",
     title: "Interview and land the offer",
-    desc: "Practice with AI that fights back. Take the real interview. Get a score, get feedback, get the offer. Visa prep is baked in.",
+    desc: "Practice with AI that fights back. Take the real interview. Get a score, get feedback, get the offer.",
   },
 ];
 

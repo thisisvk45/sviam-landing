@@ -6,7 +6,7 @@ import { useRef } from "react";
 const centerLinks = [
   "Jobs",
   "Interviews",
-  "Visa Prep",
+  "Pricing",
   "For Companies",
   "About",
 ];
@@ -127,7 +127,7 @@ export default function Footer() {
             >
               Built by someone who got ghosted 200 times,
               <br />
-              failed three visa interviews back-to-back,
+              got rejected more times than he can count,
               <br />
               and decided the system needed to burn and rebuild.
             </p>
