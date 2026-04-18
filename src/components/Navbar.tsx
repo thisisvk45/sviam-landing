@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 import {
   motion,
   useScroll,
@@ -20,6 +21,16 @@ export default function Navbar() {
   const reducedMotion = useReducedMotion();
 
   const [isDark, setIsDark] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  const supabase = useMemo(
+    () =>
+      createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      ),
+    []
+  );
 
   // Magnetic hover for CTA button
   const ctaRef = useRef<HTMLAnchorElement>(null);
@@ -47,7 +58,10 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
-  }, []);
+    supabase.auth.getUser().then(({ data }) => {
+      setIsSignedIn(!!data.user);
+    });
+  }, [supabase]);
 
   const toggleTheme = () => {
     const next = !isDark;
@@ -130,7 +144,7 @@ export default function Navbar() {
 
           <motion.a
             ref={ctaRef}
-            href="#waitlist"
+            href={isSignedIn ? "/dashboard" : "#waitlist"}
             className="px-5 py-2 text-sm font-medium rounded-[10px] text-white relative overflow-hidden"
             style={{
               background: "var(--accent)",
@@ -155,7 +169,9 @@ export default function Navbar() {
               whileHover={{ x: "100%" }}
               transition={{ duration: 0.6, ease: "easeInOut" }}
             />
-            <span className="relative z-10">Get Early Access</span>
+            <span className="relative z-10">
+              {isSignedIn ? "Dashboard" : "Get Early Access"}
+            </span>
           </motion.a>
         </div>
       </div>

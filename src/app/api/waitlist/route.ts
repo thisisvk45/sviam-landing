@@ -11,7 +11,7 @@ function getSupabase() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, phone, user_type, company_name, hiring_role, hiring_level, looking_for, experience_level } = body;
+    const { name, email, user_type, company_name, hiring_role, hiring_level, looking_for, experience_level } = body;
 
     if (!name || !email || !user_type) {
       return NextResponse.json(
@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
     const { error } = await supabase.from("waitlist").insert({
       name,
       email,
-      phone: phone || null,
       user_type,
       company_name: company_name || null,
       hiring_role: hiring_role || null,
@@ -54,7 +53,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    console.error("Waitlist API error:", err);
     return NextResponse.json(
       { error: "Invalid request." },
       { status: 400 }

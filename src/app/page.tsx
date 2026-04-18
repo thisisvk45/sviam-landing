@@ -8,6 +8,7 @@ import BigStats from "@/components/shared/BigStats";
 import FounderStory from "@/components/FounderStory";
 import FAQ from "@/components/FAQ";
 import GradientBackground from "@/components/shared/GradientBackground";
+import TryIt from "@/components/TryIt";
 import Waitlist from "@/components/Waitlist";
 import Footer from "@/components/Footer";
 import { ForkProvider } from "@/components/fork/ForkContext";
@@ -21,6 +22,7 @@ export default function Home() {
         <Hero />
         <TrustedBy />
         <ForkContent />
+        <TryIt />
         <BigStats />
         <FounderStory />
         <FAQ />

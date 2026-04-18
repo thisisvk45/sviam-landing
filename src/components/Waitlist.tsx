@@ -8,6 +8,7 @@ import {
 } from "framer-motion";
 import { useRef, useState, FormEvent } from "react";
 import confetti from "canvas-confetti";
+import AuthButton from "./AuthButton";
 
 type UserType = "candidate" | "company" | null;
 
@@ -61,11 +62,10 @@ export default function Waitlist() {
   const [userType, setUserType] = useState<UserType>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [companyName, setCompanyName] = useState("");
-  const [hiringRole, setHiringRole] = useState("");
+  const [hiringRoles, setHiringRoles] = useState<string[]>([]);
   const [hiringLevel, setHiringLevel] = useState("");
-  const [lookingFor, setLookingFor] = useState("");
+  const [lookingFor, setLookingFor] = useState<string[]>([]);
   const [experienceLevel, setExperienceLevel] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
@@ -82,12 +82,11 @@ export default function Waitlist() {
         body: JSON.stringify({
           name,
           email,
-          phone,
           user_type: userType,
           company_name: companyName || null,
-          hiring_role: hiringRole || null,
+          hiring_role: hiringRoles.length ? hiringRoles.join(", ") : null,
           hiring_level: hiringLevel || null,
-          looking_for: lookingFor || null,
+          looking_for: lookingFor.length ? lookingFor.join(", ") : null,
           experience_level: experienceLevel || null,
         }),
       });
@@ -336,33 +335,12 @@ export default function Waitlist() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="priya@email.com"
+                      placeholder=""
                       required
                       className={inputClass}
                       style={inputStyle}
                     />
                   </div>
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <label
-                    className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
-                    style={{
-                      fontFamily: "var(--font-dm-mono)",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Phone (optional)
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
-                    className={inputClass}
-                    style={inputStyle}
-                  />
                 </div>
 
                 {/* Conditional fields */}
@@ -411,7 +389,11 @@ export default function Waitlist() {
                               key={role}
                               type="button"
                               onClick={() =>
-                                setHiringRole(hiringRole === role ? "" : role)
+                                setHiringRoles((prev) =>
+                                  prev.includes(role)
+                                    ? prev.filter((r) => r !== role)
+                                    : [...prev, role]
+                                )
                               }
                               whileHover={reducedMotion ? {} : { scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -420,19 +402,19 @@ export default function Waitlist() {
                                 fontFamily: "var(--font-dm-sans)",
                                 fontWeight: 500,
                                 background:
-                                  hiringRole === role
+                                  hiringRoles.includes(role)
                                     ? "var(--teal)"
                                     : "var(--surface)",
                                 color:
-                                  hiringRole === role
+                                  hiringRoles.includes(role)
                                     ? "white"
                                     : "var(--muted2)",
                                 border:
-                                  hiringRole === role
+                                  hiringRoles.includes(role)
                                     ? "1px solid var(--teal)"
                                     : "1px solid var(--border)",
                                 boxShadow:
-                                  hiringRole === role
+                                  hiringRoles.includes(role)
                                     ? "0 0 12px rgba(16,185,129,0.25)"
                                     : "none",
                               }}
@@ -519,8 +501,10 @@ export default function Waitlist() {
                               key={role}
                               type="button"
                               onClick={() =>
-                                setLookingFor(
-                                  lookingFor === role ? "" : role
+                                setLookingFor((prev) =>
+                                  prev.includes(role)
+                                    ? prev.filter((r) => r !== role)
+                                    : [...prev, role]
                                 )
                               }
                               whileHover={reducedMotion ? {} : { scale: 1.05 }}
@@ -530,19 +514,19 @@ export default function Waitlist() {
                                 fontFamily: "var(--font-dm-sans)",
                                 fontWeight: 500,
                                 background:
-                                  lookingFor === role
+                                  lookingFor.includes(role)
                                     ? "var(--accent)"
                                     : "var(--surface)",
                                 color:
-                                  lookingFor === role
+                                  lookingFor.includes(role)
                                     ? "white"
                                     : "var(--muted2)",
                                 border:
-                                  lookingFor === role
+                                  lookingFor.includes(role)
                                     ? "1px solid var(--accent)"
                                     : "1px solid var(--border)",
                                 boxShadow:
-                                  lookingFor === role
+                                  lookingFor.includes(role)
                                     ? "0 0 12px rgba(99,102,241,0.25)"
                                     : "none",
                               }}
@@ -667,6 +651,20 @@ export default function Waitlist() {
                 >
                   No spam. One email when you&apos;re in.
                 </p>
+
+                {/* Divider */}
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                  <span
+                    className="text-[var(--muted)] text-xs"
+                    style={{ fontFamily: "var(--font-dm-mono)" }}
+                  >
+                    or
+                  </span>
+                  <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                </div>
+
+                <AuthButton />
               </motion.form>
             ) : (
               <motion.div
