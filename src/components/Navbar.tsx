@@ -108,6 +108,15 @@ export default function Navbar() {
         </motion.a>
 
         <div className="flex items-center gap-3">
+          {isSignedIn && (
+            <a
+              href="/resume-builder"
+              className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
+              style={{ fontFamily: "var(--font-dm-sans)" }}
+            >
+              Resume Builder
+            </a>
+          )}
           <motion.button
             onClick={toggleTheme}
             className="w-9 h-9 rounded-[10px] flex items-center justify-center transition-colors duration-200 hover:bg-[var(--card)]"

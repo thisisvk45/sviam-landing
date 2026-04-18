@@ -212,4 +212,167 @@ export async function getSavedJobs(
   return res.json();
 }
 
+// Resume Builder types
+export type ResumePersonal = {
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  state: string;
+  linkedin: string;
+  portfolio: string;
+};
+
+export type ResumeExperience = {
+  company: string;
+  title: string;
+  start: string;
+  end: string;
+  location: string;
+  bullets: string[];
+};
+
+export type ResumeEducation = {
+  institution: string;
+  degree: string;
+  field: string;
+  year: string;
+  gpa: string;
+};
+
+export type ResumeCertification = {
+  name: string;
+  issuer: string;
+  year: string;
+};
+
+export type ResumeData = {
+  personal: ResumePersonal;
+  summary: string;
+  experience: ResumeExperience[];
+  education: ResumeEducation[];
+  skills: string[];
+  certifications: ResumeCertification[];
+};
+
+export type TailorChange = {
+  section: string;
+  original: string;
+  updated: string;
+  reason: string;
+};
+
+export async function parseResume(
+  token: string,
+  file: File
+): Promise<ResumeData> {
+  const form = new FormData();
+  form.append("resume", file);
+  const res = await fetch(`${API_URL}/resume/parse`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to parse resume");
+  }
+  return res.json();
+}
+
+export async function improveBullets(
+  token: string,
+  data: { company: string; title: string; bullets: string[] }
+): Promise<{ improved_bullets: string[] }> {
+  const res = await fetch(`${API_URL}/resume/improve-bullets`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to improve bullets");
+  }
+  return res.json();
+}
+
+export async function generateSummary(
+  token: string,
+  data: { experience: ResumeExperience[]; skills: string[]; target_role?: string }
+): Promise<{ summary: string }> {
+  const res = await fetch(`${API_URL}/resume/generate-summary`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to generate summary");
+  }
+  return res.json();
+}
+
+export async function suggestSkills(
+  token: string,
+  data: { experience: ResumeExperience[]; current_skills: string[] }
+): Promise<{ suggested_skills: string[] }> {
+  const res = await fetch(`${API_URL}/resume/suggest-skills`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to suggest skills");
+  }
+  return res.json();
+}
+
+export async function tailorResume(
+  token: string,
+  data: { resume: ResumeData; job_description: string }
+): Promise<{ tailored_resume: ResumeData; changes: TailorChange[] }> {
+  const res = await fetch(`${API_URL}/resume/tailor`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to tailor resume");
+  }
+  return res.json();
+}
+
+export async function generatePdf(
+  token: string,
+  resume: ResumeData
+): Promise<Blob> {
+  const res = await fetch(`${API_URL}/resume/generate-pdf`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ resume }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to generate PDF");
+  }
+  return res.blob();
+}
+
 export { getToken };

@@ -26,8 +26,12 @@ export default async function proxy(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect /dashboard — redirect to home if not authenticated
-  if (req.nextUrl.pathname.startsWith("/dashboard") && !user) {
+  // Protect authenticated routes
+  const protectedPaths = ["/dashboard", "/resume-builder"];
+  const isProtected = protectedPaths.some((p) =>
+    req.nextUrl.pathname.startsWith(p)
+  );
+  if (isProtected && !user) {
     return NextResponse.redirect(new URL("/?signin=true", req.url));
   }
 
@@ -35,5 +39,5 @@ export default async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/resume-builder/:path*"],
 };

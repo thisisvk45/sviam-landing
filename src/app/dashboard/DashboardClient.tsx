@@ -172,6 +172,37 @@ export default function DashboardClient({
             <SignOutButton />
           </div>
 
+          {/* Resume builder CTA */}
+          {!profile.resume_url && !profileLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-[12px] mb-6 flex items-center justify-between flex-wrap gap-3"
+              style={{
+                background: "rgba(99,102,241,0.08)",
+                border: "1px solid rgba(99,102,241,0.2)",
+              }}
+            >
+              <p
+                className="text-sm text-[var(--text)]"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                Build a professional resume first &mdash; it takes 5 minutes
+                and improves your match quality significantly.
+              </p>
+              <a
+                href="/resume-builder"
+                className="px-4 py-2 rounded-[8px] text-xs font-medium text-white whitespace-nowrap"
+                style={{
+                  background: "var(--accent)",
+                  fontFamily: "var(--font-dm-sans)",
+                }}
+              >
+                Build Resume &rarr;
+              </a>
+            </motion.div>
+          )}
+
           {/* Two column layout */}
           <div className="grid lg:grid-cols-[1fr_1.5fr] gap-6">
             {/* Left column — Profile */}
