@@ -145,8 +145,7 @@ export default function Footer() {
             className="text-[0.7rem] text-[var(--muted)] text-center"
             style={{ fontFamily: "var(--font-dm-sans)" }}
           >
-            &copy; 2026 SViam &middot; Privacy &middot; Terms &middot; Made
-            with Claude Code
+            &copy; 2026 SViam &middot; Privacy &middot; Terms
           </p>
         </motion.div>
       </div>
