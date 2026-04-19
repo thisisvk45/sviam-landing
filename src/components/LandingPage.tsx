@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import TrustedBy from "@/components/TrustedBy";
@@ -13,7 +14,13 @@ import Waitlist from "@/components/Waitlist";
 import Footer from "@/components/Footer";
 import { ForkProvider } from "@/components/fork/ForkContext";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export default function LandingPage() {
+  // Warm up the backend on landing page load so it's ready by dashboard
+  useEffect(() => {
+    fetch(`${API_URL}/ping`, { mode: "cors" }).catch(() => {});
+  }, []);
   return (
     <ForkProvider>
       <GradientBackground />

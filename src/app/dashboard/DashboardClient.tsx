@@ -258,13 +258,36 @@ export default function DashboardClient({
     } catch { /* ignore */ }
   }, []);
 
-  const fetchMatches = useCallback(async (resumeId?: string) => {
-    setMatchesLoading(true);
+  const fetchMatches = useCallback(async (resumeId?: string, background = false) => {
+    const cacheKey = `sviam_matches_${resumeId || "default"}`;
+
+    // Stale-while-revalidate: show cached results instantly
+    if (!background) {
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const { results, ts } = JSON.parse(cached);
+          setMatches(results);
+          setMatchesLoading(false);
+          // If cache is < 5 min old, skip API call entirely
+          if (Date.now() - ts < 5 * 60 * 1000) return;
+          // Otherwise refresh silently in background
+          fetchMatches(resumeId, true);
+          return;
+        }
+      } catch { /* ignore */ }
+    }
+
+    if (!background) setMatchesLoading(true);
     try {
       const data = await matchStored(token, { resume_id: resumeId, limit: 50 });
       setMatches(data.results);
+      // Cache results with timestamp
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify({ results: data.results, ts: Date.now() }));
+      } catch { /* storage full */ }
     } catch { /* no matches */ }
-    finally { setMatchesLoading(false); }
+    finally { if (!background) setMatchesLoading(false); }
   }, [token]);
 
   // Initial load — all independent calls in parallel
@@ -280,20 +303,40 @@ export default function DashboardClient({
       }
     } catch { /* ignore */ }
 
-    // Fire all independent loads at once
+    // ── Instant restore from sessionStorage ──
+    try {
+      const cachedDash = sessionStorage.getItem("sviam_dashboard");
+      if (cachedDash) {
+        const { resumes: cr, savedJobs: cs, profile: cp } = JSON.parse(cachedDash);
+        if (cr?.length) { setResumes(cr); setSelectedResumeId(cr[0].id); }
+        if (cs?.length) { setSavedJobs(cs); setSavedJobIds(new Set(cs.map((j: SavedJob) => j.job_id))); }
+        if (cp) computeProfileCompleteness(cp);
+        setInitialLoading(false); // UI is visible immediately
+      }
+    } catch { /* ignore */ }
+
+    // ── Background refresh from API ──
     const resumePromise = listResumes(token).catch(() => ({ resumes: [] as UserResume[] }));
     const profilePromise = getProfile(token).catch(() => null);
     const savedPromise = getSavedJobs(token).then((res) => {
       setSavedJobs(res.saved_jobs);
       setSavedJobIds(new Set(res.saved_jobs.map((j) => j.job_id)));
-    }).catch(() => {});
+      return res.saved_jobs;
+    }).catch(() => [] as SavedJob[]);
     const appsPromise = fetchApplications();
 
     // Resume + profile drive match loading
-    Promise.all([resumePromise, profilePromise, savedPromise, appsPromise]).then(async ([resumeRes, profile]) => {
+    Promise.all([resumePromise, profilePromise, savedPromise, appsPromise]).then(async ([resumeRes, profile, saved]) => {
       const ur = resumeRes.resumes;
       setResumes(ur);
       if (profile) computeProfileCompleteness(profile);
+
+      // Cache dashboard state for instant restore
+      try {
+        sessionStorage.setItem("sviam_dashboard", JSON.stringify({
+          resumes: ur, savedJobs: saved, profile,
+        }));
+      } catch { /* storage full */ }
 
       if (ur.length > 0) {
         setSelectedResumeId(ur[0].id);
