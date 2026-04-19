@@ -364,13 +364,17 @@ export default function DashboardClient({
     setOnboardingStep("processing");
     setParseStage("uploading");
     try {
-      const newResume = await uploadUserResume(token, file, "Resume 1");
+      // Run upload + parse in PARALLEL (they're independent)
+      const [newResume, parsed] = await Promise.all([
+        uploadUserResume(token, file, "Resume 1"),
+        parseResume(token, file).catch(() => null),
+      ]);
+
       setResumes([newResume]);
       setSelectedResumeId(newResume.id);
+      setParseStage("matching");
 
-      setParseStage("parsing");
-      try {
-        const parsed = await parseResume(token, file);
+      if (parsed) {
         setParsedResume(parsed);
         setProfileForm({
           name: parsed.personal?.name || userName || "",
@@ -378,17 +382,18 @@ export default function DashboardClient({
           city: parsed.personal?.city || "",
           experience_level: guessExpLevel(parsed.experience),
         });
-        // Get skill suggestions
-        try {
-          const { suggested_skills } = await suggestSkills(token, {
-            experience: parsed.experience || [],
-            current_skills: parsed.skills || [],
-          });
-          setSuggestedSkills(suggested_skills);
-        } catch { /* silent */ }
-      } catch {
+        // Skill suggestions in background — don't block onboarding
+        suggestSkills(token, {
+          experience: parsed.experience || [],
+          current_skills: parsed.skills || [],
+        }).then(({ suggested_skills }) => setSuggestedSkills(suggested_skills)).catch(() => {});
+      } else {
         setProfileForm({ name: userName || "", phone: "", city: "", experience_level: "Fresher" });
       }
+
+      // Start match in background so results are ready when user finishes onboarding
+      fetchMatches(newResume.id, true);
+
       setOnboardingStep("review");
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Upload failed");
@@ -404,20 +409,10 @@ export default function DashboardClient({
   };
 
   const handleFinishOnboarding = async () => {
-    // Save preferences
     setSavingProfile(true);
     try {
-      // Merge with existing job_preferences to preserve role
-      let existing: Record<string, unknown> = {};
-      try {
-        const profile = await getProfile(token);
-        if (profile.job_preferences && typeof profile.job_preferences === "object") {
-          existing = profile.job_preferences as Record<string, unknown>;
-        }
-      } catch { /* ignore */ }
       await updateProfile(token, {
         job_preferences: {
-          ...existing,
           target_roles: preferences.target_roles.split(",").map((r) => r.trim()).filter(Boolean),
           preferred_cities: preferences.preferred_cities,
           work_mode: preferences.work_mode,
@@ -427,7 +422,8 @@ export default function DashboardClient({
     } catch { /* continue */ }
     setSavingProfile(false);
     setOnboardingStep("done");
-    fetchMatches(selectedResumeId || undefined);
+    // Only fetch if we don't already have results from background prefetch
+    if (matches.length === 0) fetchMatches(selectedResumeId || undefined);
   };
 
   // ─── Regular handlers ───
