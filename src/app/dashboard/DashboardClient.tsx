@@ -22,6 +22,8 @@ import {
   IconBriefcase,
   IconCopy,
   IconMenu2,
+  IconBulb,
+  IconLoader2,
 } from "@tabler/icons-react";
 import SignOutButton from "./SignOutButton";
 import JobCard from "@/components/JobCard";
@@ -46,6 +48,8 @@ import {
   createApplication,
   updateApplication,
   deleteApplication,
+  explainMatch,
+  getSimilarJobs,
 } from "@/lib/api";
 import type { MatchResult, UserResume, ResumeData, Application, ApplicationStatus, SavedJob, TailorChange, JobDetail } from "@/lib/api";
 import { ScoreRing } from "@/components/JobCard";
@@ -198,6 +202,7 @@ export default function DashboardClient({
 
   // Profile completeness
   const [profileComplete, setProfileComplete] = useState<Record<string, boolean>>({});
+  const [profileScore, setProfileScore] = useState(0);
   // Auto-apply status
   const [autoApplyEnabled, setAutoApplyEnabled] = useState(false);
   const [autoApplyMax, setAutoApplyMax] = useState(10);
@@ -215,7 +220,7 @@ export default function DashboardClient({
     const prefs = (profile.job_preferences || {}) as Record<string, unknown>;
     const atsProfile = (prefs.ats_profile || {}) as Record<string, unknown>;
     const autoApplyData = (prefs.auto_apply || {}) as Record<string, unknown>;
-    setProfileComplete({
+    const fields = {
       name: !!profile.name,
       phone: !!profile.phone,
       city: !!profile.city,
@@ -224,7 +229,22 @@ export default function DashboardClient({
       linkedin: !!atsProfile.linkedin,
       work_auth: !!atsProfile.work_authorization,
       target_roles: !!(prefs.target_roles && (prefs.target_roles as string[]).length > 0),
-    });
+    };
+    setProfileComplete(fields);
+
+    // Compute weighted score
+    let score = 0;
+    if (fields.name) score += 10;
+    if (fields.phone) score += 10;
+    if (fields.city) score += 10;
+    if (fields.experience) score += 10;
+    if (fields.linkedin) score += 10;
+    if (fields.resume) score += 20;
+    if (fields.target_roles) score += 15;
+    if (atsProfile.expected_ctc) score += 10;
+    if (fields.work_auth) score += 5;
+    setProfileScore(score);
+
     setAutoApplyEnabled(!!autoApplyData.enabled);
     setAutoApplyMax(Number(autoApplyData.max_per_day) || 10);
   }, [resumes.length]);
@@ -791,8 +811,8 @@ export default function DashboardClient({
           </div>
 
           {/* Profile completion */}
-          {Object.keys(profileComplete).length > 0 && (
-            <ProfileCompletionBar fields={profileComplete} />
+          {Object.keys(profileComplete).length > 0 && profileScore < 100 && (
+            <ProfileCompletionBar fields={profileComplete} score={profileScore} />
           )}
 
           {/* Auto-apply status */}
@@ -916,6 +936,7 @@ export default function DashboardClient({
               onTailor={handleTailor}
               onCoverLetter={handleCoverLetter}
               onQueue={handleQueueJob}
+              onSelect={setSelectedJob}
             />
           ) : activeTab === "matches" ? (
             <>
@@ -933,6 +954,7 @@ export default function DashboardClient({
                   {filteredMatches.map((job, i) => (
                     <JobCard key={job.job_id} job={job} index={i}
                       saved={savedJobIds.has(job.job_id)}
+                      token={token}
                       onSave={handleSave} onUnsave={handleUnsave}
                       onDismiss={handleDismiss} onTailor={handleTailor} onCoverLetter={handleCoverLetter}
                       onQueue={handleQueueJob} onSelect={setSelectedJob} />
@@ -1127,7 +1149,7 @@ function TailorPanel({ job, token, resumeText, parsedResume, onClose }: {
 }
 
 /* ─── Job Detail View (Jobright-style full page) ─── */
-function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onBack, onSave, onUnsave, onTailor, onCoverLetter, onQueue }: {
+function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onBack, onSave, onUnsave, onTailor, onCoverLetter, onQueue, onSelect }: {
   job: MatchResult;
   token: string;
   resumeText: string;
@@ -1140,6 +1162,7 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
   onTailor: (job: MatchResult) => void;
   onCoverLetter: (job: MatchResult, tone: "formal" | "creative") => Promise<string>;
   onQueue: (job: MatchResult) => void;
+  onSelect?: (job: MatchResult) => void;
 }) {
   const [detail, setDetail] = useState<JobDetail | null>(cache[job.job_id] || null);
   const [loading, setLoading] = useState(!cache[job.job_id]);
@@ -1147,6 +1170,9 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
   const [coverLetter, setCoverLetter] = useState("");
   const [clLoading, setClLoading] = useState(false);
   const [clTone, setClTone] = useState<"formal" | "creative" | null>(null);
+  const [explanation, setExplanation] = useState("");
+  const [explainLoading, setExplainLoading] = useState(false);
+  const [similarJobs, setSimilarJobs] = useState<MatchResult[]>([]);
 
   useEffect(() => {
     if (cache[job.job_id]) { setDetail(cache[job.job_id]); setLoading(false); return; }
@@ -1159,7 +1185,19 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
       finally { setLoading(false); }
     };
     load();
+    // Fetch similar jobs
+    getSimilarJobs(job.job_id).then(res => setSimilarJobs(res.similar_jobs || [])).catch(() => {});
   }, [job.job_id, cache]);
+
+  const handleExplainMatch = async () => {
+    if (explanation) return; // already fetched
+    setExplainLoading(true);
+    try {
+      const res = await explainMatch(token, { job_id: job.job_id, resume_text: resumeText });
+      setExplanation(res.explanation);
+    } catch (err) { console.error("Explain match failed:", err); }
+    finally { setExplainLoading(false); }
+  };
 
   const handleSave = () => { if (isSaved) { onUnsave(job.job_id); setIsSaved(false); } else { onSave(job.job_id); setIsSaved(true); } };
 
@@ -1382,6 +1420,34 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
                 </div>
               </div>
             )}
+
+            {/* Similar Roles */}
+            {similarJobs.length > 0 && (
+              <div className="p-5 rounded-[16px] mb-4" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+                <h2 className="text-sm font-semibold text-[var(--text)] mb-3" style={{ fontFamily: "var(--font-dm-sans)" }}>Similar Roles</h2>
+                <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "thin" }}>
+                  {similarJobs.slice(0, 5).map((sj) => (
+                    <div key={sj.job_id}
+                      onClick={() => { onBack(); if (onSelect) onSelect(sj); }}
+                      className="flex-shrink-0 w-[200px] p-3 rounded-[12px] cursor-pointer transition-all hover:brightness-110"
+                      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                      <p className="text-xs font-medium text-[var(--text)] truncate" style={{ fontFamily: "var(--font-dm-sans)" }}>{sj.title}</p>
+                      <p className="text-[0.6rem] text-[var(--muted2)] truncate mt-0.5" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+                        {sj.company}
+                      </p>
+                      {sj.city && (
+                        <p className="text-[0.55rem] text-[var(--muted)] mt-1 flex items-center gap-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                          <IconMapPin size={9} />{sj.city}
+                        </p>
+                      )}
+                      <div className="mt-1.5">
+                        <ScoreRing score={sj.match_score} size={36} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right sidebar: AI Tools */}
@@ -1425,6 +1491,30 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
               <p className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>Add to Pipeline</p>
               <p className="text-[0.6rem] text-[var(--muted2)] mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>Track this application</p>
             </button>
+
+            <button onClick={handleExplainMatch} disabled={explainLoading}
+              className="w-full text-left p-3 rounded-[12px] transition-colors hover:bg-[var(--surface)]"
+              style={{ background: explanation ? "rgba(245,158,11,0.06)" : "var(--card)", border: `1px solid ${explanation ? "rgba(245,158,11,0.15)" : "var(--border)"}` }}>
+              <p className="text-xs font-medium text-[var(--text)] flex items-center gap-1.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                {explainLoading ? <IconLoader2 size={12} className="animate-spin" /> : <IconBulb size={12} style={{ color: "#f59e0b" }} />}
+                Why this match?
+              </p>
+              <p className="text-[0.6rem] text-[var(--muted2)] mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                {explanation ? "See explanation below" : "AI-powered score breakdown"}
+              </p>
+            </button>
+            {explanation && (
+              <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-[12px]"
+                style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.15)" }}>
+                <div className="flex items-start gap-2">
+                  <IconBulb size={14} className="flex-shrink-0 mt-0.5" style={{ color: "#f59e0b" }} />
+                  <p className="text-[0.65rem] text-[var(--muted2)] leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+                    {explanation}
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
             <a href={`/interview-prep`}
               className="block w-full text-left p-3 rounded-[12px] transition-colors hover:bg-[var(--surface)]"
@@ -1830,46 +1920,45 @@ function AutoApplyStatus({ enabled, maxPerDay, appliedToday }: { enabled: boolea
   );
 }
 
-function ProfileCompletionBar({ fields }: { fields: Record<string, boolean> }) {
+function ProfileCompletionBar({ fields, score }: { fields: Record<string, boolean>; score: number }) {
   const entries = Object.entries(fields);
-  if (entries.length === 0) return null;
-  const done = entries.filter(([, v]) => v).length;
-  const total = entries.length;
-  const pct = Math.round((done / total) * 100);
-  if (pct === 100) return null;
+  if (entries.length === 0 || score >= 100) return null;
 
   const labels: Record<string, string> = {
     name: "Full name", phone: "Phone", city: "City", experience: "Experience level",
     resume: "Resume", linkedin: "LinkedIn", work_auth: "Work authorization", target_roles: "Target roles",
   };
   const missing = entries.filter(([, v]) => !v).map(([k]) => labels[k] || k);
+  const nextMissing = missing[0] || "";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="p-4 rounded-[14px] mb-4"
-      style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04))", border: "1px solid rgba(99,102,241,0.15)" }}>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
-          Profile: {pct}% complete
+    <a href="/profile" className="block no-underline">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-4 rounded-[14px] mb-4 cursor-pointer transition-all hover:brightness-105"
+        style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04))", border: "1px solid rgba(99,102,241,0.15)" }}>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            Profile {score}% complete
+          </p>
+          <span className="text-[0.65rem] font-medium" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
+            Complete Profile
+          </span>
+        </div>
+        <div className="w-full h-1.5 rounded-full overflow-hidden mb-2" style={{ background: "var(--surface)" }}>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${score}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="h-full rounded-full"
+            style={{ background: score >= 80 ? "#10b981" : score >= 50 ? "#f59e0b" : "#ef4444" }}
+          />
+        </div>
+        <p className="text-[0.6rem] text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+          {nextMissing ? `Add ${nextMissing.toLowerCase()} to improve matches` : `Missing: ${missing.join(", ")}`}
         </p>
-        <a href="/profile" className="text-[0.65rem] font-medium" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
-          Complete Profile
-        </a>
-      </div>
-      <div className="w-full h-1.5 rounded-full overflow-hidden mb-2" style={{ background: "var(--surface)" }}>
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="h-full rounded-full"
-          style={{ background: pct >= 80 ? "#10b981" : pct >= 50 ? "#f59e0b" : "var(--accent)" }}
-        />
-      </div>
-      <p className="text-[0.6rem] text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
-        Missing: {missing.join(", ")}
-      </p>
-    </motion.div>
+      </motion.div>
+    </a>
   );
 }

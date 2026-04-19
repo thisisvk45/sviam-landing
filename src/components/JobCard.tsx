@@ -18,6 +18,7 @@ import {
   IconDownload,
 } from "@tabler/icons-react";
 import type { MatchResult } from "@/lib/api";
+import { createApplicationFromApply } from "@/lib/api";
 
 function scoreColor(score: number) {
   if (score >= 75) return "#10b981";
@@ -80,6 +81,7 @@ type Props = {
   index?: number;
   saved?: boolean;
   cachedCoverLetter?: string;
+  token?: string;
   onSave?: (jobId: string) => void;
   onUnsave?: (jobId: string) => void;
   onDismiss?: (jobId: string) => void;
@@ -90,7 +92,7 @@ type Props = {
 };
 
 export default function JobCard({
-  job, index = 0, saved = false, cachedCoverLetter = "",
+  job, index = 0, saved = false, cachedCoverLetter = "", token,
   onSave, onUnsave, onDismiss, onTailor, onCoverLetter, onQueue, onSelect,
 }: Props) {
   const [isSaved, setIsSaved] = useState(saved);
@@ -190,7 +192,10 @@ export default function JobCard({
           {/* Top row */}
           <div className="flex items-center gap-2 mb-1.5">
             {job.posted_at && (
-              <span className="text-[0.6rem] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-mono)" }}>
+              <span className="flex items-center gap-1 text-[0.6rem] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                {freshnessDotColor(job.posted_at) && (
+                  <span className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: freshnessDotColor(job.posted_at)! }} />
+                )}
                 {formatPostedAt(job.posted_at)}
               </span>
             )}
@@ -247,10 +252,37 @@ export default function JobCard({
             </div>
           )}
 
+          {/* Sub-scores */}
+          {job.sub_scores && (
+            <div className="flex flex-wrap gap-3 mb-3">
+              {[
+                { label: "Skills", value: job.sub_scores.skill_match, color: "#14b8a6" },
+                { label: "Experience", value: job.sub_scores.experience_match, color: "#6366f1" },
+                { label: "Location", value: job.sub_scores.location_match, color: "#f59e0b" },
+              ].map((s) => (
+                <div key={s.label} className="flex-1 min-w-[80px]">
+                  <div className="flex justify-between text-[0.6rem] mb-0.5" style={{ fontFamily: "var(--font-dm-sans)", color: "var(--muted2)" }}>
+                    <span>{s.label}</span>
+                    <span style={{ color: s.color }}>{Math.round(s.value)}%</span>
+                  </div>
+                  <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--surface)" }}>
+                    <motion.div className="h-full rounded-full" style={{ background: s.color }}
+                      initial={{ width: 0 }} animate={{ width: `${s.value}%` }}
+                      transition={{ duration: 0.6, delay: 0.2 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Action buttons */}
           <div className="flex flex-wrap items-center gap-2">
             {job.apply_url && (
-              <a href={job.apply_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+              <a href={job.apply_url} target="_blank" rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (token) createApplicationFromApply(token, job.job_id).catch(() => {});
+                }}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-xs font-semibold text-white transition-all hover:brightness-110"
                 style={{ background: "var(--accent)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 0 12px rgba(108,99,255,0.2)" }}>
                 APPLY NOW <IconExternalLink size={12} />
@@ -328,6 +360,20 @@ export default function JobCard({
       </AnimatePresence>
     </motion.div>
   );
+}
+
+function freshnessDotColor(dateStr: string): string | null {
+  try {
+    const posted = new Date(dateStr);
+    if (isNaN(posted.getTime())) return null;
+    const diffMs = Date.now() - posted.getTime();
+    if (diffMs < 0) return null;
+    const diffHours = diffMs / (1000 * 60 * 60);
+    if (diffHours < 24) return "#10b981"; // green
+    if (diffHours < 72) return "#14b8a6"; // teal
+    if (diffHours < 168) return "#f59e0b"; // amber
+    return null;
+  } catch { return null; }
 }
 
 function formatPostedAt(dateStr: string): string {

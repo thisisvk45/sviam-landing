@@ -2,6 +2,12 @@ import { createBrowserClient } from "@supabase/ssr";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+export type SubScores = {
+  skill_match: number;
+  experience_match: number;
+  location_match: number;
+};
+
 export type MatchResult = {
   match_score: number;
   job_id: string;
@@ -14,6 +20,7 @@ export type MatchResult = {
   posted_at: string;
   skills: string[];
   source: string;
+  sub_scores?: SubScores;
 };
 
 export type MatchResponse = {
@@ -658,6 +665,73 @@ export async function deleteApplication(
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || "Failed to delete application");
   }
+}
+
+export async function createApplicationFromApply(
+  token: string,
+  jobId: string
+): Promise<Application> {
+  const res = await fetch(`${API_URL}/applications/from-apply`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ job_id: jobId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to track application");
+  }
+  return res.json();
+}
+
+export async function explainMatch(
+  token: string,
+  data: { job_id: string; resume_text: string }
+): Promise<{ explanation: string }> {
+  const res = await fetch(`${API_URL}/match/explain`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to explain match");
+  }
+  return res.json();
+}
+
+export async function getSimilarJobs(jobId: string): Promise<{ similar_jobs: MatchResult[] }> {
+  const res = await fetch(`${API_URL}/jobs/${jobId}/similar`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to fetch similar jobs");
+  }
+  return res.json();
+}
+
+export type ProfileFull = {
+  profile: Profile;
+  stats: {
+    applications_count: number;
+    saved_jobs_count: number;
+    resumes_count: number;
+  };
+};
+
+export async function getProfileFull(token: string): Promise<ProfileFull> {
+  const res = await fetch(`${API_URL}/profile/full`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to fetch full profile");
+  }
+  return res.json();
 }
 
 export { getToken };
