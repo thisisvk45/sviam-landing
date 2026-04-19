@@ -2,8 +2,9 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
+import { IconLogout } from "@tabler/icons-react";
 
-export default function SignOutButton() {
+export default function SignOutButton({ name }: { name?: string }) {
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -16,16 +17,33 @@ export default function SignOutButton() {
   };
 
   return (
-    <button
-      onClick={handleSignOut}
-      className="px-4 py-2 text-sm rounded-[10px] text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
-      style={{
-        background: "var(--surface)",
-        border: "1px solid var(--border)",
-        fontFamily: "var(--font-dm-sans)",
-      }}
-    >
-      Sign out
-    </button>
+    <div className="flex items-center gap-2">
+      {name && (
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-white flex-shrink-0"
+          style={{
+            background: "var(--accent)",
+            fontFamily: "var(--font-dm-sans)",
+          }}
+        >
+          {name.charAt(0).toUpperCase()}
+        </div>
+      )}
+      {name && (
+        <span
+          className="text-xs text-[var(--muted2)] hidden sm:block"
+          style={{ fontFamily: "var(--font-dm-sans)" }}
+        >
+          {name}
+        </span>
+      )}
+      <button
+        onClick={handleSignOut}
+        className="p-1.5 rounded-md text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface)] transition-colors"
+        title="Sign out"
+      >
+        <IconLogout size={15} />
+      </button>
+    </div>
   );
 }

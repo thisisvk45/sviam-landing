@@ -1,16 +1,16 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
-import LandingPage from "@/components/LandingPage";
+import VisaPrepClient from "./VisaPrepClient";
 
-export default async function Home() {
+export default async function VisaPrepPage() {
   const supabase = await createSupabaseServer();
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (session) {
-    redirect("/dashboard");
+  if (!session) {
+    redirect("/?signin=true");
   }
 
-  return <LandingPage />;
+  return <VisaPrepClient token={session.access_token} />;
 }

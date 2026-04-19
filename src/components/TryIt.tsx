@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import { IconUpload } from "@tabler/icons-react";
+import { createBrowserClient } from "@supabase/ssr";
 import { matchResume } from "@/lib/api";
 import type { MatchResult } from "@/lib/api";
 import JobCard from "./JobCard";
@@ -17,6 +18,30 @@ export default function TryIt() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<MatchResult[]>([]);
   const [error, setError] = useState("");
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  const supabase = useMemo(
+    () =>
+      createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      ),
+    []
+  );
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setIsSignedIn(!!data.session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsSignedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
   const handleFile = async (file: File) => {
     if (!file.name.toLowerCase().endsWith(".pdf")) {
@@ -40,6 +65,11 @@ export default function TryIt() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoToDashboard = () => {
+    // Results are already in localStorage, dashboard will pick them up
+    window.location.href = "/dashboard";
   };
 
   const topScore = results.length > 0 ? results[0].match_score : 0;
@@ -74,7 +104,9 @@ export default function TryIt() {
               lineHeight: 1.6,
             }}
           >
-            Upload your resume &mdash; no account needed.
+            {isSignedIn
+              ? "Upload your resume to find your best job matches."
+              : "Upload your resume \u2014 no account needed."}
           </p>
         </motion.div>
 
@@ -106,7 +138,7 @@ export default function TryIt() {
               className="text-xs text-[var(--muted)]"
               style={{ fontFamily: "var(--font-dm-mono)" }}
             >
-              PDF only &middot; Free &middot; No signup
+              {isSignedIn ? "PDF only" : "PDF only \u00B7 Free \u00B7 No signup"}
             </p>
             <input
               ref={inputRef}
@@ -170,8 +202,10 @@ export default function TryIt() {
                 Your top match is{" "}
                 <span className="font-semibold" style={{ color: "var(--accent)" }}>
                   {topScore}%
-                </span>{" "}
-                &mdash; create a free account to apply
+                </span>
+                {isSignedIn
+                  ? " \u2014 view all matches on your dashboard"
+                  : " \u2014 create a free account to apply"}
               </p>
             </motion.div>
 
@@ -181,23 +215,41 @@ export default function TryIt() {
               ))}
             </div>
 
-            <div
-              className="p-6 rounded-[16px] text-center space-y-4"
-              style={{
-                background: "var(--card)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <p
-                className="text-sm text-[var(--muted2)]"
-                style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}
-              >
-                Sign up to see all matches and apply in one click
-              </p>
-              <div className="max-w-xs mx-auto">
-                <AuthButton />
+            {isSignedIn ? (
+              /* Signed in — go to dashboard */
+              <div className="text-center">
+                <button
+                  onClick={handleGoToDashboard}
+                  className="px-6 py-3 rounded-[12px] text-sm font-medium text-white"
+                  style={{
+                    background: "var(--accent)",
+                    boxShadow: "0 0 24px rgba(108,99,255,0.35)",
+                    fontFamily: "var(--font-dm-sans)",
+                  }}
+                >
+                  View all matches on Dashboard &rarr;
+                </button>
               </div>
-            </div>
+            ) : (
+              /* Not signed in — show signup CTA */
+              <div
+                className="p-6 rounded-[16px] text-center space-y-4"
+                style={{
+                  background: "var(--card)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <p
+                  className="text-sm text-[var(--muted2)]"
+                  style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}
+                >
+                  Sign up to see all matches and apply in one click
+                </p>
+                <div className="max-w-xs mx-auto">
+                  <AuthButton />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

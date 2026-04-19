@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServer } from "@/lib/supabase-server";
-import DashboardClient from "./DashboardClient";
+import InterviewPrepClient from "./InterviewPrepClient";
 
-export default async function DashboardPage() {
+export default async function InterviewPrepPage() {
   const supabase = await createSupabaseServer();
   const {
     data: { session },
@@ -12,14 +12,10 @@ export default async function DashboardPage() {
     redirect("/?signin=true");
   }
 
-  const meta = session.user.user_metadata;
-  const userName = meta?.full_name || meta?.name || "";
-
   return (
-    <DashboardClient
+    <InterviewPrepClient
       token={session.access_token}
       email={session.user.email || ""}
-      userName={userName}
     />
   );
 }

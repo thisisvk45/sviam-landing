@@ -9,6 +9,7 @@ export type MatchResult = {
   company: string;
   city: string;
   remote: boolean;
+  work_type: string;
   apply_url: string;
   posted_at: string;
   skills: string[];
@@ -51,12 +52,67 @@ export type SavedJob = {
   created_at: string;
 };
 
+export type ApplicationStatus = 'queued' | 'applied' | 'interview' | 'offer' | 'rejected';
+
+export type Application = {
+  id: string;
+  user_id: string;
+  job_id: string;
+  status: ApplicationStatus;
+  resume_id: string | null;
+  title: string;
+  company: string;
+  city: string;
+  apply_url: string;
+  tailored_resume_json: object | null;
+  cover_letter: string | null;
+  notes: string | null;
+  applied_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AtsProfile = {
+  linkedin: string;
+  github: string;
+  portfolio: string;
+  work_authorization: string;
+  current_ctc: string;
+  expected_ctc: string;
+  notice_period: string;
+  dob: string;
+  gender: string;
+  full_address: string;
+  languages: string[];
+  references: string[];
+};
+
+export type AutoApplySettings = {
+  enabled: boolean;
+  max_per_day: number;
+  min_match_score: number;
+  excluded_companies: string[];
+  preferred_work_modes: string[];
+  always_include_cover_letter: boolean;
+};
+
 export type MatchFilters = {
   city?: string;
+  work_type?: string;
   remote_only?: boolean;
   min_score?: number;
   limit?: number;
   offset?: number;
+  resume_id?: string;
+};
+
+export type UserResume = {
+  id: string;
+  user_id: string;
+  label: string;
+  storage_path: string;
+  char_count: number;
+  created_at: string;
 };
 
 async function getToken(): Promise<string | null> {
@@ -102,25 +158,71 @@ export async function matchStored(
   filters?: MatchFilters
 ): Promise<MatchResponse> {
   const params = new URLSearchParams();
+  if (filters?.resume_id) params.set("resume_id", filters.resume_id);
   if (filters?.city) params.set("city", filters.city);
+  if (filters?.work_type) params.set("work_type", filters.work_type);
   if (filters?.remote_only) params.set("remote_only", "true");
   if (filters?.min_score) params.set("min_score", String(filters.min_score));
   if (filters?.limit) params.set("limit", String(filters.limit));
   if (filters?.offset) params.set("offset", String(filters.offset));
 
-  const form = new FormData();
   const qs = params.toString();
   const url = `${API_URL}/match/resume${qs ? `?${qs}` : ""}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
-    body: form,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || "Failed to match stored resume");
   }
   return res.json();
+}
+
+export async function listResumes(
+  token: string
+): Promise<{ resumes: UserResume[] }> {
+  const res = await fetch(`${API_URL}/resumes`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to list resumes");
+  }
+  return res.json();
+}
+
+export async function uploadUserResume(
+  token: string,
+  file: File,
+  label: string
+): Promise<UserResume> {
+  const form = new FormData();
+  form.append("resume", file);
+  const res = await fetch(`${API_URL}/resumes?label=${encodeURIComponent(label)}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to upload resume");
+  }
+  return res.json();
+}
+
+export async function deleteResume(
+  token: string,
+  resumeId: string
+): Promise<void> {
+  const res = await fetch(`${API_URL}/resumes/${resumeId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to delete resume");
+  }
 }
 
 export async function getProfile(token: string): Promise<Profile> {
@@ -167,6 +269,31 @@ export async function uploadResume(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || "Failed to upload resume");
+  }
+  return res.json();
+}
+
+export type JobDetail = {
+  _id: string;
+  source: string;
+  source_url: string;
+  apply_url: string;
+  ats_type: string;
+  company: { name: string; domain: string; city: string; industry: string; size: string };
+  role: { title: string; title_canonical: string; level: string; department: string; type: string };
+  location: { city: string; state: string; country: string; remote: boolean; hybrid: boolean };
+  requirements: { skills: string[]; exp_years_min: number; exp_years_max: number; education: string };
+  compensation: { salary_min: number; salary_max: number; currency: string; disclosed: boolean };
+  raw_jd: string;
+  posted_at: string;
+  is_active: boolean;
+};
+
+export async function getJob(jobId: string): Promise<JobDetail> {
+  const res = await fetch(`${API_URL}/jobs/${jobId}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Job not found");
   }
   return res.json();
 }
@@ -373,6 +500,164 @@ export async function generatePdf(
     throw new Error(err.detail || "Failed to generate PDF");
   }
   return res.blob();
+}
+
+export async function generateCoverLetter(
+  token: string,
+  data: { resume_text: string; job_title: string; company: string; city?: string; job_description?: string; tone?: "formal" | "creative" }
+): Promise<{ cover_letter: string }> {
+  const res = await fetch(`${API_URL}/resume/cover-letter`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to generate cover letter");
+  }
+  return res.json();
+}
+
+// Public Profile
+export type PublicProfile = {
+  name: string;
+  city: string;
+  experience_level: string;
+  linkedin: string;
+  github: string;
+  portfolio: string;
+  skills: string[];
+  target_roles: string[];
+  work_mode: string;
+};
+
+export async function getPublicProfile(slug: string): Promise<PublicProfile> {
+  const res = await fetch(`${API_URL}/profile/public/${slug}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Profile not found");
+  }
+  return res.json();
+}
+
+// Interview Prep
+export type InterviewQuestion = {
+  question: string;
+  category: string;
+  difficulty: string;
+  tip: string;
+};
+
+export async function generateInterviewQuestions(
+  token: string,
+  data: { job_title: string; company: string; skills?: string[]; experience_level?: string; question_count?: number }
+): Promise<{ questions: InterviewQuestion[] }> {
+  const res = await fetch(`${API_URL}/interview-prep/generate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to generate questions");
+  }
+  return res.json();
+}
+
+export async function generateVisaPrepQuestions(
+  token: string,
+  data: { university: string; program: string; consulate_city?: string; funding?: string; work_experience_years?: number; question_count?: number }
+): Promise<{ questions: InterviewQuestion[] }> {
+  const res = await fetch(`${API_URL}/interview-prep/visa-prep`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to generate visa questions");
+  }
+  return res.json();
+}
+
+// Applications API
+export async function getApplications(
+  token: string,
+  status?: ApplicationStatus
+): Promise<{ applications: Application[] }> {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  const qs = params.toString();
+  const res = await fetch(`${API_URL}/applications${qs ? `?${qs}` : ""}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to fetch applications");
+  }
+  return res.json();
+}
+
+export async function createApplication(
+  token: string,
+  data: { job_id: string; title: string; company: string; city: string; apply_url: string; resume_id?: string; notes?: string }
+): Promise<Application> {
+  const res = await fetch(`${API_URL}/applications`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to create application");
+  }
+  return res.json();
+}
+
+export async function updateApplication(
+  token: string,
+  id: string,
+  data: { status?: ApplicationStatus; notes?: string; cover_letter?: string; resume_id?: string }
+): Promise<Application> {
+  const res = await fetch(`${API_URL}/applications/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to update application");
+  }
+  return res.json();
+}
+
+export async function deleteApplication(
+  token: string,
+  id: string
+): Promise<void> {
+  const res = await fetch(`${API_URL}/applications/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to delete application");
+  }
 }
 
 export { getToken };

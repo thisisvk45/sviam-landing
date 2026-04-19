@@ -11,7 +11,7 @@ import {
   useMotionValue,
   useSpring,
 } from "framer-motion";
-import { IconSun, IconMoon } from "@tabler/icons-react";
+import { IconSun, IconMoon, IconMenu2, IconX } from "@tabler/icons-react";
 
 export default function Navbar() {
   const { scrollY } = useScroll();
@@ -22,6 +22,8 @@ export default function Navbar() {
 
   const [isDark, setIsDark] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const supabase = useMemo(
     () =>
@@ -58,9 +60,30 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
-    supabase.auth.getUser().then(({ data }) => {
-      setIsSignedIn(!!data.user);
+
+    // Check initial auth state
+    supabase.auth.getSession().then(({ data }) => {
+      setIsSignedIn(!!data.session);
+      if (data.session?.user) {
+        const meta = data.session.user.user_metadata;
+        setUserName(meta?.full_name || meta?.name || "");
+      }
     });
+
+    // Listen for auth state changes (login/logout)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsSignedIn(!!session);
+      if (session?.user) {
+        const meta = session.user.user_metadata;
+        setUserName(meta?.full_name || meta?.name || "");
+      } else {
+        setUserName("");
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [supabase]);
 
   const toggleTheme = () => {
@@ -92,7 +115,7 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <motion.a
-          href="#"
+          href="/"
           className="gradient-text"
           style={{
             fontFamily: "var(--font-display)",
@@ -109,13 +132,36 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           {isSignedIn && (
-            <a
-              href="/resume-builder"
-              className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
-              style={{ fontFamily: "var(--font-dm-sans)" }}
-            >
-              Resume Builder
-            </a>
+            <>
+              <a
+                href="/resume-builder"
+                className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                Resume Builder
+              </a>
+              <a
+                href="/dashboard"
+                className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                Dashboard
+              </a>
+              <a
+                href="/interview-prep"
+                className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                Interview Prep
+              </a>
+              <a
+                href="/profile"
+                className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                Profile
+              </a>
+            </>
           )}
           <motion.button
             onClick={toggleTheme}
@@ -151,39 +197,117 @@ export default function Navbar() {
             </AnimatePresence>
           </motion.button>
 
-          <motion.a
-            ref={ctaRef}
-            href={isSignedIn ? "/dashboard" : "#waitlist"}
-            className="px-5 py-2 text-sm font-medium rounded-[10px] text-white relative overflow-hidden"
-            style={{
-              background: "var(--accent)",
-              boxShadow: "0 0 24px rgba(108,99,255,0.35)",
-              fontFamily: "var(--font-dm-sans)",
-              x: springX,
-              y: springY,
-            }}
-            onMouseMove={handleCtaMouseMove}
-            onMouseLeave={handleCtaMouseLeave}
-            whileHover={reducedMotion ? {} : { scale: 1.05, boxShadow: "0 0 40px rgba(108,99,255,0.6)" }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-          >
-            {/* Shine sweep on hover */}
-            <motion.span
-              className="absolute inset-0 pointer-events-none"
+          {/* Mobile menu button — signed-in users only */}
+          {isSignedIn && (
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="sm:hidden w-9 h-9 rounded-[10px] flex items-center justify-center transition-colors duration-200 hover:bg-[var(--card)]"
+              style={{ border: "1px solid var(--border)" }}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <IconX size={16} className="text-[var(--muted2)]" />
+              ) : (
+                <IconMenu2 size={16} className="text-[var(--muted2)]" />
+              )}
+            </button>
+          )}
+
+          {isSignedIn ? (
+            <motion.a
+              ref={ctaRef}
+              href="/dashboard"
+              className="px-5 py-2 text-sm font-medium rounded-[10px] text-white relative overflow-hidden"
               style={{
-                background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)",
+                background: "var(--accent)",
+                boxShadow: "0 0 24px rgba(108,99,255,0.35)",
+                fontFamily: "var(--font-dm-sans)",
+                x: springX,
+                y: springY,
               }}
-              initial={{ x: "-100%" }}
-              whileHover={{ x: "100%" }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
-            />
-            <span className="relative z-10">
-              {isSignedIn ? "Dashboard" : "Get Early Access"}
-            </span>
-          </motion.a>
+              onMouseMove={handleCtaMouseMove}
+              onMouseLeave={handleCtaMouseLeave}
+              whileHover={reducedMotion ? {} : { scale: 1.05, boxShadow: "0 0 40px rgba(108,99,255,0.6)" }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <motion.span
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)",
+                }}
+                initial={{ x: "-100%" }}
+                whileHover={{ x: "100%" }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+              />
+              <span className="relative z-10">
+                {userName ? `Hi, ${userName.split(" ")[0]}` : "Dashboard"}
+              </span>
+            </motion.a>
+          ) : (
+            <motion.button
+              onClick={() => {
+                // Persist the fork choice (seeker/hirer) so we know the role after OAuth redirect
+                try {
+                  const fork = sessionStorage.getItem("sviam-fork");
+                  if (fork) localStorage.setItem("sviam-role", fork);
+                } catch { /* ignore */ }
+                supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                  },
+                });
+              }}
+              className="px-5 py-2 text-sm font-medium rounded-[10px] text-white relative overflow-hidden"
+              style={{
+                background: "var(--accent)",
+                boxShadow: "0 0 24px rgba(108,99,255,0.35)",
+                fontFamily: "var(--font-dm-sans)",
+              }}
+              whileHover={reducedMotion ? {} : { scale: 1.05, boxShadow: "0 0 40px rgba(108,99,255,0.6)" }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <span className="relative z-10">Sign In</span>
+            </motion.button>
+          )}
         </div>
       </div>
+
+      {/* Mobile dropdown menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && isSignedIn && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="sm:hidden overflow-hidden mt-2"
+          >
+            <div
+              className="flex flex-col gap-1 px-2 py-2 rounded-[12px]"
+              style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+            >
+              {[
+                { href: "/dashboard", label: "Dashboard" },
+                { href: "/resume-builder", label: "Resume Builder" },
+                { href: "/interview-prep", label: "Interview Prep" },
+                { href: "/profile", label: "Profile" },
+              ].map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 rounded-[8px] text-sm text-[var(--muted2)] hover:text-[var(--text)] hover:bg-[var(--surface)] transition-colors"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 }

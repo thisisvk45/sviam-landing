@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/?error=auth`);
   }
 
+  // Redirect to dashboard — localStorage has TryIt results if any
   const response = NextResponse.redirect(`${origin}/dashboard`);
 
   const supabase = createServerClient(

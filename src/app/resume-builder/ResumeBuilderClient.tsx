@@ -848,9 +848,12 @@ function CollapsibleSection({
         border: "1px solid var(--border)",
       }}
     >
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setOpen(!open)}
-        className="w-full px-5 py-4 flex items-center justify-between"
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(!open); } }}
+        className="w-full px-5 py-4 flex items-center justify-between cursor-pointer"
       >
         <span
           className="text-sm font-medium text-[var(--text)]"
@@ -867,7 +870,7 @@ function CollapsibleSection({
             <IconChevronDown size={16} className="text-[var(--muted)]" />
           </motion.div>
         </div>
-      </button>
+      </div>
       <AnimatePresence>
         {open && (
           <motion.div
