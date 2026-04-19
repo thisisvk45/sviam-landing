@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -77,9 +78,9 @@ export default function JobDetailPage() {
         <div className="max-w-3xl mx-auto px-6 py-16 text-center">
           <p className="text-lg text-[var(--text)] mb-2" style={{ fontFamily: "var(--font-display)" }}>Job not found</p>
           <p className="text-sm text-[var(--muted2)] mb-4" style={{ fontFamily: "var(--font-dm-sans)" }}>{error}</p>
-          <a href="/dashboard" className="text-sm font-medium" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
+          <Link href="/dashboard" className="text-sm font-medium" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
             Back to Dashboard
-          </a>
+          </Link>
         </div>
       </main>
     );
@@ -92,10 +93,10 @@ export default function JobDetailPage() {
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 px-6 py-2.5 flex items-center justify-between"
         style={{ background: "rgba(10,10,14,0.88)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
-        <a href="/dashboard" className="flex items-center gap-1 text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
+        <Link href="/dashboard" className="flex items-center gap-1 text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
           style={{ fontFamily: "var(--font-dm-sans)" }}>
           <IconArrowLeft size={14} /> Back
-        </a>
+        </Link>
         {job.apply_url && (
           <a href={job.apply_url} target="_blank" rel="noopener noreferrer"
             className="px-4 py-1.5 rounded-[8px] text-xs font-semibold text-white flex items-center gap-1"
@@ -219,11 +220,11 @@ export default function JobDetailPage() {
             <p className="text-sm font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>Prepare for this interview</p>
             <p className="text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>Get AI-generated practice questions for this role</p>
           </div>
-          <a href={`/interview-prep`}
+          <Link href="/interview-prep"
             className="px-4 py-2 rounded-[8px] text-xs font-medium text-white flex-shrink-0"
             style={{ background: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
             Practice
-          </a>
+          </Link>
         </motion.div>
 
         {/* Bottom CTA */}

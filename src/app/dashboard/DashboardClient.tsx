@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconUpload,
@@ -268,6 +269,7 @@ export default function DashboardClient({
 
   // Initial load — all independent calls in parallel
   useEffect(() => {
+    console.time("dashboard-load");
     // Persist role (seeker/hirer) from sign-in fork selection
     try {
       const storedRole = localStorage.getItem("sviam-role");
@@ -308,7 +310,7 @@ export default function DashboardClient({
         // Fallback: use profile resume text
         if (profile?.resume_text) { setResumeText(profile.resume_text); fetchMatches(); }
       }
-    }).finally(() => setInitialLoading(false));
+    }).finally(() => { setInitialLoading(false); console.timeEnd("dashboard-load"); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
@@ -1516,12 +1518,12 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
               </motion.div>
             )}
 
-            <a href={`/interview-prep`}
+            <Link href="/interview-prep"
               className="block w-full text-left p-3 rounded-[12px] transition-colors hover:bg-[var(--surface)]"
               style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
               <p className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>Interview Prep</p>
               <p className="text-[0.6rem] text-[var(--muted2)] mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>Practice for this role</p>
-            </a>
+            </Link>
           </div>
         </div>
       )}
@@ -1556,14 +1558,14 @@ function TopBar({ firstName, subtitle }: { firstName: string; subtitle?: string 
       style={{ background: "rgba(10,10,14,0.88)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
       <div className="px-6 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <a href="/" className="text-sm font-semibold text-[var(--text)]" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>SViam</a>
+          <Link href="/" className="text-sm font-semibold text-[var(--text)]" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>SViam</Link>
           {subtitle && <span className="text-[0.65rem] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-sans)" }}>{subtitle}</span>}
         </div>
         <div className="flex items-center gap-3">
-          <a href="/profile" className="text-xs text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
-            style={{ fontFamily: "var(--font-dm-sans)" }}>Profile</a>
-          <a href="/resume-builder" className="text-xs text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
-            style={{ fontFamily: "var(--font-dm-sans)" }}>Resume Builder</a>
+          <Link href="/profile" className="text-xs text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
+            style={{ fontFamily: "var(--font-dm-sans)" }}>Profile</Link>
+          <Link href="/resume-builder" className="text-xs text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
+            style={{ fontFamily: "var(--font-dm-sans)" }}>Resume Builder</Link>
           <button onClick={() => setMobileNav(!mobileNav)} className="sm:hidden p-1.5 rounded-[6px] hover:bg-[var(--surface)] transition-colors">
             {mobileNav ? <IconX size={16} style={{ color: "var(--muted2)" }} /> : <IconMenu2 size={16} style={{ color: "var(--muted2)" }} />}
           </button>
@@ -1575,8 +1577,8 @@ function TopBar({ firstName, subtitle }: { firstName: string; subtitle?: string 
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="sm:hidden overflow-hidden">
             <div className="flex flex-col gap-1 px-4 pb-3">
               {[{ href: "/profile", label: "Profile" }, { href: "/resume-builder", label: "Resume Builder" }, { href: "/interview-prep", label: "Interview Prep" }].map((l) => (
-                <a key={l.href} href={l.href} className="px-3 py-2 rounded-[8px] text-xs text-[var(--muted2)] hover:text-[var(--text)] hover:bg-[var(--surface)] transition-colors"
-                  style={{ fontFamily: "var(--font-dm-sans)" }}>{l.label}</a>
+                <Link key={l.href} href={l.href} className="px-3 py-2 rounded-[8px] text-xs text-[var(--muted2)] hover:text-[var(--text)] hover:bg-[var(--surface)] transition-colors"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}>{l.label}</Link>
               ))}
             </div>
           </motion.div>
@@ -1912,10 +1914,10 @@ function AutoApplyStatus({ enabled, maxPerDay, appliedToday }: { enabled: boolea
           Today: {appliedToday}/{maxPerDay} applications
         </p>
       </div>
-      <a href="/profile" className="text-[0.65rem] font-medium px-2.5 py-1 rounded-[6px] transition-colors hover:bg-[var(--surface)]"
+      <Link href="/profile" className="text-[0.65rem] font-medium px-2.5 py-1 rounded-[6px] transition-colors hover:bg-[var(--surface)]"
         style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
         Settings
-      </a>
+      </Link>
     </motion.div>
   );
 }
@@ -1932,7 +1934,7 @@ function ProfileCompletionBar({ fields, score }: { fields: Record<string, boolea
   const nextMissing = missing[0] || "";
 
   return (
-    <a href="/profile" className="block no-underline">
+    <Link href="/profile" className="block no-underline">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1959,6 +1961,6 @@ function ProfileCompletionBar({ fields, score }: { fields: Record<string, boolea
           {nextMissing ? `Add ${nextMissing.toLowerCase()} to improve matches` : `Missing: ${missing.join(", ")}`}
         </p>
       </motion.div>
-    </a>
+    </Link>
   );
 }

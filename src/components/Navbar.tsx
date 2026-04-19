@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { createBrowserClient } from "@supabase/ssr";
 import {
   motion,
@@ -114,53 +115,54 @@ export default function Navbar() {
       }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <motion.a
-          href="/"
-          className="gradient-text"
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "1.5rem",
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-          }}
-          whileHover={reducedMotion ? {} : { scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        >
-          SViam
-        </motion.a>
+        <Link href="/" legacyBehavior passHref>
+          <motion.a
+            className="gradient-text"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "1.5rem",
+              fontWeight: 700,
+              letterSpacing: "-0.03em",
+            }}
+            whileHover={reducedMotion ? {} : { scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          >
+            SViam
+          </motion.a>
+        </Link>
 
         <div className="flex items-center gap-3">
           {isSignedIn && (
             <>
-              <a
+              <Link
                 href="/resume-builder"
                 className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 Resume Builder
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/dashboard"
                 className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 Dashboard
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/interview-prep"
                 className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 Interview Prep
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/profile"
                 className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 Profile
-              </a>
+              </Link>
             </>
           )}
           <motion.button
@@ -214,36 +216,37 @@ export default function Navbar() {
           )}
 
           {isSignedIn ? (
-            <motion.a
-              ref={ctaRef}
-              href="/dashboard"
-              className="px-5 py-2 text-sm font-medium rounded-[10px] text-white relative overflow-hidden"
-              style={{
-                background: "var(--accent)",
-                boxShadow: "0 0 24px rgba(108,99,255,0.35)",
-                fontFamily: "var(--font-dm-sans)",
-                x: springX,
-                y: springY,
-              }}
-              onMouseMove={handleCtaMouseMove}
-              onMouseLeave={handleCtaMouseLeave}
-              whileHover={reducedMotion ? {} : { scale: 1.05, boxShadow: "0 0 40px rgba(108,99,255,0.6)" }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <motion.span
-                className="absolute inset-0 pointer-events-none"
+            <Link href="/dashboard" legacyBehavior passHref>
+              <motion.a
+                ref={ctaRef}
+                className="px-5 py-2 text-sm font-medium rounded-[10px] text-white relative overflow-hidden"
                 style={{
-                  background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)",
+                  background: "var(--accent)",
+                  boxShadow: "0 0 24px rgba(108,99,255,0.35)",
+                  fontFamily: "var(--font-dm-sans)",
+                  x: springX,
+                  y: springY,
                 }}
-                initial={{ x: "-100%" }}
-                whileHover={{ x: "100%" }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-              />
-              <span className="relative z-10">
-                {userName ? `Hi, ${userName.split(" ")[0]}` : "Dashboard"}
-              </span>
-            </motion.a>
+                onMouseMove={handleCtaMouseMove}
+                onMouseLeave={handleCtaMouseLeave}
+                whileHover={reducedMotion ? {} : { scale: 1.05, boxShadow: "0 0 40px rgba(108,99,255,0.6)" }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <motion.span
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)",
+                  }}
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                />
+                <span className="relative z-10">
+                  {userName ? `Hi, ${userName.split(" ")[0]}` : "Dashboard"}
+                </span>
+              </motion.a>
+            </Link>
           ) : (
             <motion.button
               onClick={() => {
@@ -293,16 +296,16 @@ export default function Navbar() {
                 { href: "/resume-builder", label: "Resume Builder" },
                 { href: "/interview-prep", label: "Interview Prep" },
                 { href: "/profile", label: "Profile" },
-              ].map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
+              ].map((navLink) => (
+                <Link
+                  key={navLink.href}
+                  href={navLink.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className="px-3 py-2 rounded-[8px] text-sm text-[var(--muted2)] hover:text-[var(--text)] hover:bg-[var(--surface)] transition-colors"
                   style={{ fontFamily: "var(--font-dm-sans)" }}
                 >
-                  {link.label}
-                </a>
+                  {navLink.label}
+                </Link>
               ))}
             </div>
           </motion.div>

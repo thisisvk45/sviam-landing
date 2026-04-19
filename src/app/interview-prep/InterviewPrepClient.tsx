@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconArrowLeft,
@@ -73,10 +74,10 @@ export default function InterviewPrepClient({ token, email }: { token: string; e
       <div className="fixed top-0 left-0 right-0 z-50 px-6 py-2.5 flex items-center justify-between"
         style={{ background: "rgba(10,10,14,0.88)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-4">
-          <a href="/dashboard" className="flex items-center gap-1 text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
+          <Link href="/dashboard" className="flex items-center gap-1 text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
             style={{ fontFamily: "var(--font-dm-sans)" }}>
             <IconArrowLeft size={14} /> Dashboard
-          </a>
+          </Link>
           <span className="text-sm font-semibold text-[var(--text)]" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>
             Interview Prep
           </span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   IconArrowLeft,
@@ -75,6 +76,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
 
   useEffect(() => {
     const load = async () => {
+      console.time("profile-load");
       try {
         const profile = await getProfile(token);
         setName(profile.name || "");
@@ -121,7 +123,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
           always_include_cover_letter: autoData.always_include_cover_letter ?? true,
         });
       } catch { /* new user */ }
-      finally { setLoading(false); }
+      finally { setLoading(false); console.timeEnd("profile-load"); }
     };
     load();
   }, [token]);
@@ -183,19 +185,19 @@ export default function ProfileClient({ token, email }: { token: string; email: 
       <div className="fixed top-0 left-0 right-0 z-50 px-6 py-2.5 flex items-center justify-between"
         style={{ background: "rgba(10,10,14,0.88)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-4">
-          <a href="/dashboard" className="flex items-center gap-1 text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
+          <Link href="/dashboard" className="flex items-center gap-1 text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
             style={{ fontFamily: "var(--font-dm-sans)" }}>
             <IconArrowLeft size={14} /> Dashboard
-          </a>
+          </Link>
           <span className="text-sm font-semibold text-[var(--text)]" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>
             Profile & Settings
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <a href="/resume-builder" className="text-xs text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
+          <Link href="/resume-builder" className="text-xs text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"
             style={{ fontFamily: "var(--font-dm-sans)" }}>
             Resume Builder
-          </a>
+          </Link>
           <span className="text-xs text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-mono)" }}>{email}</span>
         </div>
       </div>
