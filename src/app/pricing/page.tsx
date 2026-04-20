@@ -1,5 +1,8 @@
+"use client";
+
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import type { Metadata } from "next";
+import { createBrowserClient } from "@supabase/ssr";
 import {
   IconCheck,
   IconX,
@@ -10,12 +13,8 @@ import {
   IconMail,
   IconArrowRight,
 } from "@tabler/icons-react";
-
-export const metadata: Metadata = {
-  title: "Pricing | SViam",
-  description:
-    "SViam pricing plans. Free job matching, resume tailoring, and interview prep. Upgrade to Pro or Unlimited for more access.",
-};
+import { createOrder, verifyPayment, getToken } from "@/lib/api";
+import { useRazorpay } from "@/hooks/useRazorpay";
 
 const tiers = [
   {
@@ -24,7 +23,7 @@ const tiers = [
     period: "forever",
     description: "Get started with AI-powered job matching",
     cta: "Start Free",
-    ctaHref: "/register",
+    tier: null as null,
     highlight: false,
     features: [
       { text: "3 resume tailors / month", included: true },
@@ -44,7 +43,7 @@ const tiers = [
     period: "/month",
     description: "For serious job seekers who want an edge",
     cta: "Upgrade to Pro",
-    ctaHref: "/register",
+    tier: "pro" as const,
     highlight: true,
     badge: "Most Popular",
     features: [
@@ -66,7 +65,7 @@ const tiers = [
     period: "/month",
     description: "Everything, no limits, no waiting",
     cta: "Go Unlimited",
-    ctaHref: "/register",
+    tier: "unlimited" as const,
     highlight: false,
     features: [
       { text: "Unlimited resume tailors", included: true },
@@ -113,6 +112,68 @@ const universityBenefits = [
 ];
 
 export default function PricingPage() {
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const { openCheckout } = useRazorpay();
+
+  const supabase = useMemo(
+    () =>
+      createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      ),
+    []
+  );
+
+  const handleUpgrade = async (tier: "pro" | "unlimited") => {
+    setLoading(tier);
+    setError("");
+
+    try {
+      const token = await getToken();
+      if (!token) {
+        // Not signed in — redirect to register
+        window.location.href = "/register";
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      const order = await createOrder(token, tier);
+
+      openCheckout({
+        keyId: order.key_id,
+        orderId: order.order_id,
+        amount: order.amount,
+        currency: order.currency,
+        tier,
+        userName: user?.user_metadata?.full_name || "",
+        userEmail: user?.email || "",
+        onSuccess: async (response) => {
+          try {
+            const freshToken = await getToken();
+            if (!freshToken) throw new Error("Session expired");
+            await verifyPayment(freshToken, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              tier,
+            });
+            window.location.href = "/dashboard";
+          } catch (e) {
+            setError(e instanceof Error ? e.message : "Verification failed");
+          }
+          setLoading(null);
+        },
+        onError: () => {
+          setLoading(null);
+        },
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
+      setLoading(null);
+    }
+  };
+
   return (
     <main className="min-h-screen pt-14" style={{ background: "var(--bg)" }}>
       {/* Top bar */}
@@ -132,14 +193,14 @@ export default function PricingPage() {
           SViam
         </Link>
         <Link
-          href="/register"
+          href="/dashboard"
           className="px-4 py-1.5 rounded-[8px] text-xs font-semibold text-white"
           style={{
             background: "var(--teal)",
             fontFamily: "var(--font-dm-sans)",
           }}
         >
-          Get Started
+          Dashboard
         </Link>
       </div>
 
@@ -173,6 +234,12 @@ export default function PricingPage() {
           </p>
         </div>
 
+        {error && (
+          <p className="text-center text-sm text-red-500 mb-4" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            {error}
+          </p>
+        )}
+
         {/* Tier cards */}
         <div className="grid md:grid-cols-3 gap-5 mb-20">
           {tiers.map((tier) => (
@@ -189,7 +256,7 @@ export default function PricingPage() {
                   : undefined,
               }}
             >
-              {tier.highlight && (
+              {tier.highlight && "badge" in tier && (
                 <span
                   className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[0.6rem] font-bold uppercase tracking-wider text-white flex items-center gap-1"
                   style={{ background: "var(--teal)" }}
@@ -255,22 +322,38 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Link
-                href={tier.ctaHref}
-                className="w-full text-center py-2.5 rounded-[10px] text-sm font-semibold transition-all hover:brightness-110"
-                style={{
-                  background: tier.highlight
-                    ? "var(--teal)"
-                    : "var(--surface)",
-                  color: tier.highlight ? "white" : "var(--text)",
-                  border: tier.highlight
-                    ? "none"
-                    : "1px solid var(--border)",
-                  fontFamily: "var(--font-dm-sans)",
-                }}
-              >
-                {tier.cta}
-              </Link>
+              {tier.tier ? (
+                <button
+                  onClick={() => handleUpgrade(tier.tier!)}
+                  disabled={!!loading}
+                  className="w-full text-center py-2.5 rounded-[10px] text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-60"
+                  style={{
+                    background: tier.highlight
+                      ? "var(--teal)"
+                      : "var(--surface)",
+                    color: tier.highlight ? "white" : "var(--text)",
+                    border: tier.highlight
+                      ? "none"
+                      : "1px solid var(--border)",
+                    fontFamily: "var(--font-dm-sans)",
+                  }}
+                >
+                  {loading === tier.tier ? "Processing..." : tier.cta}
+                </button>
+              ) : (
+                <Link
+                  href="/register"
+                  className="w-full text-center py-2.5 rounded-[10px] text-sm font-semibold transition-all hover:brightness-110"
+                  style={{
+                    background: "var(--surface)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    fontFamily: "var(--font-dm-sans)",
+                  }}
+                >
+                  {tier.cta}
+                </Link>
+              )}
             </div>
           ))}
         </div>
