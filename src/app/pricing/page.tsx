@@ -13,7 +13,7 @@ import {
   IconMail,
   IconArrowRight,
 } from "@tabler/icons-react";
-import { createOrder, verifyPayment, getToken } from "@/lib/api";
+import { createOrder, verifyPayment } from "@/lib/api";
 import { useRazorpay } from "@/hooks/useRazorpay";
 
 const tiers = [
@@ -130,12 +130,14 @@ export default function PricingPage() {
     setError("");
 
     try {
-      const token = await getToken();
-      if (!token) {
+      // Use our own supabase instance to check session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
         // Not signed in — redirect to register
         window.location.href = "/register";
         return;
       }
+      const token = session.access_token;
 
       const { data: { user } } = await supabase.auth.getUser();
       const order = await createOrder(token, tier);
@@ -150,9 +152,9 @@ export default function PricingPage() {
         userEmail: user?.email || "",
         onSuccess: async (response) => {
           try {
-            const freshToken = await getToken();
-            if (!freshToken) throw new Error("Session expired");
-            await verifyPayment(freshToken, {
+            const { data: { session: freshSession } } = await supabase.auth.getSession();
+            if (!freshSession?.access_token) throw new Error("Session expired");
+            await verifyPayment(freshSession.access_token, {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
