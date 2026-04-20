@@ -9,10 +9,12 @@ import {
   IconLoader2,
   IconX,
   IconPlus,
+  IconSparkles,
 } from "@tabler/icons-react";
-import { getProfile, updateProfile, deleteAccount } from "@/lib/api";
+import { getProfile, updateProfile, deleteAccount, getBillingStatus, getBillingUsage } from "@/lib/api";
 import { createBrowserClient } from "@supabase/ssr";
-import type { AtsProfile, AutoApplySettings } from "@/lib/api";
+import type { AtsProfile, AutoApplySettings, SubscriptionStatus, UsageInfo } from "@/lib/api";
+import UpgradePrompt from "@/components/UpgradePrompt";
 
 const INDIAN_CITIES = [
   "Bangalore", "Mumbai", "Delhi NCR", "Hyderabad", "Chennai",
@@ -75,6 +77,11 @@ export default function ProfileClient({ token, email }: { token: string; email: 
   const [langInput, setLangInput] = useState("");
   const [excludeInput, setExcludeInput] = useState("");
 
+  // Billing
+  const [billingStatus, setBillingStatus] = useState<SubscriptionStatus>({ tier: "free", subscription_id: null, valid_until: null });
+  const [billingUsage, setBillingUsage] = useState<Record<string, UsageInfo>>({});
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
   // Delete account
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
@@ -133,6 +140,11 @@ export default function ProfileClient({ token, email }: { token: string; email: 
       finally { setLoading(false); console.timeEnd("profile-load"); }
     };
     load();
+    // Fetch billing info in parallel
+    Promise.all([
+      getBillingStatus(token).then(setBillingStatus),
+      getBillingUsage(token).then(setBillingUsage),
+    ]).catch(() => {});
   }, [token]);
 
   const handleSave = async () => {
@@ -578,6 +590,128 @@ export default function ProfileClient({ token, email }: { token: string; email: 
           {saving ? <IconLoader2 size={16} className="animate-spin" /> : saved ? <><IconCheck size={16} /> Saved!</> : "Save Profile"}
         </button>
 
+        {/* ── Plan & Billing ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-[16px] mt-4"
+          style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <div
+              className="w-7 h-7 rounded-[8px] flex items-center justify-center"
+              style={{ background: "rgba(0,153,153,0.1)", color: "var(--teal)" }}
+            >
+              <IconSparkles size={14} />
+            </div>
+            <h2
+              className="text-[var(--text)] text-base font-semibold"
+              style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}
+            >
+              Plan & Billing
+            </h2>
+          </div>
+
+          {/* Current Plan */}
+          <div className="flex items-center gap-3 mb-4">
+            <span
+              className="px-3 py-1 rounded-full text-xs font-medium"
+              style={{
+                background: billingStatus.tier === "free"
+                  ? "var(--surface)"
+                  : billingStatus.tier === "unlimited"
+                    ? "linear-gradient(135deg, rgba(0,153,153,0.15), rgba(0,153,153,0.08))"
+                    : "rgba(0,153,153,0.1)",
+                border: billingStatus.tier === "free"
+                  ? "1px solid var(--border)"
+                  : "1px solid rgba(0,153,153,0.3)",
+                color: billingStatus.tier === "free" ? "var(--muted2)" : "var(--teal)",
+                fontFamily: "var(--font-dm-sans)",
+              }}
+            >
+              {billingStatus.tier === "free" ? "Free Plan" : billingStatus.tier === "pro" ? "Pro Plan" : "Unlimited Plan"}
+            </span>
+            {billingStatus.valid_until && (
+              <span
+                className="text-[0.65rem] text-[var(--muted)]"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                Valid until {new Date(billingStatus.valid_until).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              </span>
+            )}
+          </div>
+
+          {/* Usage Stats */}
+          {billingStatus.tier === "free" && (
+            <div className="space-y-2.5 mb-4">
+              {[
+                { key: "tailor", label: "Resume Tailors" },
+                { key: "cover_letter", label: "Cover Letters" },
+                { key: "auto_apply", label: "Auto-Applies" },
+              ].map(({ key, label }) => {
+                const usage = billingUsage[key];
+                const used = usage?.used ?? 0;
+                const limit = usage?.limit ?? 3;
+                const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
+                return (
+                  <div key={key}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span
+                        className="text-xs text-[var(--muted2)]"
+                        style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}
+                      >
+                        {label}
+                      </span>
+                      <span
+                        className="text-xs"
+                        style={{
+                          fontFamily: "var(--font-dm-mono)",
+                          color: pct >= 100 ? "#ef4444" : "var(--muted)",
+                        }}
+                      >
+                        {used}/{limit}
+                      </span>
+                    </div>
+                    <div
+                      className="h-1.5 rounded-full overflow-hidden"
+                      style={{ background: "var(--surface)" }}
+                    >
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{
+                          width: `${pct}%`,
+                          background: pct >= 100 ? "#ef4444" : "var(--teal)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              {billingUsage[Object.keys(billingUsage)[0]]?.resets && (
+                <p
+                  className="text-[0.6rem] text-[var(--muted)] mt-1"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
+                >
+                  Resets {new Date(billingUsage[Object.keys(billingUsage)[0]].resets as string).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                </p>
+              )}
+            </div>
+          )}
+
+          {billingStatus.tier !== "unlimited" && (
+            <button
+              onClick={() => setShowUpgrade(true)}
+              className="px-4 py-2 rounded-[8px] text-xs font-medium text-white transition-all hover:brightness-110"
+              style={{
+                background: "var(--teal)",
+                fontFamily: "var(--font-dm-sans)",
+              }}
+            >
+              {billingStatus.tier === "free" ? "Upgrade to Pro" : "Upgrade to Unlimited"}
+            </button>
+          )}
+        </motion.div>
+
         {/* ── Danger Zone ── */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -665,6 +799,20 @@ export default function ProfileClient({ token, email }: { token: string; email: 
           </div>
         </>
       )}
+
+      {/* Upgrade Modal */}
+      <UpgradePrompt
+        show={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        feature={billingStatus.tier === "free" ? "AI features" : "unlimited access"}
+        limit={billingStatus.tier === "free" ? "3 per month" : "100 per month"}
+        onUpgraded={() => {
+          Promise.all([
+            getBillingStatus(token).then(setBillingStatus),
+            getBillingUsage(token).then(setBillingUsage),
+          ]).catch(() => {});
+        }}
+      />
     </main>
   );
 }

@@ -53,8 +53,11 @@ import {
   explainMatch,
   getSimilarJobs,
   getTrendingJobs,
+  getBillingStatus,
+  ApiError,
 } from "@/lib/api";
-import type { MatchResult, UserResume, ResumeData, Application, ApplicationStatus, SavedJob, TailorChange, JobDetail } from "@/lib/api";
+import type { MatchResult, UserResume, ResumeData, Application, ApplicationStatus, SavedJob, TailorChange, JobDetail, SubscriptionStatus } from "@/lib/api";
+import UpgradePrompt from "@/components/UpgradePrompt";
 import { ScoreRing } from "@/components/JobCard";
 
 const INDIAN_CITIES = [
@@ -231,6 +234,10 @@ export default function DashboardClient({
   // Inline tailor panel
   const [tailorJob, setTailorJob] = useState<MatchResult | null>(null);
 
+  // Billing / upgrade
+  const [billingStatus, setBillingStatus] = useState<SubscriptionStatus>({ tier: "free", subscription_id: null, valid_until: null });
+  const [upgradePrompt, setUpgradePrompt] = useState<{ show: boolean; feature: string; limit: string }>({ show: false, feature: "", limit: "" });
+
   const firstName = capitalize(userName?.split(" ")[0] || "");
   const isNewUser = !initialLoading && resumes.length === 0 && matches.length === 0;
 
@@ -382,6 +389,8 @@ export default function DashboardClient({
       return res.saved_jobs;
     }).catch(() => [] as SavedJob[]);
     const appsPromise = fetchApplications();
+    // Fetch billing status in parallel (non-blocking)
+    getBillingStatus(token).then(setBillingStatus).catch(() => {});
 
     // Resume + profile drive match loading
     Promise.all([resumePromise, profilePromise, savedPromise, appsPromise]).then(async ([resumeRes, profile, saved]) => {
@@ -595,6 +604,10 @@ export default function DashboardClient({
       setApplications((prev) => [app, ...prev]);
       setActiveTab("pipeline");
     } catch (err) {
+      if (err instanceof ApiError && err.status === 429) {
+        setUpgradePrompt({ show: true, feature: "auto-applies", limit: "3 per month" });
+        return;
+      }
       if (err instanceof Error && err.message.includes("already")) {
         setActiveTab("pipeline");
       }
@@ -632,17 +645,25 @@ export default function DashboardClient({
     if (coverLetterCache.current[cacheKey]) {
       return coverLetterCache.current[cacheKey];
     }
-    const profile = await getProfile(token);
-    const { cover_letter } = await generateCoverLetter(token, {
-      resume_text: profile.resume_text || resumeText || "",
-      job_title: job.title,
-      company: job.company,
-      city: job.city || "",
-      tone,
-    });
-    // Cache it
-    coverLetterCache.current[cacheKey] = cover_letter;
-    return cover_letter;
+    try {
+      const profile = await getProfile(token);
+      const { cover_letter } = await generateCoverLetter(token, {
+        resume_text: profile.resume_text || resumeText || "",
+        job_title: job.title,
+        company: job.company,
+        city: job.city || "",
+        tone,
+      });
+      // Cache it
+      coverLetterCache.current[cacheKey] = cover_letter;
+      return cover_letter;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 429) {
+        setUpgradePrompt({ show: true, feature: "cover letters", limit: "3 per month" });
+        throw err;
+      }
+      throw err;
+    }
   };
 
   // Filters
@@ -676,7 +697,7 @@ export default function DashboardClient({
     return (
       <ErrorBoundary>
         <main className="min-h-screen pt-14" style={{ background: "var(--bg)" }}>
-          <TopBar firstName={firstName} />
+          <TopBar firstName={firstName} billingTier={billingStatus.tier} onUpgrade={() => setUpgradePrompt({ show: true, feature: "AI features", limit: "3 per month" })} />
           <BgGradient />
           <div className="relative z-10 max-w-2xl mx-auto px-6 pt-16 pb-16">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
@@ -739,7 +760,7 @@ export default function DashboardClient({
   if (initialLoading) {
     return (
       <main className="min-h-screen pt-20" style={{ background: "var(--bg)" }}>
-        <TopBar firstName={firstName} subtitle="Loading..." />
+        <TopBar firstName={firstName} subtitle="Loading..." billingTier={billingStatus.tier} onUpgrade={() => setUpgradePrompt({ show: true, feature: "AI features", limit: "3 per month" })} />
         <div className="max-w-6xl mx-auto px-6 py-8 animate-pulse space-y-4">
           <div className="h-8 rounded w-56" style={{ background: "var(--surface)" }} />
           <div className="h-14 rounded-[14px] w-full" style={{ background: "var(--surface)" }} />
@@ -756,7 +777,7 @@ export default function DashboardClient({
     return (
       <ErrorBoundary>
         <main className="min-h-screen pt-14" style={{ background: "var(--bg)" }}>
-          <TopBar firstName={firstName} />
+          <TopBar firstName={firstName} billingTier={billingStatus.tier} onUpgrade={() => setUpgradePrompt({ show: true, feature: "AI features", limit: "3 per month" })} />
           <BgGradient />
 
           <div className="relative z-10 max-w-3xl mx-auto px-6 pt-10 pb-16">
@@ -1057,7 +1078,7 @@ export default function DashboardClient({
       <main className="min-h-screen pt-14" style={{ background: "var(--bg)" }}>
         <TopBar firstName={firstName} subtitle={
           matchesLoading ? "Finding matches..." : filteredMatches.length > 0 ? `${filteredMatches.length} jobs matched` : "Dashboard"
-        } />
+        } billingTier={billingStatus.tier} onUpgrade={() => setUpgradePrompt({ show: true, feature: "AI features", limit: "3 per month" })} />
         <BgGradient subtle />
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 py-6">
@@ -1266,20 +1287,36 @@ export default function DashboardClient({
             resumeText={resumeText}
             parsedResume={parsedResume}
             onClose={() => setTailorJob(null)}
+            onLimitReached={() => {
+              setTailorJob(null);
+              setUpgradePrompt({ show: true, feature: "resume tailors", limit: "3 per month" });
+            }}
           />
         )}
       </AnimatePresence>
+
+      {/* Upgrade prompt modal (shown on free tier limit) */}
+      <UpgradePrompt
+        show={upgradePrompt.show}
+        onClose={() => setUpgradePrompt({ show: false, feature: "", limit: "" })}
+        feature={upgradePrompt.feature}
+        limit={upgradePrompt.limit}
+        onUpgraded={() => {
+          getBillingStatus(token).then(setBillingStatus).catch(() => {});
+        }}
+      />
     </ErrorBoundary>
   );
 }
 
 /* ─── Tailor Resume Side Panel ─── */
-function TailorPanel({ job, token, resumeText, parsedResume, onClose }: {
+function TailorPanel({ job, token, resumeText, parsedResume, onClose, onLimitReached }: {
   job: MatchResult;
   token: string;
   resumeText: string;
   parsedResume: ResumeData | null;
   onClose: () => void;
+  onLimitReached: () => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [changes, setChanges] = useState<TailorChange[]>([]);
@@ -1301,6 +1338,10 @@ function TailorPanel({ job, token, resumeText, parsedResume, onClose }: {
       setChanges(c);
       setDone(true);
     } catch (err) {
+      if (err instanceof ApiError && err.status === 429) {
+        onLimitReached();
+        return;
+      }
       console.error("Tailor failed:", err);
       setError("Failed to tailor resume. Please try again.");
     } finally {
@@ -1813,7 +1854,7 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
 }
 
 /* ─── Shared sub-components ─── */
-function TopBar({ firstName, subtitle }: { firstName: string; subtitle?: string }) {
+function TopBar({ firstName, subtitle, billingTier, onUpgrade }: { firstName: string; subtitle?: string; billingTier?: "free" | "pro" | "unlimited"; onUpgrade?: () => void }) {
   const [mobileNav, setMobileNav] = useState(false);
   return (
     <div className="fixed top-0 left-0 right-0 z-50"
@@ -1822,6 +1863,36 @@ function TopBar({ firstName, subtitle }: { firstName: string; subtitle?: string 
         <div className="flex items-center gap-4">
           <Link href="/" className="text-sm font-semibold text-[var(--text)]" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>SViam</Link>
           {subtitle && <span className="text-[0.65rem] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-sans)" }}>{subtitle}</span>}
+          {billingTier && (
+            billingTier === "free" ? (
+              <button
+                onClick={onUpgrade}
+                className="px-2 py-0.5 rounded-full text-[0.6rem] font-medium transition-all hover:brightness-110"
+                style={{
+                  background: "rgba(0,153,153,0.1)",
+                  border: "1px solid rgba(0,153,153,0.25)",
+                  color: "var(--teal)",
+                  fontFamily: "var(--font-dm-sans)",
+                }}
+              >
+                Free Plan — Upgrade
+              </button>
+            ) : (
+              <span
+                className="px-2 py-0.5 rounded-full text-[0.6rem] font-medium"
+                style={{
+                  background: billingTier === "unlimited"
+                    ? "linear-gradient(135deg, rgba(0,153,153,0.15), rgba(0,153,153,0.08))"
+                    : "rgba(0,153,153,0.1)",
+                  border: "1px solid rgba(0,153,153,0.3)",
+                  color: "var(--teal)",
+                  fontFamily: "var(--font-dm-sans)",
+                }}
+              >
+                {billingTier === "pro" ? "Pro" : "Unlimited"}
+              </span>
+            )
+          )}
         </div>
         <div className="flex items-center gap-3">
           <Link href="/profile" className="text-xs text-[var(--muted2)] hover:text-[var(--text)] transition-colors hidden sm:block"

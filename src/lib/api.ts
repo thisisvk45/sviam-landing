@@ -2,6 +2,15 @@ import { createBrowserClient } from "@supabase/ssr";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 export type SubScores = {
   skill_match: number;
   experience_match: number;
@@ -485,7 +494,7 @@ export async function tailorResume(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || "Failed to tailor resume");
+    throw new ApiError(err.detail || "Failed to tailor resume", res.status);
   }
   return res.json();
 }
@@ -523,7 +532,7 @@ export async function generateCoverLetter(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || "Failed to generate cover letter");
+    throw new ApiError(err.detail || "Failed to generate cover letter", res.status);
   }
   return res.json();
 }
@@ -681,7 +690,7 @@ export async function createApplicationFromApply(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || "Failed to track application");
+    throw new ApiError(err.detail || "Failed to track application", res.status);
   }
   return res.json();
 }
