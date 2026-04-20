@@ -13,6 +13,7 @@ const ForkContent = lazy(() => import("@/components/fork/ForkContent"));
 const TryIt = lazy(() => import("@/components/TryIt"));
 const BigStats = lazy(() => import("@/components/shared/BigStats"));
 const FounderStory = lazy(() => import("@/components/FounderStory"));
+const Pricing = lazy(() => import("@/components/Pricing"));
 const FAQ = lazy(() => import("@/components/FAQ"));
 const Waitlist = lazy(() => import("@/components/Waitlist"));
 const Footer = lazy(() => import("@/components/Footer"));
@@ -44,6 +45,7 @@ export default function LandingPage() {
           <ForkContent />
           <TryIt />
           <BigStats />
+          <Pricing />
           <FounderStory />
           <FAQ />
           <Waitlist />
