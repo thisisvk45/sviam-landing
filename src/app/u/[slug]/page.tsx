@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   IconMapPin,
@@ -51,9 +52,9 @@ export default function PublicProfilePage() {
         <div className="text-center px-6">
           <p className="text-lg text-[var(--text)] mb-2" style={{ fontFamily: "var(--font-display)" }}>Profile not found</p>
           <p className="text-sm text-[var(--muted2)] mb-4" style={{ fontFamily: "var(--font-dm-sans)" }}>{error}</p>
-          <a href="/" className="text-sm font-medium" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
+          <Link href="/" className="text-sm font-medium" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
             Go to SViam
-          </a>
+          </Link>
         </div>
       </main>
     );
@@ -71,9 +72,9 @@ export default function PublicProfilePage() {
       <div className="relative z-10 max-w-lg mx-auto px-6">
         {/* Logo */}
         <div className="text-center mb-8">
-          <a href="/" className="text-sm text-[var(--muted)] hover:text-[var(--accent)] transition-colors" style={{ fontFamily: "var(--font-dm-sans)" }}>
+          <Link href="/" className="text-sm text-[var(--muted)] hover:text-[var(--accent)] transition-colors" style={{ fontFamily: "var(--font-dm-sans)" }}>
             sviam.in
-          </a>
+          </Link>
         </div>
 
         {/* Profile card */}
@@ -159,7 +160,7 @@ export default function PublicProfilePage() {
 
         {/* Footer */}
         <p className="text-center mt-6 text-[0.6rem] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-mono)" }}>
-          Powered by <a href="/" className="text-[var(--accent)] hover:underline">SViam</a>
+          Powered by <Link href="/" className="text-[var(--accent)] hover:underline">SViam</Link>
         </p>
       </div>
     </main>

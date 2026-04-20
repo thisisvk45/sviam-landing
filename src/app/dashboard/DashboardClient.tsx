@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -51,6 +52,7 @@ import {
   deleteApplication,
   explainMatch,
   getSimilarJobs,
+  getTrendingJobs,
 } from "@/lib/api";
 import type { MatchResult, UserResume, ResumeData, Application, ApplicationStatus, SavedJob, TailorChange, JobDetail } from "@/lib/api";
 import { ScoreRing } from "@/components/JobCard";
@@ -69,6 +71,13 @@ const EXP_LEVELS = [
 ];
 const SALARY_RANGES = [
   "0-3 LPA", "3-6 LPA", "6-10 LPA", "10-15 LPA", "15-25 LPA", "25-50 LPA", "50+ LPA",
+];
+const COMMON_ROLES = [
+  "Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer",
+  "Data Scientist", "Data Analyst", "Data Engineer", "ML Engineer",
+  "Product Manager", "Project Manager", "DevOps Engineer", "Cloud Engineer",
+  "UI/UX Designer", "Product Designer", "QA Engineer", "Mobile Developer",
+  "Business Analyst", "Marketing Manager", "Sales Executive", "HR Manager",
 ];
 
 function capitalize(s: string) {
@@ -154,6 +163,7 @@ export default function DashboardClient({
 }: {
   token: string; email: string; userName: string;
 }) {
+  const router = useRouter();
   // Core
   const [resumes, setResumes] = useState<UserResume[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState("");
@@ -169,6 +179,10 @@ export default function DashboardClient({
   const [applications, setApplications] = useState<Application[]>([]);
   const [pipelineFilter, setPipelineFilter] = useState<ApplicationStatus | "all">("all");
   const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
+
+  // New matches tracking
+  const [newMatchCount, setNewMatchCount] = useState(0);
+  const lastSeenRef = useRef<string | null>(null);
 
   // Selected job detail view (replaces list when set)
   const [selectedJob, setSelectedJob] = useState<MatchResult | null>(null);
@@ -193,11 +207,14 @@ export default function DashboardClient({
   const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
   const [profileForm, setProfileForm] = useState({ name: "", phone: "", city: "", experience_level: "" });
   const [preferences, setPreferences] = useState({
-    target_roles: "",
+    target_roles: [] as string[],
     preferred_cities: [] as string[],
     work_mode: "Any",
     salary_range: "",
   });
+  const [roleSearch, setRoleSearch] = useState("");
+  const [customRole, setCustomRole] = useState("");
+  const [needsRoleSelection, setNeedsRoleSelection] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const onboardingUploadRef = useRef<HTMLInputElement>(null);
 
@@ -250,13 +267,41 @@ export default function DashboardClient({
     setAutoApplyMax(Number(autoApplyData.max_per_day) || 10);
   }, [resumes.length]);
 
-  // Load dismissed jobs from localStorage
+  // Load dismissed jobs and last_seen_at from localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem("sviam_dismissed");
       if (stored) setDismissedIds(new Set(JSON.parse(stored)));
     } catch { /* ignore */ }
+    try {
+      lastSeenRef.current = localStorage.getItem("sviam_last_seen_at");
+    } catch { /* ignore */ }
   }, []);
+
+  // Count new matches (posted since last visit) and update last_seen_at when viewing matches tab
+  useEffect(() => {
+    if (matches.length === 0) return;
+    const lastSeen = lastSeenRef.current;
+    if (lastSeen) {
+      const lastSeenDate = new Date(lastSeen).getTime();
+      const count = matches.filter((m) => {
+        if (!m.posted_at) return false;
+        return new Date(m.posted_at).getTime() > lastSeenDate;
+      }).length;
+      setNewMatchCount(count);
+    }
+    // Update last_seen_at when viewing matches
+    if (activeTab === "matches") {
+      const now = new Date().toISOString();
+      lastSeenRef.current = now;
+      try { localStorage.setItem("sviam_last_seen_at", now); } catch { /* ignore */ }
+      // Clear badge after a short delay so user sees it briefly
+      if (newMatchCount > 0) {
+        const timer = setTimeout(() => setNewMatchCount(0), 3000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [matches, activeTab, newMatchCount]);
 
   const fetchMatches = useCallback(async (resumeId?: string, background = false) => {
     const cacheKey = `sviam_matches_${resumeId || "default"}`;
@@ -293,27 +338,40 @@ export default function DashboardClient({
   // Initial load — all independent calls in parallel
   useEffect(() => {
     console.time("dashboard-load");
-    // Persist role (seeker/hirer) from sign-in fork selection
-    try {
-      const storedRole = localStorage.getItem("sviam-role");
-      if (storedRole) {
-        const role = storedRole === "hirer" ? "company" : "candidate";
-        updateProfile(token, { job_preferences: { role } }).catch(() => {});
-        localStorage.removeItem("sviam-role");
-      }
-    } catch { /* ignore */ }
+    // Clean up any stale fork selection from landing page — role is ONLY set
+    // via the explicit role selection screen after sign-in, never auto-assigned.
+    try { localStorage.removeItem("sviam-role"); } catch { /* ignore */ }
+    try { sessionStorage.removeItem("sviam-fork"); } catch { /* ignore */ }
 
     // ── Instant restore from sessionStorage ──
+    let hasCachedState = false;
+    let cachedRole: string | undefined;
     try {
       const cachedDash = sessionStorage.getItem("sviam_dashboard");
       if (cachedDash) {
         const { resumes: cr, savedJobs: cs, profile: cp } = JSON.parse(cachedDash);
         if (cr?.length) { setResumes(cr); setSelectedResumeId(cr[0].id); }
         if (cs?.length) { setSavedJobs(cs); setSavedJobIds(new Set(cs.map((j: SavedJob) => j.job_id))); }
-        if (cp) computeProfileCompleteness(cp);
+        if (cp) {
+          computeProfileCompleteness(cp);
+          const prefs = (cp.job_preferences || {}) as Record<string, unknown>;
+          cachedRole = prefs.role as string | undefined;
+          // If cached profile says company, redirect immediately
+          if (cachedRole === "company") {
+            router.push("/company-coming-soon");
+            return;
+          }
+        }
+        hasCachedState = true;
         setInitialLoading(false); // UI is visible immediately
       }
     } catch { /* ignore */ }
+
+    // ── New user fast path: no cache = first visit, show role picker instantly ──
+    if (!hasCachedState) {
+      setNeedsRoleSelection(true);
+      setInitialLoading(false);
+    }
 
     // ── Background refresh from API ──
     const resumePromise = listResumes(token).catch(() => ({ resumes: [] as UserResume[] }));
@@ -329,7 +387,24 @@ export default function DashboardClient({
     Promise.all([resumePromise, profilePromise, savedPromise, appsPromise]).then(async ([resumeRes, profile, saved]) => {
       const ur = resumeRes.resumes;
       setResumes(ur);
-      if (profile) computeProfileCompleteness(profile);
+      if (profile) {
+        computeProfileCompleteness(profile);
+        // Check if role is set — if not, show role selection
+        const prefs = (profile.job_preferences || {}) as Record<string, unknown>;
+        const role = prefs.role as string | undefined;
+        if (!role) {
+          setNeedsRoleSelection(true);
+        } else if (role === "company") {
+          router.push("/company-coming-soon");
+          return;
+        } else {
+          // User already has a role — dismiss any early role selection gate
+          setNeedsRoleSelection(false);
+        }
+      } else {
+        // New user with no profile — show role selection
+        setNeedsRoleSelection(true);
+      }
 
       // Cache dashboard state for instant restore
       try {
@@ -413,7 +488,7 @@ export default function DashboardClient({
     try {
       await updateProfile(token, {
         job_preferences: {
-          target_roles: preferences.target_roles.split(",").map((r) => r.trim()).filter(Boolean),
+          target_roles: preferences.target_roles,
           preferred_cities: preferences.preferred_cities,
           work_mode: preferences.work_mode,
           salary_range: preferences.salary_range,
@@ -423,7 +498,24 @@ export default function DashboardClient({
     setSavingProfile(false);
     setOnboardingStep("done");
     // Only fetch if we don't already have results from background prefetch
-    if (matches.length === 0) fetchMatches(selectedResumeId || undefined);
+    if (matches.length === 0) {
+      // Try trending jobs from sessionStorage as instant fallback
+      try {
+        const cached = sessionStorage.getItem("sviam_trending");
+        if (cached) {
+          const trending = JSON.parse(cached) as MatchResult[];
+          if (trending.length > 0) setMatches(trending);
+        }
+      } catch { /* ignore */ }
+      // Fetch real matches in background
+      fetchMatches(selectedResumeId || undefined);
+      // If still no matches, fetch trending
+      if (matches.length === 0) {
+        getTrendingJobs().then((data) => {
+          if (data.results.length > 0 && matches.length === 0) setMatches(data.results);
+        }).catch(() => {});
+      }
+    }
   };
 
   // ─── Regular handlers ───
@@ -562,6 +654,83 @@ export default function DashboardClient({
       }
       return true;
     });
+
+  // ═══════════════════════════════════════
+  //  ROLE SELECTION GATE (before loading gate so it shows instantly)
+  // ═══════════════════════════════════════
+  if (needsRoleSelection) {
+    const handleRoleSelect = (role: "candidate" | "company") => {
+      if (role === "company") {
+        updateProfile(token, { job_preferences: { role: "company" } }).catch(() => {});
+        router.push("/company-coming-soon");
+        return;
+      }
+      // Optimistic — dismiss immediately, save in background
+      setNeedsRoleSelection(false);
+      updateProfile(token, { job_preferences: { role: "candidate" } }).catch(() => {});
+    };
+
+    return (
+      <ErrorBoundary>
+        <main className="min-h-screen pt-14" style={{ background: "var(--bg)" }}>
+          <TopBar firstName={firstName} />
+          <BgGradient />
+          <div className="relative z-10 max-w-2xl mx-auto px-6 pt-16 pb-16">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
+              <h1 className="text-[var(--text)] mb-2" style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.15 }}>
+                Welcome to SViam
+              </h1>
+              <p className="text-[var(--muted2)] text-base" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300, lineHeight: 1.6 }}>
+                How would you like to use SViam?
+              </p>
+            </motion.div>
+
+            <div className="grid sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+              <motion.button
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                onClick={() => handleRoleSelect("candidate")}
+                className="p-6 rounded-[20px] text-center transition-all hover:brightness-110 hover:scale-[1.02] cursor-pointer"
+                style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))", border: "1px solid rgba(99,102,241,0.2)" }}
+              >
+                <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
+                  style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.25)" }}>
+                  <IconSearch size={24} style={{ color: "var(--accent)" }} />
+                </div>
+                <p className="text-[var(--text)] text-base font-semibold mb-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  I&apos;m looking for a job
+                </p>
+                <p className="text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+                  Get AI-matched with the best opportunities
+                </p>
+              </motion.button>
+
+              <motion.button
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                onClick={() => handleRoleSelect("company")}
+                className="p-6 rounded-[20px] text-center transition-all hover:brightness-110 hover:scale-[1.02] cursor-pointer"
+                style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+              >
+                <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
+                  style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                  <IconBuilding size={24} style={{ color: "#8b5cf6" }} />
+                </div>
+                <p className="text-[var(--text)] text-base font-semibold mb-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  I&apos;m hiring talent
+                </p>
+                <p className="text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+                  Find the best candidates for your team
+                </p>
+              </motion.button>
+            </div>
+          </div>
+        </main>
+      </ErrorBoundary>
+    );
+  }
 
   // ─── Loading ───
   if (initialLoading) {
@@ -749,14 +918,54 @@ export default function DashboardClient({
               {onboardingStep === "preferences" && (
                 <motion.div key="preferences" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                   <div className="p-7 rounded-[20px] max-w-xl mx-auto" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
-                    <h2 className="text-[var(--text)] text-lg font-semibold mb-1" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>What are you looking for?</h2>
-                    <p className="text-sm text-[var(--muted2)] mb-6" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>This helps us find the most relevant jobs for you.</p>
+                    <h2 className="text-[var(--text)] mb-1" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.03em", fontSize: "clamp(1.3rem, 2.5vw, 1.6rem)", fontWeight: 700 }}>What roles are you looking for?</h2>
+                    <p className="text-sm text-[var(--muted2)] mb-6" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>Select at least one role to get matched with the best jobs.</p>
 
                     <div className="space-y-4">
-                      <FField label="Target Roles">
-                        <FInput value={preferences.target_roles} onChange={(v) => setPreferences({ ...preferences, target_roles: v })}
-                          placeholder="e.g. Data Analyst, Product Manager, Frontend Developer" />
-                        <p className="text-[0.6rem] text-[var(--muted)] mt-1" style={{ fontFamily: "var(--font-dm-mono)" }}>Separate multiple roles with commas</p>
+                      <FField label="Target Roles *">
+                        {/* Selected pills */}
+                        {preferences.target_roles.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {preferences.target_roles.map((role) => (
+                              <span key={role} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs"
+                                style={{ background: "rgba(99,102,241,0.12)", color: "var(--accent)", border: "1px solid rgba(99,102,241,0.3)", fontFamily: "var(--font-dm-sans)" }}>
+                                {role}
+                                <button onClick={() => setPreferences((p) => ({ ...p, target_roles: p.target_roles.filter((r) => r !== role) }))}
+                                  className="hover:text-[#ef4444]"><IconX size={10} /></button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {/* Search input */}
+                        <FInput value={roleSearch} onChange={setRoleSearch} placeholder="Search roles..." />
+                        {/* Role options grid */}
+                        <div className="flex flex-wrap gap-1.5 mt-2 max-h-[140px] overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
+                          {COMMON_ROLES
+                            .filter((r) => !preferences.target_roles.includes(r))
+                            .filter((r) => !roleSearch || r.toLowerCase().includes(roleSearch.toLowerCase()))
+                            .map((role) => (
+                              <button key={role} onClick={() => { setPreferences((p) => ({ ...p, target_roles: [...p.target_roles, role] })); setRoleSearch(""); }}
+                                className="px-2.5 py-1 rounded-full text-xs transition-all hover:border-[var(--accent)]"
+                                style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
+                                {role}
+                              </button>
+                            ))}
+                        </div>
+                        {/* Custom role input */}
+                        <div className="flex gap-2 mt-2">
+                          <FInput value={customRole} onChange={setCustomRole} placeholder="Other role not listed..." />
+                          <button onClick={() => {
+                            const trimmed = customRole.trim();
+                            if (trimmed && !preferences.target_roles.includes(trimmed)) {
+                              setPreferences((p) => ({ ...p, target_roles: [...p.target_roles, trimmed] }));
+                              setCustomRole("");
+                            }
+                          }}
+                            className="px-3 rounded-[8px] text-xs font-medium flex-shrink-0"
+                            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
+                            Add
+                          </button>
+                        </div>
                       </FField>
 
                       <FField label="Preferred Cities">
@@ -816,11 +1025,16 @@ export default function DashboardClient({
                         style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
                         <IconArrowLeft size={14} /> Back
                       </button>
-                      <button onClick={handleFinishOnboarding} disabled={savingProfile}
-                        className="flex-1 py-3 rounded-[10px] text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
+                      <button onClick={handleFinishOnboarding} disabled={savingProfile || preferences.target_roles.length === 0}
+                        className="flex-1 py-3 rounded-[10px] text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
                         style={{ background: "linear-gradient(135deg, var(--accent), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(108,99,255,0.3)" }}>
                         {savingProfile ? "Saving..." : <>Find My Jobs <IconSparkles size={15} /></>}
                       </button>
+                      {preferences.target_roles.length === 0 && (
+                        <p className="text-[0.6rem] text-center mt-1" style={{ color: "#f59e0b", fontFamily: "var(--font-dm-sans)" }}>
+                          Select at least one target role to continue
+                        </p>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -906,13 +1120,19 @@ export default function DashboardClient({
               };
               return (
                 <button key={tab} onClick={() => setActiveTab(tab)}
-                  className="px-4 py-1.5 rounded-[8px] text-xs font-medium transition-all"
+                  className="px-4 py-1.5 rounded-[8px] text-xs font-medium transition-all relative"
                   style={{
                     background: activeTab === tab ? "var(--accent)" : "transparent",
                     color: activeTab === tab ? "white" : "var(--muted2)",
                     fontFamily: "var(--font-dm-sans)",
                   }}>
                   {labels[tab]}
+                  {tab === "matches" && newMatchCount > 0 && activeTab !== "matches" && (
+                    <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[0.55rem] font-bold"
+                      style={{ background: "#10b981", color: "white" }}>
+                      {newMatchCount} new
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -1795,6 +2015,13 @@ function PipelineView({
                     <p className="text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
                       {app.company}{app.city ? ` \u00b7 ${app.city}` : ""}
                     </p>
+                    {/* Follow-up nudge for applied status > 7 days */}
+                    {app.status === "applied" && app.applied_at && (Date.now() - new Date(app.applied_at).getTime() > 7 * 24 * 60 * 60 * 1000) && (
+                      <p className="text-[0.6rem] mt-0.5 flex items-center gap-1"
+                        style={{ color: "#f59e0b", fontFamily: "var(--font-dm-sans)" }}>
+                        <IconBulb size={10} /> No updates in 7+ days — consider following up
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>

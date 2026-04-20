@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useInView, usePrefersReducedMotion } from "@/hooks/useInView";
 import { IconUpload } from "@tabler/icons-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { matchResume } from "@/lib/api";
@@ -10,9 +11,9 @@ import JobCard from "./JobCard";
 import AuthButton from "./AuthButton";
 
 export default function TryIt() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const reducedMotion = useReducedMotion();
+  const router = useRouter();
+  const { ref, inView } = useInView<HTMLElement>({ margin: "-80px" });
+  const reducedMotion = usePrefersReducedMotion();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(false);
@@ -69,21 +70,16 @@ export default function TryIt() {
 
   const handleGoToDashboard = () => {
     // Results are already in localStorage, dashboard will pick them up
-    window.location.href = "/dashboard";
+    router.push("/dashboard");
   };
 
   const topScore = results.length > 0 ? results[0].match_score : 0;
 
   return (
-    <section id="try-it" className="relative z-10 py-24 px-6" ref={ref}>
+    <section id="try-it" className="relative z-10 py-24 px-6 cv-auto" ref={ref}>
       <div className="max-w-2xl mx-auto">
         {/* Headline */}
-        <motion.div
-          className="text-center mb-10"
-          initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
+        <div className={`text-center mb-10 anim-base anim-fade-up ${inView ? "in-view" : ""}`}>
           <h2
             className="text-[var(--text)] mb-3"
             style={{
@@ -108,20 +104,18 @@ export default function TryIt() {
               ? "Upload your resume to find your best job matches."
               : "Upload your resume \u2014 no account needed."}
           </p>
-        </motion.div>
+        </div>
 
         {/* Upload area */}
         {results.length === 0 && !loading && (
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 15 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            onClick={() => inputRef.current?.click()}
-            className="py-12 rounded-[16px] text-center cursor-pointer transition-all duration-200 hover:border-[var(--accent)]"
+          <div
+            className={`py-12 rounded-[16px] text-center cursor-pointer transition-all duration-200 hover:border-[var(--accent)] anim-base anim-fade-up ${inView ? "in-view" : ""}`}
             style={{
               background: "var(--card)",
               border: "2px dashed var(--border)",
+              animationDelay: "0.2s",
             }}
+            onClick={() => inputRef.current?.click()}
           >
             <IconUpload
               size={32}
@@ -149,20 +143,18 @@ export default function TryIt() {
                 if (e.target.files?.[0]) handleFile(e.target.files[0]);
               }}
             />
-          </motion.div>
+          </div>
         )}
 
         {/* Loading */}
         {loading && (
           <div className="py-16 text-center">
-            <motion.div
-              className="w-10 h-10 rounded-full border-2 mx-auto mb-4"
+            <div
+              className="w-10 h-10 rounded-full border-2 mx-auto mb-4 spinner"
               style={{
                 borderColor: "var(--border)",
                 borderTopColor: "var(--accent)",
               }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             />
             <p
               className="text-sm text-[var(--muted2)]"
@@ -185,10 +177,8 @@ export default function TryIt() {
 
         {/* Results */}
         {results.length > 0 && (
-          <div className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+          <div className="space-y-6" style={{ animation: reducedMotion ? "none" : "fadeInUp 0.4s ease forwards" }}>
+            <div
               className="p-4 rounded-[12px] text-center"
               style={{
                 background: "rgba(99,102,241,0.1)",
@@ -207,7 +197,7 @@ export default function TryIt() {
                   ? " \u2014 view all matches on your dashboard"
                   : " \u2014 create a free account to apply"}
               </p>
-            </motion.div>
+            </div>
 
             <div className="space-y-3">
               {results.map((job, i) => (
@@ -216,22 +206,21 @@ export default function TryIt() {
             </div>
 
             {isSignedIn ? (
-              /* Signed in — go to dashboard */
               <div className="text-center">
                 <button
                   onClick={handleGoToDashboard}
-                  className="px-6 py-3 rounded-[12px] text-sm font-medium text-white"
+                  className="px-6 py-3 rounded-[12px] text-sm font-medium text-white hover-scale"
                   style={{
                     background: "var(--accent)",
                     boxShadow: "0 0 24px rgba(108,99,255,0.35)",
                     fontFamily: "var(--font-dm-sans)",
+                    transition: "transform 0.15s ease",
                   }}
                 >
                   View all matches on Dashboard &rarr;
                 </button>
               </div>
             ) : (
-              /* Not signed in — show signup CTA */
               <div
                 className="p-6 rounded-[16px] text-center space-y-4"
                 style={{
