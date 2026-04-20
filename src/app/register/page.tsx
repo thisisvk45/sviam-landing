@@ -64,7 +64,7 @@ export default function RegisterPage() {
   };
 
   const benefits = userType === "hirer" ? HIRER_BENEFITS : SEEKER_BENEFITS;
-  const leftHeading = userType === "hirer" ? "Build your dream team." : "Wix Mix";
+  const leftHeading = userType === "hirer" ? "Build your dream team." : "Land your dream role.";
   const leftSub = userType === "hirer"
     ? "AI-powered hiring that finds, screens, and ranks candidates before they reach your calendar."
     : "Join thousands of candidates finding their dream role faster with AI matching, resume tailoring, and one-click apply.";
