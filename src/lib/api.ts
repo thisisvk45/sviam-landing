@@ -768,9 +768,17 @@ export async function getJobCities(): Promise<{ cities: CityCount[] }> {
 
 // Billing API
 export type SubscriptionStatus = {
-  tier: "free" | "pro" | "premium";
+  tier: "free" | "pro" | "unlimited";
   subscription_id: string | null;
   valid_until: string | null;
+};
+
+export type UsageInfo = {
+  allowed: boolean;
+  tier: string;
+  used: number;
+  limit: number;
+  resets?: string;
 };
 
 export async function getBillingStatus(token: string): Promise<SubscriptionStatus> {
@@ -781,10 +789,19 @@ export async function getBillingStatus(token: string): Promise<SubscriptionStatu
   return res.json();
 }
 
-export async function createSubscription(
+export async function getBillingUsage(token: string): Promise<Record<string, UsageInfo>> {
+  const res = await fetch(`${API_URL}/billing/usage`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return {};
+  const data = await res.json();
+  return data.usage || {};
+}
+
+export async function createOrder(
   token: string,
-  tier: "pro" | "premium"
-): Promise<{ subscription_id: string; short_url: string }> {
+  tier: "pro" | "unlimited"
+): Promise<{ order_id: string; amount: number; currency: string; key_id: string; tier: string }> {
   const res = await fetch(`${API_URL}/billing/create-subscription`, {
     method: "POST",
     headers: {
@@ -795,7 +812,26 @@ export async function createSubscription(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || "Failed to create subscription");
+    throw new Error(err.detail || "Failed to create order");
+  }
+  return res.json();
+}
+
+export async function verifyPayment(
+  token: string,
+  data: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string; tier: string }
+): Promise<{ status: string; tier: string; valid_until: string }> {
+  const res = await fetch(`${API_URL}/billing/verify-payment`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Payment verification failed");
   }
   return res.json();
 }
