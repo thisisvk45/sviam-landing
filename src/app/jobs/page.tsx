@@ -30,7 +30,10 @@ async function fetchJobs(params: {
     const page = parseInt(params.page || "1", 10);
     qs.set("limit", "20");
     qs.set("skip", String((page - 1) * 20));
-    const res = await fetch(`${API_URL}/jobs?${qs}`, { next: { revalidate: 600 } });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${API_URL}/jobs?${qs}`, { next: { revalidate: 600 }, signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) return { jobs: [], total: 0 };
     const data = await res.json();
     return { jobs: data.jobs || [], total: data.total || data.count || 0 };

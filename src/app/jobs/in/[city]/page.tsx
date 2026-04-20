@@ -68,7 +68,10 @@ export default async function CityJobsPage({
       qs.set("city", cityName);
     }
     qs.set("limit", "50");
-    const res = await fetch(`${API_URL}/jobs?${qs}`, { next: { revalidate: 600 } });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${API_URL}/jobs?${qs}`, { next: { revalidate: 600 }, signal: controller.signal });
+    clearTimeout(timeout);
     if (res.ok) {
       const data = await res.json();
       jobs = data.jobs || [];

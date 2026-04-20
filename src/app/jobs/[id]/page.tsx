@@ -19,7 +19,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function fetchJob(id: string): Promise<JobDetail | null> {
   try {
-    const res = await fetch(`${API_URL}/jobs/${id}`, { next: { revalidate: 3600 } });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${API_URL}/jobs/${id}`, { next: { revalidate: 3600 }, signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) return null;
     return res.json();
   } catch {

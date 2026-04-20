@@ -20,9 +20,13 @@ export default async function OnboardingPage() {
 
   // Check if already completed onboarding
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(`${API_URL}/profile/me`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     if (res.ok) {
       const profile = await res.json();
       const prefs = profile.job_preferences as Record<string, unknown> | null;
