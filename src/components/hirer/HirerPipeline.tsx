@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
+import { useInView, usePrefersReducedMotion } from "@/hooks/useInView";
 import DashboardMockup from "../shared/DashboardMockup";
 
 const points = [
@@ -49,116 +49,69 @@ const candidates = [
   },
 ];
 
-const pointsVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.1, delayChildren: 0.15 },
-  },
-};
-
-const pointVariant = {
-  hidden: { opacity: 0, x: -20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.5, ease: [0.33, 1, 0.68, 1] as const },
-  },
-};
-
-const candidateVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.12, delayChildren: 0.3 },
-  },
-};
-
-const candidateVariant = {
-  hidden: { opacity: 0, y: 15, scale: 0.97 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.5, ease: [0.33, 1, 0.68, 1] as const },
-  },
-};
-
 export default function HirerPipeline() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const reducedMotion = useReducedMotion();
+  const { ref, inView } = useInView<HTMLElement>({ once: true, margin: "-80px" });
+  const reducedMotion = usePrefersReducedMotion();
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+
+  const animBase = reducedMotion ? "" : "anim-base";
+  const show = inView ? "in-view" : "";
 
   return (
     <section className="relative z-10 py-20 px-6" ref={ref}>
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Left — copy */}
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 25 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.span
-              className="text-xs tracking-[0.2em] text-[var(--muted)] mb-4 block"
+          <div className={`${animBase} anim-fade-up ${show}`}>
+            <span
+              className={`text-xs tracking-[0.2em] text-[var(--muted)] mb-4 block ${animBase} anim-fade-left ${show}`}
               style={{
                 fontFamily: "var(--font-dm-mono)",
                 textTransform: "uppercase",
+                transitionDelay: "0s",
               }}
-              initial={reducedMotion ? false : { opacity: 0, x: -15 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.4 }}
             >
               YOUR PIPELINE
-            </motion.span>
+            </span>
             <div className="overflow-hidden">
-              <motion.h2
-                className="mb-6"
+              <h2
+                className={`mb-6 ${animBase} anim-reveal-up ${show}`}
                 style={{
                   fontFamily: "var(--font-display)",
                   fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
                   lineHeight: 1.08,
                   letterSpacing: "-0.025em",
+                  transitionDelay: "0.1s",
                 }}
-                initial={reducedMotion ? false : { y: "100%", rotateX: -15 }}
-                animate={inView ? { y: 0, rotateX: 0 } : {}}
-                transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
               >
                 Stop burning ₹1.5L per hire.
                 <br />
                 <span className="text-[var(--muted2)]">
                   Start seeing who&apos;s actually good.
                 </span>
-              </motion.h2>
+              </h2>
             </div>
-            <motion.p
-              className="text-[var(--muted2)] mb-8 max-w-lg"
+            <p
+              className={`text-[var(--muted2)] mb-8 max-w-lg ${animBase} anim-fade-up ${show}`}
               style={{
                 fontFamily: "var(--font-dm-sans)",
                 fontWeight: 300,
                 lineHeight: 1.6,
+                transitionDelay: "0.2s",
               }}
-              initial={reducedMotion ? false : { opacity: 0, y: 15 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.2 }}
             >
               Your engineers are wasting 300+ hours a year on interviews that go
               nowhere. SViam pre-screens every candidate with an AI interview
               built to your exact spec. The only people who reach your
               calendar are worth the meeting.
-            </motion.p>
+            </p>
 
-            <motion.div
-              className="space-y-4 mb-8"
-              variants={reducedMotion ? undefined : pointsVariants}
-              initial="hidden"
-              animate={inView ? "visible" : "hidden"}
-            >
-              {points.map((p) => (
-                <motion.div
+            <div className="space-y-4 mb-8">
+              {points.map((p, i) => (
+                <div
                   key={p.label}
-                  variants={reducedMotion ? undefined : pointVariant}
-                  whileHover={reducedMotion ? {} : { x: 6 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className={`${animBase} anim-fade-left ${show} hover-lift`}
+                  style={{ transitionDelay: `${0.15 + i * 0.1}s` }}
                 >
                   <p
                     className="text-sm"
@@ -175,21 +128,18 @@ export default function HirerPipeline() {
                       {p.desc}
                     </span>
                   </p>
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
 
-            <motion.a
+            <a
               href="#waitlist"
-              className="inline-flex items-center gap-3"
-              initial={reducedMotion ? false : { opacity: 0 }}
-              animate={inView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              whileHover={reducedMotion ? {} : { x: 4 }}
+              className={`inline-flex items-center gap-3 hover-lift ${animBase} anim-fade-up ${show}`}
+              style={{ transitionDelay: "0.6s" }}
             >
               <span
                 className="live-dot"
-                style={{ background: "var(--accent)" }}
+                style={{ background: "var(--teal)" }}
               />
               <span
                 className="text-sm font-medium text-[var(--accent2)]"
@@ -197,57 +147,47 @@ export default function HirerPipeline() {
               >
                 Join the Waitlist
               </span>
-            </motion.a>
-          </motion.div>
+            </a>
+          </div>
 
           {/* Right — dashboard */}
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, x: 40, rotateY: -5 }}
-            animate={inView ? { opacity: 1, x: 0, rotateY: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.33, 1, 0.68, 1] }}
-            style={{ perspective: "1200px" }}
+          <div
+            className={`${animBase} anim-fade-up ${show}`}
+            style={{
+              perspective: "1200px",
+              transitionDelay: "0.2s",
+            }}
           >
             <DashboardMockup url="sviam.in/company/pipeline">
               {/* Candidate rows */}
-              <motion.div
-                className="p-4 space-y-3"
-                variants={reducedMotion ? undefined : candidateVariants}
-                initial="hidden"
-                animate={inView ? "visible" : "hidden"}
-              >
+              <div className="p-4 space-y-3">
                 {candidates.map((c, i) => (
-                  <motion.div
+                  <div
                     key={c.name}
-                    variants={reducedMotion ? undefined : candidateVariant}
                     onMouseEnter={() => setHoveredRow(i)}
                     onMouseLeave={() => setHoveredRow(null)}
-                    whileHover={reducedMotion ? {} : { x: 4, scale: 1.01 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="flex items-center gap-3 p-3 rounded-[8px] relative overflow-hidden"
+                    className={`flex items-center gap-3 p-3 rounded-[8px] relative overflow-hidden hover-lift ${animBase} anim-fade-up ${show}`}
                     style={{
                       border: "1px solid var(--border)",
                       background: hoveredRow === i ? "rgba(255,255,255,0.02)" : "transparent",
+                      transitionDelay: `${0.3 + i * 0.12}s`,
                     }}
                   >
                     {/* Shine on hover */}
                     {hoveredRow === i && !reducedMotion && (
-                      <motion.div
-                        className="absolute inset-0 pointer-events-none"
+                      <div
+                        className="absolute inset-0 pointer-events-none btn-shimmer"
                         style={{
                           background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.04) 50%, transparent 60%)",
                         }}
-                        initial={{ x: "-100%" }}
-                        animate={{ x: "200%" }}
-                        transition={{ duration: 0.8, ease: "easeInOut" }}
                       />
                     )}
-                    <motion.div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs"
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs transition-transform hover:scale-110"
                       style={{ background: c.color }}
-                      whileHover={reducedMotion ? {} : { scale: 1.1, rotate: 5 }}
                     >
                       {c.initials}
-                    </motion.div>
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div
                         className="text-sm font-medium text-[var(--text)]"
@@ -272,25 +212,20 @@ export default function HirerPipeline() {
                     >
                       {c.score}/100
                     </span>
-                    <motion.span
-                      className="text-[10px] font-medium px-2 py-1 rounded-[6px]"
+                    <span
+                      className="text-[10px] font-medium px-2 py-1 rounded-[6px] transition-transform"
                       style={{
                         color: c.statusColor,
                         background: `color-mix(in srgb, ${c.statusColor} 10%, transparent)`,
                         fontFamily: "var(--font-dm-sans)",
+                        transform: hoveredRow === i && !reducedMotion ? "scale(1.1)" : "scale(1)",
                       }}
-                      animate={
-                        reducedMotion || hoveredRow !== i
-                          ? {}
-                          : { scale: [1, 1.1, 1] }
-                      }
-                      transition={{ duration: 0.3 }}
                     >
                       {c.status}
-                    </motion.span>
-                  </motion.div>
+                    </span>
+                  </div>
                 ))}
-              </motion.div>
+              </div>
 
               {/* Bar chart */}
               <div
@@ -315,18 +250,13 @@ export default function HirerPipeline() {
                       className="flex-1 h-5 rounded-[4px] overflow-hidden"
                       style={{ background: "var(--surface)" }}
                     >
-                      <motion.div
+                      <div
                         className="h-full rounded-[4px]"
                         style={{
                           background: "linear-gradient(90deg, var(--green), var(--teal))",
                           boxShadow: "0 0 10px rgba(6,214,160,0.3)",
-                        }}
-                        initial={{ width: 0 }}
-                        animate={inView ? { width: "21%" } : { width: 0 }}
-                        transition={{
-                          duration: 1.2,
-                          delay: 0.8,
-                          ease: "easeOut",
+                          width: inView ? "21%" : "0%",
+                          transition: "width 1.2s ease-out 0.8s",
                         }}
                       />
                     </div>
@@ -348,15 +278,12 @@ export default function HirerPipeline() {
                       className="flex-1 h-5 rounded-[4px] overflow-hidden"
                       style={{ background: "var(--surface)" }}
                     >
-                      <motion.div
+                      <div
                         className="h-full rounded-[4px]"
-                        style={{ background: "var(--muted)" }}
-                        initial={{ width: 0 }}
-                        animate={inView ? { width: "100%" } : { width: 0 }}
-                        transition={{
-                          duration: 1.5,
-                          delay: 1,
-                          ease: "easeOut",
+                        style={{
+                          background: "var(--muted)",
+                          width: inView ? "100%" : "0%",
+                          transition: "width 1.5s ease-out 1s",
                         }}
                       />
                     </div>
@@ -376,7 +303,7 @@ export default function HirerPipeline() {
                 </div>
               </div>
             </DashboardMockup>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

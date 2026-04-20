@@ -3,18 +3,18 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --bg: #fafaf9;
-  --surface: #ffffff;
-  --card: #f4f4f5;
-  --border: rgba(0, 0, 0, 0.06);
-  --border2: rgba(0, 0, 0, 0.12);
-  --text: #09090b;
-  --muted: #71717a;
-  --muted2: #3f3f46;
+  --bg: #f0f7f7;
+  --surface: #f7fcfc;
+  --card: #e6f0f0;
+  --border: rgba(0, 120, 120, 0.10);
+  --border2: rgba(0, 120, 120, 0.18);
+  --text: #0a1a1a;
+  --muted: #5c7070;
+  --muted2: #344040;
   --accent: #6366f1;
   --accent2: #818cf8;
-  --teal: #10b981;
-  --teal2: #34d399;
+  --teal: #009999;
+  --teal2: #33b3b3;
   --orange: #f97316;
   --pink: #ec4899;
   --gold: #f59e0b;
@@ -33,6 +33,7 @@
 }
 
 @theme inline {
+  --font-serif: var(--font-serif);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-card: var(--card);
@@ -65,16 +66,18 @@ body {
   overflow-x: hidden;
 }
 
-/* Film grain overlay */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  background-repeat: repeat;
+/* Film grain — desktop only, hidden on mobile for performance */
+@media (min-width: 768px) {
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+  }
 }
 
 /* Float keyframes */
@@ -134,13 +137,13 @@ body::after {
 }
 
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,0.3); }
-  50% { box-shadow: 0 0 40px rgba(99,102,241,0.6), 0 0 80px rgba(99,102,241,0.2); }
+  0%, 100% { box-shadow: 0 0 20px rgba(0,153,153,0.3); }
+  50% { box-shadow: 0 0 40px rgba(0,153,153,0.6), 0 0 80px rgba(0,153,153,0.2); }
 }
 
 @keyframes borderGlow {
-  0%, 100% { border-color: rgba(99,102,241,0.2); }
-  50% { border-color: rgba(99,102,241,0.5); }
+  0%, 100% { border-color: rgba(0,153,153,0.2); }
+  50% { border-color: rgba(0,153,153,0.5); }
 }
 
 @keyframes ripple {
@@ -154,12 +157,12 @@ body::after {
 }
 
 @keyframes textGlow {
-  0%, 100% { text-shadow: 0 0 10px rgba(99,102,241,0.3); }
-  50% { text-shadow: 0 0 20px rgba(99,102,241,0.6), 0 0 40px rgba(16,185,129,0.2); }
+  0%, 100% { text-shadow: 0 0 10px rgba(0,153,153,0.3); }
+  50% { text-shadow: 0 0 20px rgba(0,153,153,0.6), 0 0 40px rgba(16,185,129,0.2); }
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent2), var(--teal));
+  background: linear-gradient(135deg, var(--teal), var(--accent2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -204,7 +207,7 @@ body::after {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: linear-gradient(135deg, var(--accent), var(--teal));
+  background: linear-gradient(135deg, var(--teal), var(--accent));
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: -1;
@@ -216,7 +219,7 @@ body::after {
 /* Section divider — glowing gradient line */
 .section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent) 20%, var(--teal) 80%, transparent);
+  background: linear-gradient(90deg, transparent, var(--teal) 20%, var(--accent) 80%, transparent);
   opacity: 0.15;
   margin: 0 auto;
   max-width: 80%;
@@ -246,4 +249,319 @@ body::after {
     rgba(0, 0, 0, 0.03) 4px
   );
   border-radius: inherit;
+}
+
+/* Job ticker marquee */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-track {
+  display: flex;
+  animation: marquee 40s linear infinite;
+  width: max-content;
+}
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* Onboarding gradient border pulse */
+@keyframes gradientBorderPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Processing step pop */
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================
+   CSS Animation System (replaces Framer Motion)
+   GPU-composited: transform + opacity only
+   ============================================ */
+
+/* Fade in from below */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade in from left */
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Fade in from right */
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Fade in with scale */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Slide up with perspective (headline reveal) */
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(100%) perspective(800px) rotateX(-15deg); }
+  to { opacity: 1; transform: translateY(0) perspective(800px) rotateX(0deg); }
+}
+
+/* Scale X grow (for lines/dividers) */
+@keyframes scaleXGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Floating orb animation (background) */
+@keyframes orbFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -30px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+@keyframes orbFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-30px, 25px) scale(0.95); }
+  66% { transform: translate(20px, -15px) scale(1.1); }
+}
+@keyframes orbFloat3 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(50px, -40px); }
+  66% { transform: translate(-30px, 30px); }
+}
+@keyframes orbFloat4 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(100px, -60px); }
+  66% { transform: translate(-80px, 40px); }
+}
+
+/* Beam travel (SVG circle along path) */
+@keyframes beamTravel {
+  0% { opacity: 0; }
+  10% { opacity: 0.9; }
+  90% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* Scroll indicator bounce */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(-100%); }
+  50% { transform: translateY(200%); }
+}
+
+/* Typing cursor blink — already exists as 'blink' */
+
+/* Dot bounce for typing indicators */
+@keyframes dotBounce {
+  0%, 100% { opacity: 0.3; transform: scale(0.8) translateY(0); }
+  50% { opacity: 1; transform: scale(1.2) translateY(-3px); }
+}
+
+/* Accordion expand/collapse */
+.accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+.accordion-content.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.accordion-content > div {
+  overflow: hidden;
+}
+
+/* Stagger delay utilities */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.4s; }
+.stagger-9 { animation-delay: 0.45s; }
+.stagger-10 { animation-delay: 0.5s; }
+
+/* Base animation class — invisible until triggered */
+.anim-base {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.anim-base.in-view {
+  animation-fill-mode: both;
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.anim-fade-up.in-view { animation-name: fadeInUp; }
+.anim-fade-left.in-view { animation-name: fadeInLeft; }
+.anim-fade-right.in-view { animation-name: fadeInRight; }
+.anim-fade-scale.in-view { animation-name: fadeInScale; }
+.anim-reveal-up.in-view { animation-name: revealUp; animation-duration: 0.7s; }
+.anim-scale-x.in-view { animation-name: scaleXGrow; animation-duration: 1s; }
+
+/* Hover effects — CSS only */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.hover-scale {
+  transition: transform 0.15s ease;
+}
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-glow {
+  transition: box-shadow 0.3s ease;
+}
+.hover-glow:hover {
+  box-shadow: 0 0 30px rgba(0,153,153,0.3);
+}
+
+/* Button shimmer effect */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+  transform: translateX(-100%);
+  animation: slideShine 4s ease-in-out infinite;
+  animation-delay: 2s;
+  pointer-events: none;
+}
+
+/* Navbar scroll transition */
+.navbar-glass {
+  transition: background-color 0.3s ease, backdrop-filter 0.3s ease, border-color 0.3s ease;
+}
+.navbar-glass.scrolled {
+  background-color: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.navbar-glass:not(.scrolled) {
+  background-color: transparent;
+  backdrop-filter: none;
+  border-bottom: 1px solid transparent;
+}
+
+/* Dropdown animation */
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes dropdownOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-8px) scale(0.95); }
+}
+.dropdown-enter {
+  animation: dropdownIn 0.15s ease forwards;
+}
+
+/* Mobile menu slide */
+@keyframes mobileMenuIn {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 300px; }
+}
+.mobile-menu-enter {
+  animation: mobileMenuIn 0.3s ease forwards;
+  overflow: hidden;
+}
+
+/* Icon rotate for FAQ toggle */
+.faq-icon {
+  transition: transform 0.2s ease;
+}
+.faq-icon.open {
+  transform: rotate(45deg);
+}
+
+/* Spinner (loading) — CSS only */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Pulsing ring effect */
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Divider dot float (ForkSelector) */
+@keyframes dividerDotFloat {
+  0%, 100% { top: 20%; }
+  50% { top: 80%; }
+}
+
+/* Shine sweep for card hover */
+@keyframes shineSweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(200%); }
+}
+
+/* Glow text shadow pulse */
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 30px rgba(0,212,170,0.3); }
+  50% { text-shadow: 0 0 60px rgba(0,212,170,0.5); }
+}
+
+/* Scroll-driven scale/opacity for giant background number */
+@keyframes bgNumReveal {
+  from { opacity: 0; transform: scale(0.8) perspective(800px) rotateX(5deg); }
+  to { opacity: 1; transform: scale(1) perspective(800px) rotateX(0deg); }
+}
+
+/* Generic CSS fade-in (used by CodeEditor, HirerInterviewConfig) */
+@keyframes css-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pulsing opacity (used for "Live preview" text, AI ASKS label) */
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Glow pulse for score text */
+@keyframes glow-pulse {
+  0%, 100% { text-shadow: 0 0 10px rgba(6,214,160,0.3); }
+  50% { text-shadow: 0 0 25px rgba(6,214,160,0.5); }
+}
+
+/* Content visibility for off-screen sections */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* Reduced motion: disable all custom animations */
+@media (prefers-reduced-motion: reduce) {
+  .anim-base { opacity: 1; }
+  .anim-base.in-view { animation: none; }
+  .ticker-track { animation: none; }
+  .btn-shimmer::after { animation: none; }
+  .live-dot { animation: none; }
+  .spinner { animation: none; }
 }

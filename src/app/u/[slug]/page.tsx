@@ -52,7 +52,7 @@ export default function PublicProfilePage() {
         <div className="text-center px-6">
           <p className="text-lg text-[var(--text)] mb-2" style={{ fontFamily: "var(--font-display)" }}>Profile not found</p>
           <p className="text-sm text-[var(--muted2)] mb-4" style={{ fontFamily: "var(--font-dm-sans)" }}>{error}</p>
-          <Link href="/" className="text-sm font-medium" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
+          <Link href="/" className="text-sm font-medium" style={{ color: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
             Go to SViam
           </Link>
         </div>
@@ -72,7 +72,7 @@ export default function PublicProfilePage() {
       <div className="relative z-10 max-w-lg mx-auto px-6">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="text-sm text-[var(--muted)] hover:text-[var(--accent)] transition-colors" style={{ fontFamily: "var(--font-dm-sans)" }}>
+          <Link href="/" className="text-sm text-[var(--muted)] hover:text-[var(--teal)] transition-colors" style={{ fontFamily: "var(--font-dm-sans)" }}>
             sviam.in
           </Link>
         </div>
@@ -83,7 +83,7 @@ export default function PublicProfilePage() {
 
           {/* Avatar */}
           <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-xl font-bold"
-            style={{ background: "linear-gradient(135deg, var(--accent), #7c3aed)", color: "white", fontFamily: "var(--font-display)" }}>
+            style={{ background: "linear-gradient(135deg, var(--teal), #7c3aed)", color: "white", fontFamily: "var(--font-display)" }}>
             {initials}
           </div>
 
@@ -128,7 +128,7 @@ export default function PublicProfilePage() {
               <div className="flex flex-wrap justify-center gap-1.5">
                 {profile.target_roles.map((role) => (
                   <span key={role} className="px-2.5 py-1 rounded-full text-xs"
-                    style={{ background: "rgba(99,102,241,0.1)", color: "var(--accent)", border: "1px solid rgba(99,102,241,0.2)", fontFamily: "var(--font-dm-sans)" }}>
+                    style={{ background: "rgba(99,102,241,0.1)", color: "var(--teal)", border: "1px solid rgba(99,102,241,0.2)", fontFamily: "var(--font-dm-sans)" }}>
                     {role}
                   </span>
                 ))}
@@ -160,7 +160,7 @@ export default function PublicProfilePage() {
 
         {/* Footer */}
         <p className="text-center mt-6 text-[0.6rem] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-mono)" }}>
-          Powered by <Link href="/" className="text-[var(--accent)] hover:underline">SViam</Link>
+          Powered by <Link href="/" className="text-[var(--teal)] hover:underline">SViam</Link>
         </p>
       </div>
     </main>

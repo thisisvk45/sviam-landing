@@ -18,15 +18,15 @@ const CONSULATES = ["Chennai", "Mumbai", "Hyderabad", "Delhi", "Kolkata"];
 const FUNDING_OPTIONS = ["Self-funded", "University Assistantship", "Scholarship", "Loan", "Sponsor"];
 
 const CATEGORY_COLORS: Record<string, { bg: string; color: string }> = {
-  intent: { bg: "rgba(99,102,241,0.1)", color: "var(--accent)" },
+  intent: { bg: "rgba(99,102,241,0.1)", color: "var(--teal)" },
   academic: { bg: "rgba(59,130,246,0.1)", color: "#3b82f6" },
-  financial: { bg: "rgba(16,185,129,0.1)", color: "#10b981" },
+  financial: { bg: "rgba(0,153,153,0.1)", color: "#009999" },
   "ties-to-home": { bg: "rgba(245,158,11,0.1)", color: "#f59e0b" },
   "post-graduation": { bg: "rgba(139,92,246,0.1)", color: "#8b5cf6" },
 };
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  easy: "#10b981", medium: "#f59e0b", hard: "#ef4444",
+  easy: "#009999", medium: "#f59e0b", hard: "#ef4444",
 };
 
 export default function VisaPrepClient({ token }: { token: string }) {
@@ -93,14 +93,14 @@ export default function VisaPrepClient({ token }: { token: string }) {
               <label className="text-[0.55rem] text-[var(--muted)] block mb-1 tracking-[0.12em] uppercase" style={{ fontFamily: "var(--font-dm-mono)" }}>University</label>
               <input value={university} onChange={(e) => setUniversity(e.target.value)}
                 placeholder="e.g. University of Texas at Dallas"
-                className="w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                className="w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--teal)]"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }} />
             </div>
             <div>
               <label className="text-[0.55rem] text-[var(--muted)] block mb-1 tracking-[0.12em] uppercase" style={{ fontFamily: "var(--font-dm-mono)" }}>Program</label>
               <input value={program} onChange={(e) => setProgram(e.target.value)}
                 placeholder="e.g. MS in Computer Science"
-                className="w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                className="w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--teal)]"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }} />
             </div>
             <div>
@@ -123,7 +123,7 @@ export default function VisaPrepClient({ token }: { token: string }) {
             <div>
               <label className="text-[0.55rem] text-[var(--muted)] block mb-1 tracking-[0.12em] uppercase" style={{ fontFamily: "var(--font-dm-mono)" }}>Work Experience (years)</label>
               <input type="number" min={0} max={20} value={workExp} onChange={(e) => setWorkExp(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                className="w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--teal)]"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }} />
             </div>
           </div>
@@ -131,7 +131,7 @@ export default function VisaPrepClient({ token }: { token: string }) {
           <button onClick={handleGenerate}
             disabled={generating || !university.trim() || !program.trim()}
             className="mt-4 w-full py-3 rounded-[10px] text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, var(--accent), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(108,99,255,0.3)" }}>
+            style={{ background: "linear-gradient(135deg, var(--teal), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(0,153,153,0.3)" }}>
             {generating ? <><IconLoader2 size={16} className="animate-spin" /> Generating...</> : <><IconSparkles size={16} /> Start Mock Interview</>}
           </button>
           {error && <p className="mt-2 text-xs text-red-400 text-center" style={{ fontFamily: "var(--font-dm-sans)" }}>{error}</p>}

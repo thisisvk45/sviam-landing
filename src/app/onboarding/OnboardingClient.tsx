@@ -119,10 +119,8 @@ export default function OnboardingClient({
   const [openToRelocation, setOpenToRelocation] = useState(false);
 
   // Step 2
-  const [expLevels, setExpLevels] = useState<string[]>([]);
+  const [expLevel, setExpLevel] = useState("");
   const [recMode, setRecMode] = useState("balanced");
-  const [salaryMin, setSalaryMin] = useState("");
-  const [salaryMax, setSalaryMax] = useState("");
   const [workModes, setWorkModes] = useState<string[]>(["Remote", "Hybrid", "Onsite"]);
 
   // Step 3
@@ -145,10 +143,8 @@ export default function OnboardingClient({
     );
   };
 
-  const toggleExpLevel = (id: string) => {
-    setExpLevels((prev) =>
-      prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]
-    );
+  const selectExpLevel = (id: string) => {
+    setExpLevel(id);
   };
 
   const toggleWorkMode = (mode: string) => {
@@ -191,15 +187,13 @@ export default function OnboardingClient({
 
   const goToStep3 = async () => {
     await saveStepData({
-      experience_level: expLevels.join(","),
+      experience_level: expLevel,
       job_preferences: {
         target_roles: selectedRoles,
         job_type: jobType,
         cities: [city],
         open_to_relocation: openToRelocation,
         recommendation_mode: recMode,
-        salary_min: salaryMin ? Number(salaryMin) : undefined,
-        salary_max: salaryMax ? Number(salaryMax) : undefined,
         work_modes: workModes,
       },
     });
@@ -279,15 +273,13 @@ export default function OnboardingClient({
 
   const completeOnboarding = async () => {
     await saveStepData({
-      experience_level: expLevels.join(","),
+      experience_level: expLevel,
       job_preferences: {
         target_roles: selectedRoles,
         job_type: jobType,
         cities: [city],
         open_to_relocation: openToRelocation,
         recommendation_mode: recMode,
-        salary_min: salaryMin ? Number(salaryMin) : undefined,
-        salary_max: salaryMax ? Number(salaryMax) : undefined,
         work_modes: workModes,
         onboarding_completed: true,
       },
@@ -320,9 +312,9 @@ export default function OnboardingClient({
     return (
       <WelcomeModal
         count={matchCount}
-        expLevels={expLevels}
+        expLevel={expLevel}
         recMode={recMode}
-        onChangeExpLevels={setExpLevels}
+        onChangeExpLevel={setExpLevel}
         onChangeRecMode={setRecMode}
         onConfirm={completeOnboarding}
       />
@@ -331,9 +323,9 @@ export default function OnboardingClient({
 
   /* ------- Main split-screen layout (steps 1-3) ------- */
   return (
-    <div className="min-h-screen flex" style={{ background: "#050507" }}>
+    <div className="min-h-screen flex" style={{ background: "var(--bg)" }}>
       {/* Left panel — desktop only */}
-      <div className="hidden md:flex w-[380px] shrink-0 flex-col justify-between p-8" style={{ background: "#080810" }}>
+      <div className="hidden md:flex w-[380px] shrink-0 flex-col justify-between p-8" style={{ background: "var(--card)" }}>
         <div>
           {/* Logo */}
           <span
@@ -348,22 +340,22 @@ export default function OnboardingClient({
             <div
               className="w-20 h-20 rounded-full mb-4 flex items-center justify-center"
               style={{
-                background: "linear-gradient(135deg, #6366f1, #10b981)",
+                background: "linear-gradient(135deg, #009999, #33b3b3)",
                 padding: 3,
                 animation: "gradientBorderPulse 3s ease-in-out infinite",
               }}
             >
               <div
                 className="w-full h-full rounded-full flex items-center justify-center"
-                style={{ background: "#080810" }}
+                style={{ background: "var(--card)" }}
               >
                 <span className="text-2xl">&#x2728;</span>
               </div>
             </div>
-            <span style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: "1.3rem", color: "#ededf0" }}>
-              Arya
+            <span style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: "1.3rem", color: "var(--text)" }}>
+              Viks
             </span>
-            <span className="text-xs text-[#63637a] mt-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            <span className="text-xs text-[var(--muted)] mt-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
               Your SViam AI Copilot
             </span>
           </div>
@@ -376,7 +368,7 @@ export default function OnboardingClient({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="text-sm text-[#9494ad] leading-relaxed text-center"
+              className="text-sm text-[var(--muted2)] leading-relaxed text-center"
               style={{ fontFamily: "var(--font-dm-sans)" }}
             >
               {STEP_MESSAGES[step - 1]}
@@ -384,7 +376,7 @@ export default function OnboardingClient({
           </AnimatePresence>
 
           {userName && (
-            <p className="text-xs text-[#63637a] text-center mt-6" style={{ fontFamily: "var(--font-dm-sans)" }}>
+            <p className="text-xs text-[var(--muted)] text-center mt-6" style={{ fontFamily: "var(--font-dm-sans)" }}>
               Signed in as {userName}
             </p>
           )}
@@ -397,7 +389,7 @@ export default function OnboardingClient({
               key={s}
               className="h-1 flex-1 rounded-full transition-colors duration-300"
               style={{
-                background: s <= step ? "linear-gradient(90deg, #6366f1, #10b981)" : "rgba(255,255,255,0.06)",
+                background: s <= step ? "linear-gradient(90deg, #009999, #33b3b3)" : "var(--border)",
               }}
             />
           ))}
@@ -407,12 +399,12 @@ export default function OnboardingClient({
       {/* Right panel — form */}
       <div className="flex-1 flex items-start md:items-center justify-center p-4 md:p-8 overflow-y-auto min-h-screen">
         {/* Mobile progress */}
-        <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex gap-1 px-4 pt-3 pb-2" style={{ background: "#050507" }}>
+        <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex gap-1 px-4 pt-3 pb-2" style={{ background: "var(--bg)" }}>
           {[1, 2, 3].map((s) => (
             <div
               key={s}
               className="h-1 flex-1 rounded-full"
-              style={{ background: s <= step ? "linear-gradient(90deg, #6366f1, #10b981)" : "rgba(255,255,255,0.06)" }}
+              style={{ background: s <= step ? "linear-gradient(90deg, #009999, #33b3b3)" : "var(--border)" }}
             />
           ))}
         </div>
@@ -421,14 +413,14 @@ export default function OnboardingClient({
           {step === 1 && (
             <motion.div key="step1" {...slideRight} transition={{ duration: 0.3 }} className="w-full max-w-[560px] mt-10 md:mt-0">
               <Card>
-                <h2 className="text-2xl mb-6 text-[#ededf0]" style={{ fontFamily: "var(--font-serif)", fontSize: 28 }}>
+                <h2 className="text-2xl mb-6 text-[var(--text)]" style={{ fontFamily: "var(--font-serif)", fontSize: 28 }}>
                   What are you looking for?
                 </h2>
 
                 {/* Two-column job function selector — desktop */}
-                <div className="hidden md:grid grid-cols-[200px_1fr] gap-0 rounded-xl overflow-hidden mb-6" style={{ border: "1px solid rgba(255,255,255,0.06)", maxHeight: 320 }}>
+                <div className="hidden md:grid grid-cols-[200px_1fr] gap-0 rounded-xl overflow-hidden mb-6" style={{ border: "1px solid var(--border)", maxHeight: 320 }}>
                   {/* Left — categories */}
-                  <div className="overflow-y-auto" style={{ borderRight: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
+                  <div className="overflow-y-auto" style={{ borderRight: "1px solid var(--border)", background: "var(--surface)" }}>
                     {CATEGORY_NAMES.map((cat) => (
                       <button
                         key={cat}
@@ -436,9 +428,9 @@ export default function OnboardingClient({
                         className="w-full text-left px-3 py-2.5 text-xs transition-colors"
                         style={{
                           fontFamily: "var(--font-dm-sans)",
-                          background: activeCategory === cat ? "rgba(99,102,241,0.1)" : "transparent",
-                          color: activeCategory === cat ? "#818cf8" : "#9494ad",
-                          borderBottom: "1px solid rgba(255,255,255,0.03)",
+                          background: activeCategory === cat ? "rgba(0,153,153,0.1)" : "transparent",
+                          color: activeCategory === cat ? "var(--teal)" : "var(--muted2)",
+                          borderBottom: "1px solid var(--border)",
                         }}
                       >
                         {cat}
@@ -457,13 +449,13 @@ export default function OnboardingClient({
                         transition={{ duration: 0.2 }}
                       >
                         {JOB_CATEGORIES[activeCategory]?.length === 0 ? (
-                          <p className="text-xs text-[#63637a] py-4 text-center" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                          <p className="text-xs text-[var(--muted)] py-4 text-center" style={{ fontFamily: "var(--font-dm-sans)" }}>
                             Coming soon — more roles will be added.
                           </p>
                         ) : (
                           JOB_CATEGORIES[activeCategory]?.map((group) => (
                             <div key={group.group} className="mb-3">
-                              <p className="text-[10px] text-[#63637a] uppercase tracking-wider mb-1.5" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                              <p className="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1.5" style={{ fontFamily: "var(--font-dm-mono)" }}>
                                 {group.group}
                               </p>
                               <div className="flex flex-wrap gap-1.5">
@@ -474,9 +466,9 @@ export default function OnboardingClient({
                                     className="px-2.5 py-1 rounded-lg text-xs transition-all"
                                     style={{
                                       fontFamily: "var(--font-dm-sans)",
-                                      background: selectedRoles.includes(role) ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)",
-                                      color: selectedRoles.includes(role) ? "#818cf8" : "#9494ad",
-                                      border: `1px solid ${selectedRoles.includes(role) ? "rgba(99,102,241,0.3)" : "rgba(255,255,255,0.06)"}`,
+                                      background: selectedRoles.includes(role) ? "rgba(0,153,153,0.15)" : "var(--surface)",
+                                      color: selectedRoles.includes(role) ? "var(--teal)" : "var(--muted2)",
+                                      border: `1px solid ${selectedRoles.includes(role) ? "rgba(0,153,153,0.3)" : "var(--border)"}`,
                                     }}
                                   >
                                     {role}
@@ -492,16 +484,16 @@ export default function OnboardingClient({
                 </div>
 
                 {/* Mobile accordion */}
-                <div className="md:hidden mb-6 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div className="md:hidden mb-6 rounded-xl overflow-hidden" style={{ border: "1px solid var(--border)" }}>
                   {CATEGORY_NAMES.map((cat) => (
-                    <div key={cat} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                    <div key={cat} style={{ borderBottom: "1px solid var(--surface)" }}>
                       <button
                         onClick={() => setMobileExpandedCategory(mobileExpandedCategory === cat ? null : cat)}
                         className="w-full text-left px-3 py-2.5 text-xs flex justify-between items-center"
                         style={{
                           fontFamily: "var(--font-dm-sans)",
-                          color: mobileExpandedCategory === cat ? "#818cf8" : "#9494ad",
-                          background: mobileExpandedCategory === cat ? "rgba(99,102,241,0.05)" : "transparent",
+                          color: mobileExpandedCategory === cat ? "var(--teal)" : "var(--muted2)",
+                          background: mobileExpandedCategory === cat ? "rgba(0,153,153,0.05)" : "transparent",
                         }}
                       >
                         {cat}
@@ -517,7 +509,7 @@ export default function OnboardingClient({
                           >
                             {JOB_CATEGORIES[cat].map((group) => (
                               <div key={group.group} className="mb-2">
-                                <p className="text-[10px] text-[#63637a] uppercase tracking-wider mb-1" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                <p className="text-[10px] text-[var(--muted)] uppercase tracking-wider mb-1" style={{ fontFamily: "var(--font-dm-mono)" }}>
                                   {group.group}
                                 </p>
                                 <div className="flex flex-wrap gap-1.5">
@@ -528,9 +520,9 @@ export default function OnboardingClient({
                                       className="px-2 py-1 rounded-lg text-xs transition-all"
                                       style={{
                                         fontFamily: "var(--font-dm-sans)",
-                                        background: selectedRoles.includes(role) ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)",
-                                        color: selectedRoles.includes(role) ? "#818cf8" : "#9494ad",
-                                        border: `1px solid ${selectedRoles.includes(role) ? "rgba(99,102,241,0.3)" : "rgba(255,255,255,0.06)"}`,
+                                        background: selectedRoles.includes(role) ? "rgba(0,153,153,0.15)" : "var(--surface)",
+                                        color: selectedRoles.includes(role) ? "var(--teal)" : "var(--muted2)",
+                                        border: `1px solid ${selectedRoles.includes(role) ? "rgba(0,153,153,0.3)" : "var(--border)"}`,
                                       }}
                                     >
                                       {role}
@@ -548,14 +540,14 @@ export default function OnboardingClient({
 
                 {/* Selected roles count */}
                 {selectedRoles.length > 0 && (
-                  <p className="text-xs text-[#818cf8] mb-4" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  <p className="text-xs text-[var(--teal)] mb-4" style={{ fontFamily: "var(--font-dm-sans)" }}>
                     {selectedRoles.length} role{selectedRoles.length !== 1 ? "s" : ""} selected
                   </p>
                 )}
 
                 {/* Job type toggle */}
                 <div className="mb-5">
-                  <p className="text-xs text-[#9494ad] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>Job Type</p>
+                  <p className="text-xs text-[var(--muted2)] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>Job Type</p>
                   <div className="flex flex-wrap gap-2">
                     {JOB_TYPES.map((t) => (
                       <button
@@ -564,9 +556,9 @@ export default function OnboardingClient({
                         className="px-3 py-1.5 rounded-lg text-xs transition-all"
                         style={{
                           fontFamily: "var(--font-dm-sans)",
-                          background: jobType === t ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)",
-                          color: jobType === t ? "#818cf8" : "#9494ad",
-                          border: `1px solid ${jobType === t ? "rgba(99,102,241,0.3)" : "rgba(255,255,255,0.06)"}`,
+                          background: jobType === t ? "rgba(0,153,153,0.15)" : "var(--surface)",
+                          color: jobType === t ? "var(--teal)" : "var(--muted2)",
+                          border: `1px solid ${jobType === t ? "rgba(0,153,153,0.3)" : "var(--border)"}`,
                         }}
                       >
                         {t}
@@ -577,19 +569,19 @@ export default function OnboardingClient({
 
                 {/* Location */}
                 <div className="mb-5">
-                  <p className="text-xs text-[#9494ad] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>Location</p>
+                  <p className="text-xs text-[var(--muted2)] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>Where are you based out of?</p>
                   <select
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg text-xs text-[#ededf0] outline-none"
+                    className="w-full px-3 py-2 rounded-lg text-xs text-[var(--text)] outline-none"
                     style={{
                       fontFamily: "var(--font-dm-sans)",
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.06)",
+                      background: "var(--surface)",
+                      border: "1px solid var(--border)",
                     }}
                   >
                     {CITIES.map((c) => (
-                      <option key={c} value={c} style={{ background: "#101018" }}>{c}</option>
+                      <option key={c} value={c} style={{ background: "var(--card)" }}>{c}</option>
                     ))}
                   </select>
                 </div>
@@ -600,9 +592,9 @@ export default function OnboardingClient({
                     type="checkbox"
                     checked={openToRelocation}
                     onChange={(e) => setOpenToRelocation(e.target.checked)}
-                    className="w-4 h-4 rounded accent-[#6366f1]"
+                    className="w-4 h-4 rounded accent-[#009999]"
                   />
-                  <span className="text-xs text-[#9494ad]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  <span className="text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
                     Open to relocating for the right opportunity
                   </span>
                 </label>
@@ -614,7 +606,7 @@ export default function OnboardingClient({
                     disabled={selectedRoles.length === 0}
                     className="px-6 py-2.5 rounded-xl text-sm text-white font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed w-full md:w-auto"
                     style={{
-                      background: selectedRoles.length > 0 ? "linear-gradient(135deg, #6366f1, #818cf8)" : "rgba(99,102,241,0.2)",
+                      background: selectedRoles.length > 0 ? "linear-gradient(135deg, #009999, #33b3b3)" : "rgba(0,153,153,0.2)",
                       fontFamily: "var(--font-dm-sans)",
                     }}
                   >
@@ -628,7 +620,7 @@ export default function OnboardingClient({
           {step === 2 && (
             <motion.div key="step2" {...slideRight} transition={{ duration: 0.3 }} className="w-full max-w-[560px] mt-10 md:mt-0">
               <Card>
-                <h2 className="text-2xl mb-6 text-[#ededf0]" style={{ fontFamily: "var(--font-serif)", fontSize: 28 }}>
+                <h2 className="text-2xl mb-6 text-[var(--text)]" style={{ fontFamily: "var(--font-serif)", fontSize: 28 }}>
                   What&apos;s your experience level?
                 </h2>
 
@@ -637,22 +629,22 @@ export default function OnboardingClient({
                   {EXP_LEVELS.map((level) => (
                     <motion.button
                       key={level.id}
-                      onClick={() => toggleExpLevel(level.id)}
+                      onClick={() => selectExpLevel(level.id)}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                       className="flex flex-col items-center p-4 rounded-xl text-center transition-all"
                       style={{
-                        background: expLevels.includes(level.id) ? "rgba(99,102,241,0.08)" : "rgba(255,255,255,0.02)",
-                        border: `1px solid ${expLevels.includes(level.id) ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.06)"}`,
-                        animation: expLevels.includes(level.id) ? "borderGlow 2s ease infinite" : "none",
+                        background: expLevel === level.id ? "rgba(0,153,153,0.08)" : "var(--surface)",
+                        border: `1px solid ${expLevel === level.id ? "rgba(0,153,153,0.4)" : "var(--border)"}`,
+                        animation: expLevel === level.id ? "borderGlow 2s ease infinite" : "none",
                       }}
                     >
                       <span className="text-2xl mb-2">{level.icon}</span>
-                      <span className="text-xs text-[#ededf0] font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                      <span className="text-xs text-[var(--text)] font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>
                         {level.label}
                       </span>
                       {level.range && (
-                        <span className="text-[10px] text-[#63637a] mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                        <span className="text-[10px] text-[var(--muted)] mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
                           {level.range}
                         </span>
                       )}
@@ -661,7 +653,7 @@ export default function OnboardingClient({
                 </div>
 
                 {/* Recommendation preference */}
-                <p className="text-xs text-[#9494ad] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                <p className="text-xs text-[var(--muted2)] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
                   Job recommendation preference
                 </p>
                 <div className="grid grid-cols-3 gap-2 mb-8">
@@ -671,63 +663,23 @@ export default function OnboardingClient({
                       onClick={() => setRecMode(mode.id)}
                       className="flex flex-col items-center p-3 rounded-xl text-center transition-all"
                       style={{
-                        background: recMode === mode.id ? "rgba(99,102,241,0.08)" : "rgba(255,255,255,0.02)",
-                        border: `1px solid ${recMode === mode.id ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.06)"}`,
+                        background: recMode === mode.id ? "rgba(0,153,153,0.08)" : "var(--surface)",
+                        border: `1px solid ${recMode === mode.id ? "rgba(0,153,153,0.4)" : "var(--border)"}`,
                       }}
                     >
                       <span className="text-lg mb-1">{mode.icon}</span>
-                      <span className="text-[11px] text-[#ededf0] font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                      <span className="text-[11px] text-[var(--text)] font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>
                         {mode.label}
                       </span>
-                      <span className="text-[9px] text-[#63637a] mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                      <span className="text-[9px] text-[var(--muted)] mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>
                         {mode.desc}
                       </span>
                     </button>
                   ))}
                 </div>
 
-                {/* Salary range */}
-                <p className="text-xs text-[#9494ad] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
-                  Expected salary range
-                </p>
-                <div className="grid grid-cols-2 gap-3 mb-1">
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#63637a]">\u20B9</span>
-                    <input
-                      type="number"
-                      placeholder="Min CTC"
-                      value={salaryMin}
-                      onChange={(e) => setSalaryMin(e.target.value)}
-                      className="w-full pl-7 pr-3 py-2 rounded-lg text-xs text-[#ededf0] outline-none"
-                      style={{
-                        fontFamily: "var(--font-dm-sans)",
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.06)",
-                      }}
-                    />
-                  </div>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#63637a]">\u20B9</span>
-                    <input
-                      type="number"
-                      placeholder="Max CTC"
-                      value={salaryMax}
-                      onChange={(e) => setSalaryMax(e.target.value)}
-                      className="w-full pl-7 pr-3 py-2 rounded-lg text-xs text-[#ededf0] outline-none"
-                      style={{
-                        fontFamily: "var(--font-dm-sans)",
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.06)",
-                      }}
-                    />
-                  </div>
-                </div>
-                <p className="text-[10px] text-[#63637a] mb-6" style={{ fontFamily: "var(--font-dm-sans)" }}>
-                  We use this to filter out roles outside your range
-                </p>
-
                 {/* Work mode */}
-                <p className="text-xs text-[#9494ad] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                <p className="text-xs text-[var(--muted2)] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
                   Work mode preference
                 </p>
                 <div className="flex gap-2 mb-8">
@@ -738,9 +690,9 @@ export default function OnboardingClient({
                       className="px-4 py-1.5 rounded-lg text-xs transition-all"
                       style={{
                         fontFamily: "var(--font-dm-sans)",
-                        background: workModes.includes(mode) ? "rgba(99,102,241,0.15)" : "rgba(255,255,255,0.04)",
-                        color: workModes.includes(mode) ? "#818cf8" : "#9494ad",
-                        border: `1px solid ${workModes.includes(mode) ? "rgba(99,102,241,0.3)" : "rgba(255,255,255,0.06)"}`,
+                        background: workModes.includes(mode) ? "rgba(0,153,153,0.15)" : "var(--surface)",
+                        color: workModes.includes(mode) ? "var(--teal)" : "var(--muted2)",
+                        border: `1px solid ${workModes.includes(mode) ? "rgba(0,153,153,0.3)" : "var(--border)"}`,
                       }}
                     >
                       {mode}
@@ -752,8 +704,8 @@ export default function OnboardingClient({
                 <div className="flex justify-between gap-3">
                   <button
                     onClick={() => setStep(1)}
-                    className="px-5 py-2.5 rounded-xl text-sm text-[#9494ad] transition-colors hover:text-[#ededf0]"
-                    style={{ fontFamily: "var(--font-dm-sans)", border: "1px solid rgba(255,255,255,0.06)" }}
+                    className="px-5 py-2.5 rounded-xl text-sm text-[var(--muted2)] transition-colors hover:text-[var(--text)]"
+                    style={{ fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}
                   >
                     &larr; Back
                   </button>
@@ -761,7 +713,7 @@ export default function OnboardingClient({
                     onClick={goToStep3}
                     className="flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm text-white font-medium"
                     style={{
-                      background: "linear-gradient(135deg, #6366f1, #818cf8)",
+                      background: "linear-gradient(135deg, #009999, #33b3b3)",
                       fontFamily: "var(--font-dm-sans)",
                     }}
                   >
@@ -775,7 +727,7 @@ export default function OnboardingClient({
           {step === 3 && (
             <motion.div key="step3" {...slideRight} transition={{ duration: 0.3 }} className="w-full max-w-[560px] mt-10 md:mt-0">
               <Card>
-                <h2 className="text-2xl mb-6 text-[#ededf0]" style={{ fontFamily: "var(--font-serif)", fontSize: 28 }}>
+                <h2 className="text-2xl mb-6 text-[var(--text)]" style={{ fontFamily: "var(--font-serif)", fontSize: 28 }}>
                   Upload your resume
                 </h2>
 
@@ -787,8 +739,8 @@ export default function OnboardingClient({
                   onClick={() => !file && fileInputRef.current?.click()}
                   className="rounded-2xl p-8 md:p-10 text-center cursor-pointer transition-all mb-6"
                   style={{
-                    border: `2px dashed ${isDragOver ? "rgba(99,102,241,0.6)" : file ? "rgba(34,197,94,0.3)" : "rgba(255,255,255,0.08)"}`,
-                    background: isDragOver ? "rgba(99,102,241,0.05)" : file ? "rgba(34,197,94,0.03)" : "rgba(255,255,255,0.02)",
+                    border: `2px dashed ${isDragOver ? "rgba(0,153,153,0.6)" : file ? "rgba(34,197,94,0.3)" : "var(--border2)"}`,
+                    background: isDragOver ? "rgba(0,153,153,0.05)" : file ? "rgba(34,197,94,0.03)" : "var(--surface)",
                     animation: isDragOver ? "glowPulse 1.5s ease infinite" : "none",
                   }}
                 >
@@ -810,8 +762,8 @@ export default function OnboardingClient({
                         </svg>
                       </div>
                       <div className="text-left">
-                        <p className="text-sm text-[#ededf0]" style={{ fontFamily: "var(--font-dm-sans)" }}>{file.name}</p>
-                        <p className="text-[10px] text-[#63637a]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                        <p className="text-sm text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>{file.name}</p>
+                        <p className="text-[10px] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
                           {(file.size / 1024 / 1024).toFixed(1)} MB
                         </p>
                       </div>
@@ -829,18 +781,18 @@ export default function OnboardingClient({
                     </div>
                   ) : (
                     <>
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#63637a" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                         <polyline points="17 8 12 3 7 8" />
                         <line x1="12" y1="3" x2="12" y2="15" />
                       </svg>
-                      <p className="text-sm text-[#ededf0] mb-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                      <p className="text-sm text-[var(--text)] mb-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
                         Drop your resume here
                       </p>
-                      <p className="text-xs text-[#63637a] mb-3" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                      <p className="text-xs text-[var(--muted)] mb-3" style={{ fontFamily: "var(--font-dm-sans)" }}>
                         PDF or Word format &middot; Max 10MB
                       </p>
-                      <span className="text-xs text-[#818cf8] underline" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                      <span className="text-xs text-[var(--teal)] underline" style={{ fontFamily: "var(--font-dm-sans)" }}>
                         Browse files
                       </span>
                     </>
@@ -850,17 +802,17 @@ export default function OnboardingClient({
                 {/* Privacy notice */}
                 <div
                   className="flex items-start gap-3 p-4 rounded-xl mb-4"
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+                  style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#63637a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                   <div>
-                    <p className="text-xs text-[#9494ad]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                    <p className="text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
                       Your resume is private. It is only used for job matching and will never be shared with third parties.
                     </p>
-                    <Link href="/privacy" className="text-[10px] text-[#818cf8] mt-1 inline-block" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                    <Link href="/privacy" className="text-[10px] text-[var(--teal)] mt-1 inline-block" style={{ fontFamily: "var(--font-dm-sans)" }}>
                       See our Privacy Policy
                     </Link>
                   </div>
@@ -869,29 +821,29 @@ export default function OnboardingClient({
                 {/* Feature highlight */}
                 <div
                   className="p-4 rounded-xl mb-6"
-                  style={{ background: "rgba(99,102,241,0.04)", border: "1px solid rgba(99,102,241,0.1)" }}
+                  style={{ background: "rgba(0,153,153,0.04)", border: "1px solid rgba(0,153,153,0.1)" }}
                 >
                   <span
                     className="inline-block text-[9px] px-2 py-0.5 rounded-full mb-2"
-                    style={{ background: "rgba(99,102,241,0.15)", color: "#818cf8", fontFamily: "var(--font-dm-mono)" }}
+                    style={{ background: "rgba(0,153,153,0.15)", color: "var(--teal)", fontFamily: "var(--font-dm-mono)" }}
                   >
                     Feature Highlights
                   </span>
-                  <p className="text-sm text-[#ededf0] font-medium mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  <p className="text-sm text-[var(--text)] font-medium mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
                     Generate Custom Resume For Each Job
                   </p>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-16 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <div className="w-12 h-16 rounded-lg" style={{ background: "var(--surface)", border: "1px solid var(--border2)" }}>
                       <div className="p-1.5 space-y-1">
-                        <div className="h-1 rounded-full" style={{ background: "rgba(255,255,255,0.1)", width: "80%" }} />
-                        <div className="h-1 rounded-full" style={{ background: "rgba(255,255,255,0.1)", width: "60%" }} />
-                        <div className="h-1 rounded-full" style={{ background: "rgba(255,255,255,0.1)", width: "70%" }} />
+                        <div className="h-1 rounded-full" style={{ background: "var(--border2)", width: "80%" }} />
+                        <div className="h-1 rounded-full" style={{ background: "var(--border2)", width: "60%" }} />
+                        <div className="h-1 rounded-full" style={{ background: "var(--border2)", width: "70%" }} />
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="relative w-10 h-10">
                         <svg viewBox="0 0 36 36" className="w-10 h-10 -rotate-90">
-                          <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
+                          <circle cx="18" cy="18" r="15" fill="none" stroke="var(--border)" strokeWidth="3" />
                           <circle cx="18" cy="18" r="15" fill="none" stroke="#22c55e" strokeWidth="3" strokeDasharray={`${0.9 * 94.2} ${94.2}`} strokeLinecap="round" />
                         </svg>
                         <span className="absolute inset-0 flex items-center justify-center text-[8px] text-[#22c55e] font-bold">9.0</span>
@@ -905,8 +857,8 @@ export default function OnboardingClient({
                 <div className="flex justify-between gap-3">
                   <button
                     onClick={() => setStep(2)}
-                    className="px-5 py-2.5 rounded-xl text-sm text-[#9494ad] transition-colors hover:text-[#ededf0]"
-                    style={{ fontFamily: "var(--font-dm-sans)", border: "1px solid rgba(255,255,255,0.06)" }}
+                    className="px-5 py-2.5 rounded-xl text-sm text-[var(--muted2)] transition-colors hover:text-[var(--text)]"
+                    style={{ fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}
                   >
                     &larr; Back
                   </button>
@@ -915,7 +867,7 @@ export default function OnboardingClient({
                     disabled={!file}
                     className="flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm text-white font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
-                      background: file ? "linear-gradient(135deg, #6366f1, #818cf8)" : "rgba(99,102,241,0.2)",
+                      background: file ? "linear-gradient(135deg, #009999, #33b3b3)" : "rgba(0,153,153,0.2)",
                       fontFamily: "var(--font-dm-sans)",
                     }}
                   >
@@ -940,9 +892,9 @@ function Card({ children }: { children: React.ReactNode }) {
     <div
       className="w-full rounded-[20px] p-6 md:p-8"
       style={{
-        background: "rgba(16,16,24,0.8)",
-        border: "1px solid rgba(255,255,255,0.06)",
-        boxShadow: "0 25px 80px rgba(0,0,0,0.5)",
+        background: "var(--card)",
+        border: "1px solid var(--border)",
+        boxShadow: "0 25px 80px rgba(0,0,0,0.08)",
         backdropFilter: "blur(20px)",
       }}
     >
@@ -963,7 +915,7 @@ const PROCESSING_STEPS = [
 
 function ProcessingView({ currentStep }: { currentStep: number }) {
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#050507" }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
       <div className="text-center max-w-md mx-auto px-6">
         {/* Pulsing logo */}
         <motion.div
@@ -1006,16 +958,16 @@ function ProcessingView({ currentStep }: { currentStep: number }) {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   className="w-6 h-6 rounded-full shrink-0"
-                  style={{ border: "2px solid rgba(99,102,241,0.3)", borderTopColor: "#6366f1" }}
+                  style={{ border: "2px solid rgba(0,153,153,0.3)", borderTopColor: "#009999" }}
                 />
               ) : (
-                <div className="w-6 h-6 rounded-full shrink-0" style={{ background: "rgba(255,255,255,0.04)" }} />
+                <div className="w-6 h-6 rounded-full shrink-0" style={{ background: "var(--surface)" }} />
               )}
               <span
                 className="text-sm"
                 style={{
                   fontFamily: "var(--font-dm-sans)",
-                  color: i <= currentStep ? "#ededf0" : "#63637a",
+                  color: i <= currentStep ? "var(--text)" : "var(--muted)",
                 }}
               >
                 {label}
@@ -1028,7 +980,7 @@ function ProcessingView({ currentStep }: { currentStep: number }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="text-xs text-[#63637a] mt-8"
+          className="text-xs text-[var(--muted)] mt-8"
           style={{ fontFamily: "var(--font-dm-sans)" }}
         >
           Applying advanced AI to create your unique suitability profile...
@@ -1042,26 +994,20 @@ function ProcessingView({ currentStep }: { currentStep: number }) {
 
 function WelcomeModal({
   count,
-  expLevels,
+  expLevel,
   recMode,
-  onChangeExpLevels,
+  onChangeExpLevel,
   onChangeRecMode,
   onConfirm,
 }: {
   count: number;
-  expLevels: string[];
+  expLevel: string;
   recMode: string;
-  onChangeExpLevels: (levels: string[]) => void;
+  onChangeExpLevel: (level: string) => void;
   onChangeRecMode: (mode: string) => void;
   onConfirm: () => void;
 }) {
   const [loading, setLoading] = useState(false);
-
-  const toggleLevel = (id: string) => {
-    onChangeExpLevels(
-      expLevels.includes(id) ? expLevels.filter((l) => l !== id) : [...expLevels, id]
-    );
-  };
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -1069,16 +1015,16 @@ function WelcomeModal({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "rgba(5,5,7,0.95)", backdropFilter: "blur(20px)" }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--bg)", backdropFilter: "blur(20px)" }}>
       <motion.div
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
         className="w-full max-w-lg rounded-[20px] p-6 md:p-8"
         style={{
-          background: "rgba(16,16,24,0.9)",
-          border: "1px solid rgba(255,255,255,0.06)",
-          boxShadow: "0 30px 100px rgba(0,0,0,0.6)",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          boxShadow: "0 30px 100px rgba(0,0,0,0.08)",
         }}
       >
         {/* Logo */}
@@ -1090,31 +1036,31 @@ function WelcomeModal({
             SViam
           </span>
           <h2
-            className="text-xl md:text-2xl text-[#ededf0]"
+            className="text-xl md:text-2xl text-[var(--text)]"
             style={{ fontFamily: "var(--font-serif)" }}
           >
             Welcome! We found {count || "several"} roles that fit you best.
           </h2>
-          <p className="text-xs text-[#9494ad] mt-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
+          <p className="text-xs text-[var(--muted2)] mt-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
             Based on your resume and preferences
           </p>
         </div>
 
         {/* Experience levels */}
-        <p className="text-xs text-[#9494ad] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
+        <p className="text-xs text-[var(--muted2)] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
           Recommended experience levels
         </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
           {EXP_LEVELS.map((level) => (
             <button
               key={level.id}
-              onClick={() => toggleLevel(level.id)}
+              onClick={() => onChangeExpLevel(level.id)}
               className="flex items-center gap-2 p-2 rounded-lg text-xs transition-all"
               style={{
                 fontFamily: "var(--font-dm-sans)",
-                background: expLevels.includes(level.id) ? "rgba(99,102,241,0.1)" : "rgba(255,255,255,0.02)",
-                border: `1px solid ${expLevels.includes(level.id) ? "rgba(99,102,241,0.3)" : "rgba(255,255,255,0.06)"}`,
-                color: expLevels.includes(level.id) ? "#818cf8" : "#9494ad",
+                background: expLevel === level.id ? "rgba(0,153,153,0.1)" : "var(--surface)",
+                border: `1px solid ${expLevel === level.id ? "rgba(0,153,153,0.35)" : "var(--border)"}`,
+                color: expLevel === level.id ? "var(--teal)" : "var(--muted2)",
               }}
             >
               <span>{level.icon}</span>
@@ -1124,7 +1070,7 @@ function WelcomeModal({
         </div>
 
         {/* Recommendation mode */}
-        <p className="text-xs text-[#9494ad] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
+        <p className="text-xs text-[var(--muted2)] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
           Job recommendation preference
         </p>
         <div className="grid grid-cols-3 gap-2 mb-8">
@@ -1134,12 +1080,12 @@ function WelcomeModal({
               onClick={() => onChangeRecMode(mode.id)}
               className="flex flex-col items-center p-2.5 rounded-xl text-center transition-all"
               style={{
-                background: recMode === mode.id ? "rgba(99,102,241,0.08)" : "rgba(255,255,255,0.02)",
-                border: `1px solid ${recMode === mode.id ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.06)"}`,
+                background: recMode === mode.id ? "rgba(0,153,153,0.08)" : "var(--surface)",
+                border: `1px solid ${recMode === mode.id ? "rgba(0,153,153,0.4)" : "var(--border)"}`,
               }}
             >
               <span className="text-sm mb-0.5">{mode.icon}</span>
-              <span className="text-[10px] text-[#ededf0]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+              <span className="text-[10px] text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
                 {mode.label}
               </span>
             </button>
@@ -1152,7 +1098,7 @@ function WelcomeModal({
           disabled={loading}
           className="w-full py-3 rounded-xl text-sm text-white font-medium transition-all disabled:opacity-60"
           style={{
-            background: "linear-gradient(135deg, #6366f1, #818cf8)",
+            background: "linear-gradient(135deg, #009999, #33b3b3)",
             fontFamily: "var(--font-dm-sans)",
           }}
         >

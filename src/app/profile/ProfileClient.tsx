@@ -10,7 +10,8 @@ import {
   IconX,
   IconPlus,
 } from "@tabler/icons-react";
-import { getProfile, updateProfile } from "@/lib/api";
+import { getProfile, updateProfile, deleteAccount } from "@/lib/api";
+import { createBrowserClient } from "@supabase/ssr";
 import type { AtsProfile, AutoApplySettings } from "@/lib/api";
 
 const INDIAN_CITIES = [
@@ -73,6 +74,12 @@ export default function ProfileClient({ token, email }: { token: string; email: 
   // Tag inputs
   const [langInput, setLangInput] = useState("");
   const [excludeInput, setExcludeInput] = useState("");
+
+  // Delete account
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -257,7 +264,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
                 </span>
                 <input value={publicSlug} onChange={(e) => setPublicSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
                   placeholder="your-name"
-                  className="flex-1 px-3 py-2 rounded-r-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                  className="flex-1 px-3 py-2 rounded-r-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--teal)]"
                   style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }} />
               </div>
               {publicSlug && (
@@ -324,7 +331,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {ats.languages.map((lang) => (
                   <span key={lang} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.65rem]"
-                    style={{ background: "rgba(99,102,241,0.1)", color: "var(--accent)", border: "1px solid rgba(99,102,241,0.2)", fontFamily: "var(--font-dm-sans)" }}>
+                    style={{ background: "rgba(99,102,241,0.1)", color: "var(--teal)", border: "1px solid rgba(99,102,241,0.2)", fontFamily: "var(--font-dm-sans)" }}>
                     {lang}
                     <button onClick={() => removeTag(ats.languages, lang, (v) => setAts({ ...ats, languages: v }))} className="hover:text-[#ef4444]">
                       <IconX size={10} />
@@ -346,9 +353,15 @@ export default function ProfileClient({ token, email }: { token: string; email: 
 
         {/* ── Section 5: Auto-Apply Settings ── */}
         <Card title="Auto-Apply Settings" accent>
-          <p className="text-xs text-[var(--muted2)] mb-4" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
-            Configure how the AI auto-apply agent behaves when applying on your behalf.
-          </p>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="px-2 py-0.5 rounded-full text-[0.6rem] font-semibold uppercase tracking-wider"
+              style={{ background: "rgba(245,158,11,0.12)", color: "#f59e0b", fontFamily: "var(--font-dm-mono)" }}>
+              Coming Soon
+            </span>
+            <p className="text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+              Auto-apply is in development. Set your preferences now so they are ready when it launches.
+            </p>
+          </div>
 
           <div className="space-y-4">
             {/* Enable toggle */}
@@ -356,7 +369,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
               <label className="text-sm text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>Enable Auto-Apply</label>
               <button onClick={() => setAutoApply({ ...autoApply, enabled: !autoApply.enabled })}
                 className="w-11 h-6 rounded-full relative transition-colors"
-                style={{ background: autoApply.enabled ? "var(--accent)" : "var(--surface)", border: "1px solid var(--border)" }}>
+                style={{ background: autoApply.enabled ? "var(--teal)" : "var(--surface)", border: "1px solid var(--border)" }}>
                 <motion.div className="w-4 h-4 rounded-full bg-white absolute top-0.5"
                   animate={{ left: autoApply.enabled ? 22 : 2 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} />
               </button>
@@ -366,7 +379,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
             <Field label={`Max Applications Per Day: ${autoApply.max_per_day}`}>
               <input type="range" min={1} max={50} value={autoApply.max_per_day}
                 onChange={(e) => setAutoApply({ ...autoApply, max_per_day: Number(e.target.value) })}
-                className="w-full accent-[var(--accent)]" />
+                className="w-full accent-[var(--teal)]" />
               <div className="flex justify-between text-[0.55rem] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-mono)" }}>
                 <span>1</span><span>50</span>
               </div>
@@ -376,7 +389,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
             <Field label={`Minimum Match Score: ${autoApply.min_match_score}%`}>
               <input type="range" min={30} max={95} step={5} value={autoApply.min_match_score}
                 onChange={(e) => setAutoApply({ ...autoApply, min_match_score: Number(e.target.value) })}
-                className="w-full accent-[var(--accent)]" />
+                className="w-full accent-[var(--teal)]" />
               <div className="flex justify-between text-[0.55rem] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-mono)" }}>
                 <span>30%</span><span>95%</span>
               </div>
@@ -399,7 +412,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
                       style={{
                         background: selected ? "rgba(99,102,241,0.12)" : "var(--surface)",
                         border: selected ? "1px solid rgba(99,102,241,0.3)" : "1px solid var(--border)",
-                        color: selected ? "var(--accent)" : "var(--muted2)",
+                        color: selected ? "var(--teal)" : "var(--muted2)",
                         fontFamily: "var(--font-dm-sans)",
                       }}>
                       {selected && <IconCheck size={10} className="inline mr-1" />}{m}
@@ -437,7 +450,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
               <label className="text-sm text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>Always Include Cover Letter</label>
               <button onClick={() => setAutoApply({ ...autoApply, always_include_cover_letter: !autoApply.always_include_cover_letter })}
                 className="w-11 h-6 rounded-full relative transition-colors"
-                style={{ background: autoApply.always_include_cover_letter ? "var(--accent)" : "var(--surface)", border: "1px solid var(--border)" }}>
+                style={{ background: autoApply.always_include_cover_letter ? "var(--teal)" : "var(--surface)", border: "1px solid var(--border)" }}>
                 <motion.div className="w-4 h-4 rounded-full bg-white absolute top-0.5"
                   animate={{ left: autoApply.always_include_cover_letter ? 22 : 2 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} />
               </button>
@@ -497,7 +510,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
             <Field label={`Min Score: ${newAlert.min_score}%`}>
               <input type="range" min={30} max={95} step={5} value={newAlert.min_score}
                 onChange={(e) => setNewAlert({ ...newAlert, min_score: Number(e.target.value) })}
-                className="w-full accent-[var(--accent)]" />
+                className="w-full accent-[var(--teal)]" />
             </Field>
           </div>
           <button onClick={() => {
@@ -527,7 +540,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
                 </div>
                 <button onClick={() => setEmailPrefs({ ...emailPrefs, [key]: !emailPrefs[key] })}
                   className="w-11 h-6 rounded-full relative transition-colors"
-                  style={{ background: emailPrefs[key] ? "var(--accent)" : "var(--surface)", border: "1px solid var(--border)" }}>
+                  style={{ background: emailPrefs[key] ? "var(--teal)" : "var(--surface)", border: "1px solid var(--border)" }}>
                   <motion.div className="w-4 h-4 rounded-full bg-white absolute top-0.5"
                     animate={{ left: emailPrefs[key] ? 22 : 2 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} />
                 </button>
@@ -543,7 +556,7 @@ export default function ProfileClient({ token, email }: { token: string; email: 
                       style={{
                         background: emailPrefs.frequency === f ? "rgba(99,102,241,0.12)" : "var(--surface)",
                         border: emailPrefs.frequency === f ? "1px solid rgba(99,102,241,0.3)" : "1px solid var(--border)",
-                        color: emailPrefs.frequency === f ? "var(--accent)" : "var(--muted2)",
+                        color: emailPrefs.frequency === f ? "var(--teal)" : "var(--muted2)",
                         fontFamily: "var(--font-dm-sans)",
                       }}>
                       {f}
@@ -561,10 +574,97 @@ export default function ProfileClient({ token, email }: { token: string; email: 
         )}
         <button onClick={handleSave} disabled={saving}
           className="w-full py-3 rounded-[12px] text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
-          style={{ background: "linear-gradient(135deg, var(--accent), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(108,99,255,0.3)" }}>
+          style={{ background: "linear-gradient(135deg, var(--teal), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(0,153,153,0.3)" }}>
           {saving ? <IconLoader2 size={16} className="animate-spin" /> : saved ? <><IconCheck size={16} /> Saved!</> : "Save Profile"}
         </button>
+
+        {/* ── Danger Zone ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-[16px] mt-4"
+          style={{ background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.2)" }}>
+          <h2 className="text-[var(--text)] text-base font-semibold mb-1" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>
+            Danger Zone
+          </h2>
+          <p className="text-xs text-[var(--muted2)] mb-4" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+            Permanently delete your account and all associated data. This action cannot be undone.
+          </p>
+          <button onClick={() => setShowDeleteModal(true)}
+            className="px-4 py-2 rounded-[8px] text-xs font-medium transition-all hover:brightness-110"
+            style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontFamily: "var(--font-dm-sans)" }}>
+            Delete Account
+          </button>
+        </motion.div>
       </div>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <>
+          <div className="fixed inset-0 z-[60]" style={{ background: "rgba(0,0,0,0.6)" }}
+            onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); setDeleteError(""); }} />
+          <div className="fixed inset-0 z-[61] flex items-center justify-center px-6">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full max-w-sm p-6 rounded-[20px]"
+              style={{ background: "var(--card)", border: "1px solid rgba(239,68,68,0.3)" }}
+            >
+              <h3 className="text-[var(--text)] text-base font-semibold mb-2" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>
+                Delete your account?
+              </h3>
+              <p className="text-xs text-[var(--muted2)] mb-4 leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+                This will permanently delete your profile, resumes, applications, saved jobs, and all associated data. You cannot undo this.
+              </p>
+              <p className="text-xs text-[var(--muted)] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                Type <strong className="text-[var(--text)]">DELETE</strong> to confirm:
+              </p>
+              <input
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder="DELETE"
+                className="w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[#ef4444] mb-3"
+                style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-mono)" }}
+              />
+              {deleteError && (
+                <p className="text-xs mb-3" style={{ color: "#ef4444", fontFamily: "var(--font-dm-sans)" }}>{deleteError}</p>
+              )}
+              <div className="flex gap-2">
+                <button onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); setDeleteError(""); }}
+                  className="flex-1 py-2.5 rounded-[10px] text-xs font-medium"
+                  style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (deleteConfirm !== "DELETE") { setDeleteError("Please type DELETE to confirm."); return; }
+                    setDeleting(true);
+                    setDeleteError("");
+                    try {
+                      await deleteAccount(token);
+                      try { sessionStorage.clear(); } catch { /* ignore */ }
+                      try { localStorage.removeItem("sviam-role"); localStorage.removeItem("sviam_dismissed"); } catch { /* ignore */ }
+                      const supabase = createBrowserClient(
+                        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                      );
+                      await supabase.auth.signOut();
+                      window.location.href = "/";
+                    } catch (err) {
+                      setDeleteError(err instanceof Error ? err.message : "Failed to delete account");
+                      setDeleting(false);
+                    }
+                  }}
+                  disabled={deleting || deleteConfirm !== "DELETE"}
+                  className="flex-1 py-2.5 rounded-[10px] text-xs font-semibold text-white transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ background: "#ef4444", fontFamily: "var(--font-dm-sans)" }}>
+                  {deleting ? "Deleting..." : "Delete Forever"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </>
+      )}
     </main>
   );
 }
@@ -605,7 +705,7 @@ function Input({ value, onChange, placeholder, className, onKeyDown }: {
 }) {
   return (
     <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} onKeyDown={onKeyDown}
-      className={`w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--accent)] ${className || ""}`}
+      className={`w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--teal)] ${className || ""}`}
       style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }} />
   );
 }

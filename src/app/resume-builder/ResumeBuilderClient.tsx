@@ -259,7 +259,7 @@ function UploadMode({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             onClick={() => !parsing && inputRef.current?.click()}
-            className="p-8 rounded-[16px] text-center cursor-pointer transition-all duration-200 hover:border-[var(--accent)]"
+            className="p-8 rounded-[16px] text-center cursor-pointer transition-all duration-200 hover:border-[var(--teal)]"
             style={{
               background: "var(--card)",
               border: "2px dashed var(--border)",
@@ -271,7 +271,7 @@ function UploadMode({
                   className="w-8 h-8 rounded-full border-2 mx-auto mb-3"
                   style={{
                     borderColor: "var(--border)",
-                    borderTopColor: "var(--accent)",
+                    borderTopColor: "var(--teal)",
                   }}
                   animate={{ rotate: 360 }}
                   transition={{
@@ -325,7 +325,7 @@ function UploadMode({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             onClick={onStartScratch}
-            className="p-8 rounded-[16px] text-center cursor-pointer transition-all duration-200 hover:border-[var(--accent)]"
+            className="p-8 rounded-[16px] text-center cursor-pointer transition-all duration-200 hover:border-[var(--teal)]"
             style={{
               background: "var(--card)",
               border: "2px dashed var(--border)",
@@ -399,7 +399,7 @@ function EditMode({
           onClick={onPreview}
           className="px-5 py-2 rounded-[10px] text-sm font-medium text-white"
           style={{
-            background: "var(--accent)",
+            background: "var(--teal)",
             fontFamily: "var(--font-dm-sans)",
           }}
         >
@@ -561,7 +561,7 @@ function PreviewMode({
               onClick={onDownload}
               className="px-4 py-2 rounded-[8px] text-xs font-medium text-white flex items-center gap-1"
               style={{
-                background: "var(--accent)",
+                background: "var(--teal)",
                 fontFamily: "var(--font-dm-sans)",
               }}
             >
@@ -597,7 +597,7 @@ function PreviewMode({
             </p>
             {changes.map((c, i) => (
               <div key={i} className="text-xs space-y-1">
-                <p className="font-medium text-[var(--accent)]">
+                <p className="font-medium text-[var(--teal)]">
                   {c.section}
                 </p>
                 <p className="text-[var(--muted)]line-through">{c.original}</p>
@@ -686,7 +686,7 @@ function PreviewMode({
                   disabled={tailoring || !tailorJD.trim()}
                   className="px-4 py-2 rounded-[8px] text-xs font-medium text-white disabled:opacity-50"
                   style={{
-                    background: "var(--accent)",
+                    background: "var(--teal)",
                     fontFamily: "var(--font-dm-sans)",
                   }}
                 >
@@ -956,7 +956,7 @@ function SummarySection({
             handleGenerate();
           }}
           disabled={generating}
-          className="flex items-center gap-1 text-xs text-[var(--accent)] hover:underline"
+          className="flex items-center gap-1 text-xs text-[var(--teal)] hover:underline"
           style={{ fontFamily: "var(--font-dm-sans)" }}
         >
           <IconSparkles size={12} />
@@ -1027,7 +1027,7 @@ function ExperienceSection({
         ))}
         <button
           onClick={addExp}
-          className="flex items-center gap-1 text-xs text-[var(--accent)]"
+          className="flex items-center gap-1 text-xs text-[var(--teal)]"
           style={{ fontFamily: "var(--font-dm-sans)" }}
         >
           <IconPlus size={14} />
@@ -1142,7 +1142,7 @@ function ExperienceEntry({
           <button
             onClick={handleImprove}
             disabled={improving}
-            className="flex items-center gap-1 text-xs text-[var(--accent)]"
+            className="flex items-center gap-1 text-xs text-[var(--teal)]"
             style={{ fontFamily: "var(--font-dm-sans)" }}
           >
             <IconSparkles size={12} />
@@ -1265,7 +1265,7 @@ function EducationSection({
         ))}
         <button
           onClick={addEdu}
-          className="flex items-center gap-1 text-xs text-[var(--accent)]"
+          className="flex items-center gap-1 text-xs text-[var(--teal)]"
           style={{ fontFamily: "var(--font-dm-sans)" }}
         >
           <IconPlus size={14} />
@@ -1327,7 +1327,7 @@ function SkillsSection({
             handleSuggest();
           }}
           disabled={suggesting}
-          className="flex items-center gap-1 text-xs text-[var(--accent)]"
+          className="flex items-center gap-1 text-xs text-[var(--teal)]"
           style={{ fontFamily: "var(--font-dm-sans)" }}
         >
           <IconSparkles size={12} />
@@ -1391,9 +1391,9 @@ function SkillsSection({
                   addSkill(s);
                   setSuggestions((prev) => prev.filter((_, j) => j !== i));
                 }}
-                className="px-3 py-1 rounded-full text-xs text-[var(--accent)] transition-colors hover:bg-[var(--accent)] hover:text-white"
+                className="px-3 py-1 rounded-full text-xs text-[var(--teal)] transition-colors hover:bg-[var(--teal)] hover:text-white"
                 style={{
-                  border: "1px solid var(--accent)",
+                  border: "1px solid var(--teal)",
                   fontFamily: "var(--font-dm-sans)",
                 }}
               >
@@ -1471,7 +1471,7 @@ function CertificationsSection({
         ))}
         <button
           onClick={addCert}
-          className="flex items-center gap-1 text-xs text-[var(--accent)]"
+          className="flex items-center gap-1 text-xs text-[var(--teal)]"
           style={{ fontFamily: "var(--font-dm-sans)" }}
         >
           <IconPlus size={14} />

@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useInView, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
+import { useInView, usePrefersReducedMotion } from "@/hooks/useInView";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -21,23 +21,11 @@ const chatMessages = [
   },
 ];
 
-// No standalone variants — inline animation used instead
-
 export default function SeekerVisaPrep() {
-  const ref = useRef(null);
   const numRef = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-50px" });
-  const reducedMotion = useReducedMotion();
+  const { ref, inView } = useInView<HTMLElement>({ once: true, margin: "-50px" });
+  const reducedMotion = usePrefersReducedMotion();
   const [counted, setCounted] = useState(false);
-
-  // Scroll-driven opacity for the huge number
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "center center"],
-  });
-  const numScale = useTransform(scrollYProgress, [0, 0.5], [0.8, 1]);
-  const numOpacity = useTransform(scrollYProgress, [0, 0.4], [0, 1]);
-  const numRotate = useTransform(scrollYProgress, [0, 0.5], [5, 0]);
 
   useEffect(() => {
     if (!numRef.current || counted || reducedMotion) {
@@ -69,15 +57,14 @@ export default function SeekerVisaPrep() {
   return (
     <section className="relative z-10 py-8 px-6 overflow-hidden" ref={ref}>
       <div className="max-w-7xl mx-auto">
-        {/* Full-viewport stat — the emotional climax */}
+        {/* Full-viewport stat */}
         <div className="relative min-h-[70vh] flex flex-col items-center justify-center mb-16">
           {/* Giant background number */}
-          <motion.div
+          <div
             className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
             style={{
-              scale: reducedMotion ? 1 : numScale,
-              opacity: reducedMotion ? 0.04 : numOpacity,
-              rotateX: reducedMotion ? 0 : numRotate,
+              animation: reducedMotion ? "none" : "bgNumReveal 1s ease forwards",
+              opacity: reducedMotion ? 0.04 : undefined,
             }}
           >
             <span
@@ -91,35 +78,34 @@ export default function SeekerVisaPrep() {
             >
               74
             </span>
-          </motion.div>
+          </div>
 
           {/* Decorative rings around the stat */}
           {!reducedMotion && (
             <>
-              <motion.div
+              <div
                 className="absolute w-[300px] h-[300px] rounded-full border pointer-events-none"
-                style={{ borderColor: "rgba(0,212,170,0.05)" }}
-                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                style={{
+                  borderColor: "rgba(0,212,170,0.05)",
+                  animation: "pulseRing 4s ease-in-out infinite",
+                }}
               />
-              <motion.div
+              <div
                 className="absolute w-[500px] h-[500px] rounded-full border pointer-events-none"
-                style={{ borderColor: "rgba(0,212,170,0.03)" }}
-                animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.05, 0.2], rotate: [0, 180, 360] }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                style={{
+                  borderColor: "rgba(0,212,170,0.03)",
+                  animation: "pulseRing 8s linear infinite",
+                }}
               />
             </>
           )}
 
           {/* Foreground content */}
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 50, scale: 0.95 }}
-            animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-            transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
-            className="relative text-center"
+          <div
+            className={`relative text-center anim-base anim-fade-up ${inView ? "in-view" : ""}`}
           >
             <div className="flex items-baseline justify-center gap-3 mb-6">
-              <motion.span
+              <span
                 ref={numRef}
                 style={{
                   fontFamily: "var(--font-display)",
@@ -127,93 +113,72 @@ export default function SeekerVisaPrep() {
                   lineHeight: 0.85,
                   letterSpacing: "-0.05em",
                   color: "var(--teal)",
+                  animation: !reducedMotion && counted ? "glowPulse 3s ease-in-out infinite" : "none",
                 }}
-                animate={
-                  reducedMotion || !counted
-                    ? {}
-                    : { textShadow: ["0 0 30px rgba(0,212,170,0.3)", "0 0 60px rgba(0,212,170,0.5)", "0 0 30px rgba(0,212,170,0.3)"] }
-                }
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               >
                 {reducedMotion ? "74" : "0"}
-              </motion.span>
-              <motion.span
+              </span>
+              <span
+                className={`anim-base anim-fade-left stagger-5 ${inView ? "in-view" : ""}`}
                 style={{
                   fontFamily: "var(--font-display)",
                   fontSize: "clamp(3rem, 8vw, 6rem)",
                   color: "var(--teal)",
                   opacity: 0.5,
                 }}
-                initial={reducedMotion ? false : { opacity: 0, x: -20 }}
-                animate={inView ? { opacity: 0.5, x: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.5 }}
               >
                 %
-              </motion.span>
+              </span>
             </div>
 
-            <motion.h2
-              className="mb-4"
+            <h2
+              className={`mb-4 anim-base anim-fade-up stagger-3 ${inView ? "in-view" : ""}`}
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(1.4rem, 2.5vw, 2rem)",
                 lineHeight: 1.2,
                 color: "var(--text)",
               }}
-              initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.3 }}
             >
               of Indian students get rejected
               <br />
               at the F-1 interview.
-            </motion.h2>
+            </h2>
 
-            <motion.p
-              className="text-[var(--muted2)] max-w-md mx-auto mb-2"
+            <p
+              className={`text-[var(--muted2)] max-w-md mx-auto mb-2 anim-base anim-fade-up stagger-5 ${inView ? "in-view" : ""}`}
               style={{
                 fontFamily: "var(--font-dm-sans)",
                 fontWeight: 300,
                 lineHeight: 1.6,
                 fontSize: "0.95rem",
               }}
-              initial={reducedMotion ? false : { opacity: 0, y: 15 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.5 }}
             >
               You&apos;ve paid &#8377;65,000 in fees before you even walk into
               the consulate. One wrong answer and it&apos;s gone.
               <br />
               SViam drills you until your story is bulletproof.
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
         </div>
 
-        {/* Chat UI mockup — with scanline effect */}
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 40, scale: 0.95 }}
-          animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-          transition={{ duration: 0.7, delay: 0.3, ease: [0.33, 1, 0.68, 1] }}
-          className="max-w-xl mx-auto"
+        {/* Chat UI mockup */}
+        <div
+          className={`max-w-xl mx-auto anim-base anim-fade-up stagger-3 ${inView ? "in-view" : ""}`}
         >
-          <motion.div
-            className="rounded-[16px] overflow-hidden scanlines"
+          <div
+            className="rounded-[16px] overflow-hidden scanlines hover-glow"
             style={{
               background: "var(--card)",
               border: "1px solid var(--border)",
               boxShadow:
                 "0 0 60px rgba(0,212,170,0.06), 0 20px 60px rgba(0,0,0,0.3)",
             }}
-            whileHover={reducedMotion ? {} : { boxShadow: "0 0 80px rgba(0,212,170,0.1), 0 25px 70px rgba(0,0,0,0.4)" }}
-            transition={{ duration: 0.3 }}
           >
             {/* Header */}
-            <motion.div
-              className="flex items-center justify-between px-5 py-4"
+            <div
+              className={`flex items-center justify-between px-5 py-4 anim-base anim-fade-up stagger-4 ${inView ? "in-view" : ""}`}
               style={{ borderBottom: "1px solid var(--border)" }}
-              initial={reducedMotion ? false : { opacity: 0 }}
-              animate={inView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.4, delay: 0.4 }}
             >
               <div className="flex items-center gap-2">
                 <span className="live-dot" />
@@ -230,34 +195,24 @@ export default function SeekerVisaPrep() {
               >
                 Chennai Consulate
               </span>
-            </motion.div>
+            </div>
 
             {/* Messages */}
             <div className="p-5 space-y-4">
               {chatMessages.map((msg, i) => (
-                <motion.div
+                <div
                   key={i}
-                  initial={reducedMotion ? false : {
-                    opacity: 0,
-                    x: msg.role === "user" ? 40 : -40,
-                    scale: 0.9,
-                    filter: "blur(4px)",
-                  }}
-                  animate={inView ? { opacity: 1, x: 0, scale: 1, filter: "blur(0px)" } : {}}
-                  transition={{ type: "spring", stiffness: 200, damping: 25, delay: 0.6 + i * 0.25 }}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} anim-base ${msg.role === "user" ? "anim-fade-right" : "anim-fade-left"} stagger-${i + 5} ${inView ? "in-view" : ""}`}
                 >
-                  <motion.div
-                    className="max-w-[85%] p-3 rounded-[10px]"
+                  <div
+                    className="max-w-[85%] p-3 rounded-[10px] hover-lift"
                     style={{
                       background:
                         msg.role === "vo"
                           ? "var(--surface)"
-                          : "rgba(108,99,255,0.12)",
+                          : "rgba(0,153,153,0.12)",
                       border: "1px solid var(--border)",
                     }}
-                    whileHover={reducedMotion ? {} : { scale: 1.02, y: -2 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   >
                     <span
                       className="text-[10px] font-medium block mb-1"
@@ -277,16 +232,13 @@ export default function SeekerVisaPrep() {
                     >
                       {msg.text}
                     </p>
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
               ))}
 
               {/* Typing indicator */}
-              <motion.div
-                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.4, delay: 1.4, type: "spring" }}
-                className="flex justify-start"
+              <div
+                className={`flex justify-start anim-base anim-fade-up stagger-9 ${inView ? "in-view" : ""}`}
               >
                 <div
                   className="px-4 py-3 rounded-[10px] flex items-center gap-1.5"
@@ -296,42 +248,30 @@ export default function SeekerVisaPrep() {
                   }}
                 >
                   {[0, 1, 2].map((dot) => (
-                    <motion.span
+                    <span
                       key={dot}
                       className="w-1.5 h-1.5 rounded-full bg-[var(--muted)]"
-                      animate={
-                        reducedMotion
-                          ? {}
-                          : {
-                              opacity: [0.3, 1, 0.3],
-                              scale: [0.8, 1.2, 0.8],
-                              y: [0, -3, 0],
-                            }
-                      }
-                      transition={{
-                        duration: 0.8,
-                        repeat: Infinity,
-                        delay: dot * 0.15,
+                      style={{
+                        animation: reducedMotion
+                          ? "none"
+                          : `dotBounce 0.8s ease infinite ${dot * 0.15}s`,
                       }}
                     />
                   ))}
                 </div>
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Source */}
-          <motion.p
-            className="mt-5 text-center text-[var(--muted)]"
+          <p
+            className={`mt-5 text-center text-[var(--muted)] anim-base anim-fade-up stagger-10 ${inView ? "in-view" : ""}`}
             style={{ fontFamily: "var(--font-dm-mono)", fontSize: "0.6rem" }}
-            initial={reducedMotion ? false : { opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.5, delay: 1.6 }}
           >
             GradPilot India Visa Data, Aug 2025 · SEVIS + MRV + Visa
             Integrity Fee, 2026
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
       </div>
     </section>
   );

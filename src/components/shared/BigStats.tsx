@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { useInView, usePrefersReducedMotion } from "@/hooks/useInView";
 import { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -24,7 +24,7 @@ const stats: StatItem[] = [
     suffix: " hrs",
     label: "burned per job search. Gone.",
     source: "LinkedIn Hiring Posts, 2025",
-    accent: "var(--accent)",
+    accent: "var(--teal)",
   },
   {
     value: 150000,
@@ -54,7 +54,7 @@ function CountUpStat({ stat, delay }: { stat: StatItem; delay: number }) {
   const numRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
 
   const formatValue = (v: number) => {
     if (stat.format === "rupee")
@@ -113,40 +113,12 @@ function CountUpStat({ stat, delay }: { stat: StatItem; delay: number }) {
   );
 }
 
-const statVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.7,
-      delay: 0.2 + i * 0.12,
-      ease: [0.33, 1, 0.68, 1] as const,
-    },
-  }),
-};
-
-const lineVariants = {
-  hidden: { scaleX: 0 },
-  visible: (i: number) => ({
-    scaleX: 1,
-    transition: {
-      duration: 0.6,
-      delay: 0.15 + i * 0.12,
-      ease: [0.33, 1, 0.68, 1] as const,
-    },
-  }),
-};
-
 export default function BigStats() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const reducedMotion = useReducedMotion();
+  const { ref, inView } = useInView<HTMLElement>({ margin: "-80px" });
 
   return (
     <section
-      className="relative z-10 py-28 px-6 overflow-hidden"
+      className="relative z-10 py-28 px-6 overflow-hidden cv-auto"
       ref={ref}
       style={{
         background: "var(--surface)",
@@ -155,36 +127,21 @@ export default function BigStats() {
       }}
     >
       {/* Subtle gradient accent */}
-      <motion.div
-        className="absolute top-0 left-0 right-0 h-px"
+      <div
+        className={`absolute top-0 left-0 right-0 h-px anim-base anim-scale-x ${inView ? "in-view" : ""}`}
         style={{
-          background:
-            "linear-gradient(90deg, transparent, var(--accent), var(--teal), transparent)",
+          background: "linear-gradient(90deg, transparent, var(--teal), var(--teal), transparent)",
           opacity: 0.3,
           transformOrigin: "center",
+          animationDuration: "1.2s",
         }}
-        initial={reducedMotion ? false : { scaleX: 0 }}
-        animate={inView ? { scaleX: 1 } : {}}
-        transition={{ duration: 1.2, ease: [0.33, 1, 0.68, 1] }}
       />
 
       <div className="max-w-6xl mx-auto">
         {/* Editorial headline */}
         <div className="overflow-hidden mb-20">
-          <motion.h2
-            initial={
-              reducedMotion
-                ? false
-                : { y: "100%", rotateX: -20, filter: "blur(8px)" }
-            }
-            animate={
-              inView ? { y: 0, rotateX: 0, filter: "blur(0px)" } : {}
-            }
-            transition={{
-              duration: 0.8,
-              ease: [0.33, 1, 0.68, 1],
-            }}
-            className="text-center"
+          <h2
+            className={`text-center anim-base anim-reveal-up ${inView ? "in-view" : ""}`}
             style={{
               fontFamily: "var(--font-display)",
               fontSize: "clamp(2rem, 4vw, 3.2rem)",
@@ -193,33 +150,29 @@ export default function BigStats() {
               fontWeight: 600,
               color: "var(--muted2)",
               transformOrigin: "bottom",
+              animationDuration: "0.8s",
             }}
           >
             Everyone knows the system is rigged. Here are the receipts.
-          </motion.h2>
+          </h2>
         </div>
 
-        {/* Stats — horizontal on desktop, each staggered */}
+        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-8">
           {stats.map((stat, i) => (
-            <motion.div
+            <div
               key={stat.label}
-              custom={i}
-              variants={reducedMotion ? undefined : statVariants}
-              initial="hidden"
-              animate={inView ? "visible" : "hidden"}
-              className="relative group"
-              whileHover={reducedMotion ? {} : { y: -6 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className={`relative group hover-lift anim-base anim-fade-up ${inView ? "in-view" : ""}`}
+              style={{ animationDelay: `${0.2 + i * 0.12}s` }}
             >
-              {/* Accent line top — animated grow */}
-              <motion.div
-                className="w-8 h-[2px] mb-5"
-                style={{ background: stat.accent, transformOrigin: "left" }}
-                custom={i}
-                variants={reducedMotion ? undefined : lineVariants}
-                initial="hidden"
-                animate={inView ? "visible" : "hidden"}
+              {/* Accent line top */}
+              <div
+                className={`w-8 h-[2px] mb-5 anim-base anim-scale-x ${inView ? "in-view" : ""}`}
+                style={{
+                  background: stat.accent,
+                  transformOrigin: "left",
+                  animationDelay: `${0.15 + i * 0.12}s`,
+                }}
               />
               <CountUpStat stat={stat} delay={i * 0.15} />
               <p
@@ -237,7 +190,7 @@ export default function BigStats() {
               >
                 {stat.source}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

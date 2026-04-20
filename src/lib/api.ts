@@ -734,4 +734,97 @@ export async function getProfileFull(token: string): Promise<ProfileFull> {
   return res.json();
 }
 
+export async function getTrendingJobs(limit?: number): Promise<MatchResponse> {
+  const params = new URLSearchParams();
+  if (limit) params.set("limit", String(limit));
+  const qs = params.toString();
+  const res = await fetch(`${API_URL}/jobs/trending${qs ? `?${qs}` : ""}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to fetch trending jobs");
+  }
+  return res.json();
+}
+
+export async function deleteAccount(token: string): Promise<void> {
+  const res = await fetch(`${API_URL}/profile/me`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to delete account");
+  }
+}
+
+// Job cities for SEO pages
+export type CityCount = { city: string; count: number };
+
+export async function getJobCities(): Promise<{ cities: CityCount[] }> {
+  const res = await fetch(`${API_URL}/jobs/cities`);
+  if (!res.ok) return { cities: [] };
+  return res.json();
+}
+
+// Billing API
+export type SubscriptionStatus = {
+  tier: "free" | "pro" | "premium";
+  subscription_id: string | null;
+  valid_until: string | null;
+};
+
+export async function getBillingStatus(token: string): Promise<SubscriptionStatus> {
+  const res = await fetch(`${API_URL}/billing/status`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { tier: "free", subscription_id: null, valid_until: null };
+  return res.json();
+}
+
+export async function createSubscription(
+  token: string,
+  tier: "pro" | "premium"
+): Promise<{ subscription_id: string; short_url: string }> {
+  const res = await fetch(`${API_URL}/billing/create-subscription`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ tier }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to create subscription");
+  }
+  return res.json();
+}
+
+// Job listing (for server-side use)
+export type JobListResponse = {
+  jobs: JobDetail[];
+  total: number;
+  count: number;
+  skip: number;
+  limit: number;
+};
+
+export async function listJobs(params?: {
+  city?: string;
+  level?: string;
+  remote?: boolean;
+  limit?: number;
+  skip?: number;
+}): Promise<JobListResponse> {
+  const qs = new URLSearchParams();
+  if (params?.city) qs.set("city", params.city);
+  if (params?.level) qs.set("level", params.level);
+  if (params?.remote) qs.set("remote", "true");
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.skip) qs.set("skip", String(params.skip));
+  const res = await fetch(`${API_URL}/jobs?${qs}`);
+  if (!res.ok) return { jobs: [], total: 0, count: 0, skip: 0, limit: 20 };
+  return res.json();
+}
+
 export { getToken };

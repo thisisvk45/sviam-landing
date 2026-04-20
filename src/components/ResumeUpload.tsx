@@ -78,9 +78,9 @@ export default function ResumeUpload({ token, onMatchComplete }: Props) {
           >
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(16,185,129,0.15)" }}
+              style={{ background: "rgba(0,153,153,0.15)" }}
             >
-              <IconCheck size={20} color="#10b981" />
+              <IconCheck size={20} color="#009999" />
             </div>
             <p
               className="text-sm text-[var(--text)]"
@@ -100,7 +100,7 @@ export default function ResumeUpload({ token, onMatchComplete }: Props) {
               className="w-8 h-8 rounded-full border-2 mx-auto mb-3"
               style={{
                 borderColor: "var(--border)",
-                borderTopColor: "var(--accent)",
+                borderTopColor: "var(--teal)",
               }}
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -126,7 +126,7 @@ export default function ResumeUpload({ token, onMatchComplete }: Props) {
               className="py-8 rounded-[12px] text-center cursor-pointer transition-all duration-200"
               style={{
                 border: dragging
-                  ? "2px dashed var(--accent)"
+                  ? "2px dashed var(--teal)"
                   : "2px dashed var(--border)",
                 background: dragging
                   ? "rgba(99,102,241,0.05)"
@@ -164,7 +164,7 @@ export default function ResumeUpload({ token, onMatchComplete }: Props) {
             {/* Selected file */}
             {file && (
               <div className="flex items-center gap-3 mt-4">
-                <IconFile size={18} style={{ color: "var(--accent)" }} />
+                <IconFile size={18} style={{ color: "var(--teal)" }} />
                 <span
                   className="text-sm text-[var(--text)] flex-1 truncate"
                   style={{ fontFamily: "var(--font-dm-sans)" }}
@@ -194,7 +194,7 @@ export default function ResumeUpload({ token, onMatchComplete }: Props) {
                 onClick={handleSubmit}
                 className="w-full mt-4 py-3 rounded-[10px] text-sm font-medium text-white"
                 style={{
-                  background: "var(--accent)",
+                  background: "var(--teal)",
                   fontFamily: "var(--font-dm-sans)",
                 }}
               >

@@ -1,24 +1,24 @@
 "use client";
 
-import { motion, useInView, useReducedMotion, AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
+import { useInView } from "@/hooks/useInView";
+import { useState } from "react";
 
 const faqs = [
   {
     q: "Is SViam free to use?",
-    a: "For candidates, yes. Job matching and AI interview practice are completely free. Companies pay per successful hire, and it costs a fraction of what traditional recruiters charge.",
+    a: "Yes. Job matching, resume tailoring, cover letter generation, and AI interview practice are all free right now. We will introduce a Pro tier with higher usage limits in the future, but the core features will always have a free option.",
   },
   {
-    q: "How does the AI interview work?",
-    a: "You join a live session where our AI asks you real technical and behavioral questions, follows up based on your answers, and scores you on multiple dimensions. It is not a chatbot. It listens, challenges, and evaluates like a real interviewer.",
+    q: "How does SViam match me to jobs?",
+    a: "Upload your resume and our AI analyzes your skills, experience, and preferences. We compare you against hundreds of live job openings and give you a match score for each one, so you know your odds before you apply.",
+  },
+  {
+    q: "Can SViam auto-apply for me?",
+    a: "Not yet. Auto-apply is in active development. Today, SViam helps you find the right jobs faster, tailor your resume, generate cover letters, and practice interviews. One-click apply tracking is available so you can manage your pipeline.",
   },
   {
     q: "What about my data and privacy?",
-    a: "Your data stays yours. We never sell it to third parties. Companies only see your profile and scores if you apply to their roles. You can delete your account and all data at any time.",
-  },
-  {
-    q: "When will I get access?",
-    a: "We are onboarding in waves. Join the waitlist and we will email you exactly once when your spot opens. No spam, no newsletters, just your access notification.",
+    a: "Your data stays yours. We never sell it to third parties. Companies only see your profile and scores if you apply to their roles. You can delete your account and all data at any time from your profile settings.",
   },
   {
     q: "Does SViam work for non-tech roles?",
@@ -26,39 +26,30 @@ const faqs = [
   },
   {
     q: "How is this different from Naukri or LinkedIn?",
-    a: "Naukri and LinkedIn are job boards. You apply and hope. SViam matches you to roles based on your actual skill level, pre-screens you through AI interviews, and gives companies real signal instead of a resume pile. Both sides save time.",
+    a: "Job boards show you everything and let you figure it out. SViam matches you to roles based on your actual skills, shows you exactly where you are strong or weak for each job, tailors your resume, and helps you prepare for interviews. Both sides save time.",
   },
 ];
 
 export default function FAQ() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const reducedMotion = useReducedMotion();
+  const { ref, inView } = useInView<HTMLElement>({ margin: "-80px" });
   const [open, setOpen] = useState<number | null>(null);
 
   return (
     <section className="relative z-10 py-24 px-6" ref={ref}>
       <div className="max-w-2xl mx-auto">
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-14"
-        >
-          <motion.span
+        <div className={`text-center mb-14 anim-base anim-fade-up ${inView ? "in-view" : ""}`}>
+          <span
             className="text-xs tracking-[0.2em] text-[var(--muted)] mb-4 block"
             style={{
               fontFamily: "var(--font-dm-mono)",
               textTransform: "uppercase",
             }}
-            initial={reducedMotion ? false : { opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.4 }}
           >
             FAQ
-          </motion.span>
+          </span>
           <div className="overflow-hidden">
-            <motion.h2
+            <h2
+              className={`anim-base anim-reveal-up ${inView ? "in-view" : ""}`}
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2rem, 4vw, 3rem)",
@@ -66,33 +57,24 @@ export default function FAQ() {
                 letterSpacing: "-0.025em",
                 fontWeight: 700,
               }}
-              initial={reducedMotion ? false : { y: "100%", rotateX: -15 }}
-              animate={inView ? { y: 0, rotateX: 0 } : {}}
-              transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
             >
               Questions you probably have.
-            </motion.h2>
+            </h2>
           </div>
-        </motion.div>
+        </div>
 
         <div className="space-y-2">
           {faqs.map((faq, i) => {
             const isOpen = open === i;
             return (
-              <motion.div
+              <div
                 key={i}
-                initial={reducedMotion ? false : { opacity: 0, y: 15 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{
-                  duration: 0.4,
-                  delay: 0.1 + i * 0.06,
-                  ease: [0.33, 1, 0.68, 1] as const,
-                }}
-                className="rounded-[14px] overflow-hidden"
+                className={`rounded-[14px] overflow-hidden anim-base anim-fade-up ${inView ? "in-view" : ""}`}
                 style={{
                   background: isOpen ? "var(--card)" : "transparent",
                   border: `1px solid ${isOpen ? "var(--border2)" : "var(--border)"}`,
                   transition: "background 0.3s, border-color 0.3s",
+                  animationDelay: `${0.1 + i * 0.06}s`,
                 }}
               >
                 <button
@@ -105,11 +87,7 @@ export default function FAQ() {
                   >
                     {faq.q}
                   </span>
-                  <motion.span
-                    className="text-[var(--muted)] shrink-0"
-                    animate={{ rotate: isOpen ? 45 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <span className={`text-[var(--muted)] shrink-0 faq-icon ${isOpen ? "open" : ""}`}>
                     <svg
                       width="18"
                       height="18"
@@ -121,31 +99,23 @@ export default function FAQ() {
                     >
                       <path d="M9 4v10M4 9h10" />
                     </svg>
-                  </motion.span>
+                  </span>
                 </button>
 
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
-                      className="overflow-hidden"
+                <div className={`accordion-content ${isOpen ? "open" : ""}`}>
+                  <div>
+                    <p
+                      className="px-5 pb-5 text-sm text-[var(--muted2)] leading-relaxed"
+                      style={{
+                        fontFamily: "var(--font-dm-sans)",
+                        fontWeight: 300,
+                      }}
                     >
-                      <p
-                        className="px-5 pb-5 text-sm text-[var(--muted2)] leading-relaxed"
-                        style={{
-                          fontFamily: "var(--font-dm-sans)",
-                          fontWeight: 300,
-                        }}
-                      >
-                        {faq.a}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>

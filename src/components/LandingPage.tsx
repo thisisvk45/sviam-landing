@@ -1,25 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import TrustedBy from "@/components/TrustedBy";
-import ForkContent from "@/components/fork/ForkContent";
-import BigStats from "@/components/shared/BigStats";
-import FounderStory from "@/components/FounderStory";
-import FAQ from "@/components/FAQ";
 import GradientBackground from "@/components/shared/GradientBackground";
-import TryIt from "@/components/TryIt";
-import Waitlist from "@/components/Waitlist";
-import Footer from "@/components/Footer";
+import JobTicker from "@/components/JobTicker";
 import { ForkProvider } from "@/components/fork/ForkContext";
+
+// Lazy-load below-fold components to reduce initial JS parse
+const ForkContent = lazy(() => import("@/components/fork/ForkContent"));
+const TryIt = lazy(() => import("@/components/TryIt"));
+const BigStats = lazy(() => import("@/components/shared/BigStats"));
+const FounderStory = lazy(() => import("@/components/FounderStory"));
+const FAQ = lazy(() => import("@/components/FAQ"));
+const Waitlist = lazy(() => import("@/components/Waitlist"));
+const Footer = lazy(() => import("@/components/Footer"));
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function LandingPage() {
-  // Warm up the backend on landing page load so it's ready by dashboard
+  // Warm up the backend + prefetch trending jobs so dashboard loads instantly
   useEffect(() => {
     fetch(`${API_URL}/ping`, { mode: "cors" }).catch(() => {});
+    fetch(`${API_URL}/jobs/trending`, { mode: "cors" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.results) {
+          try { sessionStorage.setItem("sviam_trending", JSON.stringify(data.results)); } catch { /* ignore */ }
+        }
+      })
+      .catch(() => {});
   }, []);
   return (
     <ForkProvider>
@@ -27,15 +38,20 @@ export default function LandingPage() {
       <Navbar />
       <main>
         <Hero />
+        <JobTicker />
         <TrustedBy />
-        <ForkContent />
-        <TryIt />
-        <BigStats />
-        <FounderStory />
-        <FAQ />
-        <Waitlist />
+        <Suspense>
+          <ForkContent />
+          <TryIt />
+          <BigStats />
+          <FounderStory />
+          <FAQ />
+          <Waitlist />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense>
+        <Footer />
+      </Suspense>
     </ForkProvider>
   );
 }

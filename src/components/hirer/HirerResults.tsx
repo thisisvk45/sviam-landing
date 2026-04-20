@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
+import { useInView, usePrefersReducedMotion } from "@/hooks/useInView";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -16,30 +16,24 @@ const reportTopics = [
   { name: "Communication", score: 85, color: "#06d6a0" },
 ];
 
-const barVariants = {
-  hidden: { opacity: 0, x: -15 },
-  visible: (i: number) => ({
-    opacity: 1,
-    x: 0,
-    transition: {
-      duration: 0.5,
-      delay: 0.3 + i * 0.1,
-      ease: [0.33, 1, 0.68, 1] as const,
-    },
-  }),
-};
-
 export default function HirerResults() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const reducedMotion = useReducedMotion();
+  const sectionRef = useRef<HTMLElement>(null);
+  const { ref, inView } = useInView<HTMLElement>({ once: true, margin: "-80px" });
+  const reducedMotion = usePrefersReducedMotion();
   const barRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [animated, setAnimated] = useState(false);
 
+  // Merge refs: assign both ref and sectionRef to the section element
+  const setRefs = (el: HTMLElement | null) => {
+    sectionRef.current = el;
+    // Manually assign the useInView ref
+    (ref as React.MutableRefObject<HTMLElement | null>).current = el;
+  };
+
   useEffect(() => {
-    if (animated || reducedMotion || !ref.current) return;
+    if (animated || reducedMotion || !sectionRef.current) return;
     const trigger = ScrollTrigger.create({
-      trigger: ref.current,
+      trigger: sectionRef.current,
       start: "top 80%",
       once: true,
       onEnter: () => {
@@ -62,58 +56,50 @@ export default function HirerResults() {
     return () => trigger.kill();
   }, [animated, reducedMotion]);
 
+  const animBase = reducedMotion ? "" : "anim-base";
+  const show = inView ? "in-view" : "";
+
   return (
-    <section className="relative z-10 py-20 px-6" ref={ref}>
+    <section className="relative z-10 py-20 px-6" ref={setRefs}>
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
-          className="mb-12"
-        >
-          <motion.span
-            className="text-xs tracking-[0.2em] text-[var(--muted)] mb-4 block"
+        <div className={`mb-12 ${animBase} anim-fade-up ${show}`}>
+          <span
+            className={`text-xs tracking-[0.2em] text-[var(--muted)] mb-4 block ${animBase} anim-fade-left ${show}`}
             style={{
               fontFamily: "var(--font-dm-mono)",
               textTransform: "uppercase",
+              transitionDelay: "0s",
             }}
-            initial={reducedMotion ? false : { opacity: 0, x: -15 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.4 }}
           >
             KILL THE GUESSWORK
-          </motion.span>
+          </span>
           <div className="overflow-hidden">
-            <motion.h2
+            <h2
+              className={`${animBase} anim-reveal-up ${show}`}
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
                 lineHeight: 1.08,
                 letterSpacing: "-0.025em",
+                transitionDelay: "0.1s",
               }}
-              initial={reducedMotion ? false : { y: "100%", rotateX: -15 }}
-              animate={inView ? { y: 0, rotateX: 0 } : {}}
-              transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
             >
               Every hire backed by data.
               <br />
               <span className="text-[var(--muted2)]">Not a 45-minute vibe check.</span>
-            </motion.h2>
+            </h2>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid lg:grid-cols-5 gap-8">
           {/* Report mockup — spans 3 cols */}
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 30, scale: 0.97 }}
-            animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.33, 1, 0.68, 1] }}
-            className="lg:col-span-3 p-6 rounded-[16px] relative overflow-hidden"
+          <div
+            className={`lg:col-span-3 p-6 rounded-[16px] relative overflow-hidden hover-lift ${animBase} anim-fade-up ${show}`}
             style={{
               background: "var(--card)",
               border: "1px solid var(--border)",
+              transitionDelay: "0.1s",
             }}
-            whileHover={reducedMotion ? {} : { boxShadow: "0 10px 40px rgba(0,0,0,0.3)" }}
           >
             {/* Subtle gradient accent */}
             <div
@@ -125,23 +111,19 @@ export default function HirerResults() {
             />
 
             {/* Candidate header */}
-            <motion.div
-              className="flex items-center gap-3 mb-8 relative"
-              initial={reducedMotion ? false : { opacity: 0, x: -20 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.2 }}
+            <div
+              className={`flex items-center gap-3 mb-8 relative ${animBase} anim-fade-left ${show}`}
+              style={{ transitionDelay: "0.2s" }}
             >
-              <motion.div
-                className="w-11 h-11 rounded-[10px] flex items-center justify-center text-white font-bold text-sm"
+              <div
+                className="w-11 h-11 rounded-[10px] flex items-center justify-center text-white font-bold text-sm transition-transform hover:scale-110 hover:rotate-[5deg]"
                 style={{
                   background:
                     "linear-gradient(135deg, #6c63ff, #8b7fff)",
                 }}
-                whileHover={reducedMotion ? {} : { scale: 1.1, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 400 }}
               >
                 PK
-              </motion.div>
+              </div>
               <div>
                 <div
                   className="text-sm font-medium text-[var(--text)]"
@@ -157,20 +139,15 @@ export default function HirerResults() {
                 </div>
               </div>
               <div className="ml-auto text-right">
-                <motion.span
+                <span
                   className="text-2xl font-normal text-[var(--green)]"
                   style={{
                     fontFamily: "var(--font-display)",
+                    animation: animated && !reducedMotion ? "glow-pulse 2s infinite" : "none",
                   }}
-                  animate={
-                    reducedMotion || !animated
-                      ? {}
-                      : { textShadow: ["0 0 10px rgba(6,214,160,0.3)", "0 0 25px rgba(6,214,160,0.5)", "0 0 10px rgba(6,214,160,0.3)"] }
-                  }
-                  transition={{ duration: 2, repeat: Infinity }}
                 >
                   92
-                </motion.span>
+                </span>
                 <span
                   className="text-xs text-[var(--muted)] block"
                   style={{ fontFamily: "var(--font-dm-mono)" }}
@@ -178,17 +155,15 @@ export default function HirerResults() {
                   /100
                 </span>
               </div>
-            </motion.div>
+            </div>
 
             {/* Topic bars */}
             <div className="space-y-5 relative">
               {reportTopics.map((topic, i) => (
-                <motion.div
+                <div
                   key={topic.name}
-                  custom={i}
-                  variants={reducedMotion ? undefined : barVariants}
-                  initial="hidden"
-                  animate={inView ? "visible" : "hidden"}
+                  className={`${animBase} anim-fade-left ${show}`}
+                  style={{ transitionDelay: `${0.3 + i * 0.1}s` }}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span
@@ -197,18 +172,16 @@ export default function HirerResults() {
                     >
                       {topic.name}
                     </span>
-                    <motion.span
-                      className="text-sm font-medium"
+                    <span
+                      className={`text-sm font-medium ${animBase} anim-fade-up ${show}`}
                       style={{
                         color: topic.color,
                         fontFamily: "var(--font-dm-mono)",
+                        transitionDelay: `${0.5 + i * 0.15}s`,
                       }}
-                      initial={reducedMotion ? false : { opacity: 0 }}
-                      animate={inView ? { opacity: 1 } : {}}
-                      transition={{ delay: 0.5 + i * 0.15 }}
                     >
                       {topic.score}
-                    </motion.span>
+                    </span>
                   </div>
                   <div
                     className="h-2.5 rounded-full overflow-hidden"
@@ -226,17 +199,17 @@ export default function HirerResults() {
                       }}
                     />
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
 
             {/* Verdict */}
-            <motion.div
-              initial={reducedMotion ? false : { opacity: 0, y: 15, scale: 0.95 }}
-              animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-              transition={{ duration: 0.5, delay: 0.8, type: "spring", stiffness: 200 }}
-              className="mt-8 pt-5 flex items-center justify-between"
-              style={{ borderTop: "1px solid var(--border)" }}
+            <div
+              className={`mt-8 pt-5 flex items-center justify-between ${animBase} anim-fade-up ${show}`}
+              style={{
+                borderTop: "1px solid var(--border)",
+                transitionDelay: "0.8s",
+              }}
             >
               <span
                 className="text-xs text-[var(--muted)]"
@@ -244,37 +217,31 @@ export default function HirerResults() {
               >
                 AI Recommendation
               </span>
-              <motion.span
-                className="text-sm font-medium px-3 py-1 rounded-[6px]"
+              <span
+                className="text-sm font-medium px-3 py-1 rounded-[6px] transition-all duration-200 hover:scale-110"
                 style={{
                   color: "var(--green)",
                   background: "rgba(6,214,160,0.1)",
                   fontFamily: "var(--font-dm-sans)",
                 }}
-                whileHover={reducedMotion ? {} : { scale: 1.1, boxShadow: "0 0 20px rgba(6,214,160,0.3)" }}
-                transition={{ type: "spring", stiffness: 400 }}
               >
                 Strong Hire
-              </motion.span>
-            </motion.div>
-          </motion.div>
+              </span>
+            </div>
+          </div>
 
           {/* Cost savings — spans 2 cols */}
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 30, scale: 0.97 }}
-            animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.25, ease: [0.33, 1, 0.68, 1] }}
-            className="lg:col-span-2 flex flex-col gap-6"
+          <div
+            className={`lg:col-span-2 flex flex-col gap-6 ${animBase} anim-fade-up ${show}`}
+            style={{ transitionDelay: "0.25s" }}
           >
             {/* Comparison card */}
-            <motion.div
-              className="p-6 rounded-[16px] flex-1"
+            <div
+              className="p-6 rounded-[16px] flex-1 hover-lift transition-shadow duration-300"
               style={{
                 background: "var(--card)",
                 border: "1px solid var(--border)",
               }}
-              whileHover={reducedMotion ? {} : { y: -4, boxShadow: "0 15px 40px rgba(0,0,0,0.25)" }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
             >
               <span
                 className="text-[0.65rem] text-[var(--muted)] block mb-6 tracking-[0.15em]"
@@ -306,17 +273,12 @@ export default function HirerResults() {
                     className="h-3 rounded-full overflow-hidden"
                     style={{ background: "var(--surface)" }}
                   >
-                    <motion.div
+                    <div
                       className="h-full rounded-full"
-                      style={{ background: "var(--muted)" }}
-                      initial={{ width: 0 }}
-                      animate={
-                        inView ? { width: "100%" } : { width: 0 }
-                      }
-                      transition={{
-                        duration: 1.5,
-                        delay: 0.5,
-                        ease: "easeOut",
+                      style={{
+                        background: "var(--muted)",
+                        width: inView ? "100%" : "0%",
+                        transition: "width 1.5s ease-out 0.5s",
                       }}
                     />
                   </div>
@@ -341,21 +303,14 @@ export default function HirerResults() {
                     className="h-3 rounded-full overflow-hidden"
                     style={{ background: "var(--surface)" }}
                   >
-                    <motion.div
+                    <div
                       className="h-full rounded-full"
                       style={{
                         background:
                           "linear-gradient(90deg, var(--teal), var(--green))",
                         boxShadow: "0 0 12px rgba(0,212,170,0.3)",
-                      }}
-                      initial={{ width: 0 }}
-                      animate={
-                        inView ? { width: "21%" } : { width: 0 }
-                      }
-                      transition={{
-                        duration: 1.2,
-                        delay: 0.8,
-                        ease: "easeOut",
+                        width: inView ? "21%" : "0%",
+                        transition: "width 1.2s ease-out 0.8s",
                       }}
                     />
                   </div>
@@ -368,17 +323,15 @@ export default function HirerResults() {
               >
                 Quantalent India, 2026
               </p>
-            </motion.div>
+            </div>
 
             {/* Cost card */}
-            <motion.div
-              className="p-6 rounded-[16px]"
+            <div
+              className="p-6 rounded-[16px] hover-lift transition-shadow duration-300"
               style={{
                 background: "var(--card)",
                 border: "1px solid var(--border)",
               }}
-              whileHover={reducedMotion ? {} : { y: -4, boxShadow: "0 15px 40px rgba(0,0,0,0.25)" }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
             >
               <span
                 className="text-[0.65rem] text-[var(--muted)] block mb-3 tracking-[0.15em]"
@@ -390,38 +343,32 @@ export default function HirerResults() {
                 Cost per hire
               </span>
               <div className="flex items-baseline gap-3">
-                <motion.span
-                  className="line-through text-[var(--muted)]"
+                <span
+                  className={`line-through text-[var(--muted)] ${animBase} anim-fade-left ${show}`}
                   style={{
                     fontFamily: "var(--font-display)",
                     fontSize: "1.4rem",
+                    transitionDelay: "0.4s",
                   }}
-                  initial={reducedMotion ? false : { opacity: 0, x: -10 }}
-                  animate={inView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.5, delay: 0.4 }}
                 >
                   &#8377;1.5L
-                </motion.span>
-                <motion.span
-                  className="text-[var(--muted)]"
-                  initial={reducedMotion ? false : { opacity: 0, scale: 0 }}
-                  animate={inView ? { opacity: 1, scale: 1 } : {}}
-                  transition={{ duration: 0.3, delay: 0.6 }}
+                </span>
+                <span
+                  className={`text-[var(--muted)] ${animBase} anim-fade-up ${show}`}
+                  style={{ transitionDelay: "0.6s" }}
                 >
                   &rarr;
-                </motion.span>
-                <motion.span
-                  className="text-[var(--teal)]"
+                </span>
+                <span
+                  className={`text-[var(--teal)] ${animBase} anim-fade-up ${show}`}
                   style={{
                     fontFamily: "var(--font-display)",
                     fontSize: "1.8rem",
+                    transitionDelay: "0.8s",
                   }}
-                  initial={reducedMotion ? false : { opacity: 0, x: 10, scale: 0.8 }}
-                  animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}}
-                  transition={{ duration: 0.5, delay: 0.8, type: "spring", stiffness: 200 }}
                 >
                   &#8377;62K
-                </motion.span>
+                </span>
               </div>
               <p
                 className="text-[0.6rem] text-[var(--muted)] mt-2"
@@ -429,8 +376,8 @@ export default function HirerResults() {
               >
                 SheWork + CutShort India, 2025
               </p>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

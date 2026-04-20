@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useRef, useState, useCallback } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { usePrefersReducedMotion } from "@/hooks/useInView";
 
 interface Props {
   url: string;
@@ -15,7 +15,7 @@ export default function DashboardMockup({
   glowColor = "108,99,255",
 }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -44,7 +44,7 @@ export default function DashboardMockup({
   };
 
   return (
-    <motion.div
+    <div
       ref={cardRef}
       className="rounded-[16px] overflow-hidden"
       style={{
@@ -59,22 +59,19 @@ export default function DashboardMockup({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
-      whileHover={reducedMotion ? {} : { scale: 1.01 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
       {/* Mouse-following spotlight */}
       {isHovered && !reducedMotion && (
-        <motion.div
+        <div
           className="absolute pointer-events-none z-10"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
           style={{
             left: mousePos.x - 100,
             top: mousePos.y - 100,
             width: 200,
             height: 200,
             background: `radial-gradient(circle, rgba(${glowColor},0.06) 0%, transparent 60%)`,
+            opacity: 1,
+            transition: "opacity 0.2s ease",
           }}
         />
       )}
@@ -84,21 +81,9 @@ export default function DashboardMockup({
         className="flex items-center gap-2 px-4 py-3 relative"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
-        <motion.span
-          className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"
-          whileHover={reducedMotion ? {} : { scale: 1.4 }}
-          transition={{ type: "spring", stiffness: 500 }}
-        />
-        <motion.span
-          className="w-2.5 h-2.5 rounded-full bg-[#febc2e]"
-          whileHover={reducedMotion ? {} : { scale: 1.4 }}
-          transition={{ type: "spring", stiffness: 500 }}
-        />
-        <motion.span
-          className="w-2.5 h-2.5 rounded-full bg-[#28c840]"
-          whileHover={reducedMotion ? {} : { scale: 1.4 }}
-          transition={{ type: "spring", stiffness: 500 }}
-        />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57] transition-transform hover:scale-[1.4]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e] transition-transform hover:scale-[1.4]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#28c840] transition-transform hover:scale-[1.4]" />
         <span
           className="ml-3 text-[10px] text-[var(--muted)]"
           style={{ fontFamily: "var(--font-dm-mono)" }}
@@ -107,6 +92,6 @@ export default function DashboardMockup({
         </span>
       </div>
       <div className="relative">{children}</div>
-    </motion.div>
+    </div>
   );
 }

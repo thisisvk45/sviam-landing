@@ -111,18 +111,18 @@ function ProcessingAnimation({ stage }: { stage: "uploading" | "parsing" | "matc
   return (
     <div className="flex flex-col items-center py-20">
       <div className="relative w-24 h-24 mb-8">
-        <motion.div className="absolute inset-0 rounded-full" style={{ border: "3px solid rgba(99,102,241,0.15)" }}
+        <motion.div className="absolute inset-0 rounded-full" style={{ border: "3px solid rgba(0,153,153,0.15)" }}
           animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
-        <motion.div className="absolute inset-2 rounded-full" style={{ border: "3px solid rgba(99,102,241,0.25)" }}
+        <motion.div className="absolute inset-2 rounded-full" style={{ border: "3px solid rgba(0,153,153,0.25)" }}
           animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0.1, 0.6] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.3 }} />
         <motion.div className="absolute inset-4 rounded-full flex items-center justify-center"
-          style={{ background: "rgba(99,102,241,0.1)", border: "2px solid rgba(99,102,241,0.3)" }}
+          style={{ background: "rgba(0,153,153,0.1)", border: "2px solid rgba(0,153,153,0.3)" }}
           animate={{ rotate: 360 }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>
           <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
-            style={{ color: "var(--accent)" }}>
+            style={{ color: "var(--teal)" }}>
             <IconSparkles size={24} />
           </motion.div>
         </motion.div>
@@ -133,9 +133,9 @@ function ProcessingAnimation({ stage }: { stage: "uploading" | "parsing" | "matc
             transition={{ delay: i * 0.2 }} className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
               style={{
-                background: i < currentIdx ? "rgba(16,185,129,0.15)" : i === currentIdx ? "rgba(99,102,241,0.15)" : "var(--surface)",
-                color: i < currentIdx ? "#10b981" : i === currentIdx ? "var(--accent)" : "var(--muted)",
-                border: i === currentIdx ? "1px solid rgba(99,102,241,0.3)" : "1px solid var(--border)",
+                background: i < currentIdx ? "rgba(0,153,153,0.15)" : i === currentIdx ? "rgba(0,153,153,0.15)" : "var(--surface)",
+                color: i < currentIdx ? "#009999" : i === currentIdx ? "var(--teal)" : "var(--muted)",
+                border: i === currentIdx ? "1px solid rgba(0,153,153,0.3)" : "1px solid var(--border)",
               }}>
               {i < currentIdx ? <IconCheck size={14} /> : s.icon}
             </div>
@@ -146,7 +146,7 @@ function ProcessingAnimation({ stage }: { stage: "uploading" | "parsing" | "matc
               {s.label}
             </p>
             {i === currentIdx && (
-              <motion.div className="w-1.5 h-1.5 rounded-full ml-auto" style={{ background: "var(--accent)" }}
+              <motion.div className="w-1.5 h-1.5 rounded-full ml-auto" style={{ background: "var(--teal)" }}
                 animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
             )}
           </motion.div>
@@ -692,11 +692,11 @@ export default function DashboardClient({
                 transition={{ delay: 0.1 }}
                 onClick={() => handleRoleSelect("candidate")}
                 className="p-6 rounded-[20px] text-center transition-all hover:brightness-110 hover:scale-[1.02] cursor-pointer"
-                style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))", border: "1px solid rgba(99,102,241,0.2)" }}
+                style={{ background: "linear-gradient(135deg, rgba(0,153,153,0.08), rgba(0,153,153,0.05))", border: "1px solid rgba(0,153,153,0.2)" }}
               >
                 <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
-                  style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.25)" }}>
-                  <IconSearch size={24} style={{ color: "var(--accent)" }} />
+                  style={{ background: "rgba(0,153,153,0.12)", border: "1px solid rgba(0,153,153,0.25)" }}>
+                  <IconSearch size={24} style={{ color: "var(--teal)" }} />
                 </div>
                 <p className="text-[var(--text)] text-base font-semibold mb-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
                   I&apos;m looking for a job
@@ -715,7 +715,7 @@ export default function DashboardClient({
                 style={{ background: "var(--card)", border: "1px solid var(--border)" }}
               >
                 <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
-                  style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)" }}>
+                  style={{ background: "rgba(0,153,153,0.08)", border: "1px solid rgba(0,153,153,0.2)" }}>
                   <IconBuilding size={24} style={{ color: "#8b5cf6" }} />
                 </div>
                 <p className="text-[var(--text)] text-base font-semibold mb-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
@@ -771,13 +771,13 @@ export default function DashboardClient({
                   </div>
 
                   <div className="grid lg:grid-cols-[1.3fr_1fr] gap-5">
-                    <div className="p-7 rounded-[20px]" style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04))", border: "1px solid rgba(99,102,241,0.15)" }}>
+                    <div className="p-7 rounded-[20px]" style={{ background: "linear-gradient(135deg, rgba(0,153,153,0.06), rgba(0,153,153,0.04))", border: "1px solid rgba(0,153,153,0.15)" }}>
                       <div onClick={() => onboardingUploadRef.current?.click()}
-                        className="py-16 rounded-[14px] text-center cursor-pointer transition-all duration-300 hover:border-[var(--accent)] hover:shadow-[0_0_30px_rgba(99,102,241,0.1)]"
+                        className="py-16 rounded-[14px] text-center cursor-pointer transition-all duration-300 hover:border-[var(--teal)] hover:shadow-[0_0_30px_rgba(0,153,153,0.1)]"
                         style={{ border: "2px dashed var(--border)" }}>
                         <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
-                          style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.25)" }}>
-                          <IconUpload size={26} style={{ color: "var(--accent)" }} />
+                          style={{ background: "rgba(0,153,153,0.12)", border: "1px solid rgba(0,153,153,0.25)" }}>
+                          <IconUpload size={26} style={{ color: "var(--teal)" }} />
                         </div>
                         <p className="text-[var(--text)] text-base font-medium mb-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
                           Drop your resume or click to upload
@@ -796,13 +796,13 @@ export default function DashboardClient({
                       <h3 className="text-[var(--text)] text-sm font-semibold mb-5" style={{ fontFamily: "var(--font-dm-sans)" }}>How it works</h3>
                       <div className="space-y-4">
                         {[
-                          { icon: <IconFileText size={16} />, text: "We parse your resume and build your profile", bg: "rgba(99,102,241,0.1)" },
-                          { icon: <IconTarget size={16} />, text: "You tell us your job preferences and goals", bg: "rgba(139,92,246,0.1)" },
+                          { icon: <IconFileText size={16} />, text: "We parse your resume and build your profile", bg: "rgba(0,153,153,0.1)" },
+                          { icon: <IconTarget size={16} />, text: "You tell us your job preferences and goals", bg: "rgba(0,153,153,0.1)" },
                           { icon: <IconSparkles size={16} />, text: "AI matches you with the best-fit jobs", bg: "rgba(245,158,11,0.1)" },
-                          { icon: <IconCheck size={16} />, text: "Review, filter, tailor resume, and apply", bg: "rgba(16,185,129,0.1)" },
+                          { icon: <IconCheck size={16} />, text: "Review, filter, tailor resume, and apply", bg: "rgba(0,153,153,0.1)" },
                         ].map((item, i) => (
                           <div key={i} className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-[8px] flex items-center justify-center flex-shrink-0" style={{ background: item.bg, color: "var(--accent)" }}>{item.icon}</div>
+                            <div className="w-8 h-8 rounded-[8px] flex items-center justify-center flex-shrink-0" style={{ background: item.bg, color: "var(--teal)" }}>{item.icon}</div>
                             <p className="text-sm text-[var(--muted2)] pt-1.5" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>{item.text}</p>
                           </div>
                         ))}
@@ -827,10 +827,10 @@ export default function DashboardClient({
                   <div className="grid lg:grid-cols-[1.1fr_1fr] gap-5">
                     <div className="p-7 rounded-[20px]" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
                       <div className="flex items-center gap-2 mb-5">
-                        <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "rgba(16,185,129,0.15)" }}>
-                          <IconCheck size={14} color="#10b981" />
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "rgba(0,153,153,0.15)" }}>
+                          <IconCheck size={14} color="#009999" />
                         </div>
-                        <p className="text-xs text-[#10b981] font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>Resume uploaded</p>
+                        <p className="text-xs text-[#009999] font-medium" style={{ fontFamily: "var(--font-dm-sans)" }}>Resume uploaded</p>
                       </div>
                       <h2 className="text-[var(--text)] text-lg font-semibold mb-1" style={{ fontFamily: "var(--font-display)", letterSpacing: "-0.02em" }}>Review your profile</h2>
                       <p className="text-sm text-[var(--muted2)] mb-5" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>Extracted from your CV. Correct anything off.</p>
@@ -864,7 +864,7 @@ export default function DashboardClient({
 
                       <button onClick={handleSaveAndPreferences} disabled={savingProfile}
                         className="w-full mt-5 py-3 rounded-[10px] text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110"
-                        style={{ background: "linear-gradient(135deg, var(--accent), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(108,99,255,0.3)" }}>
+                        style={{ background: "linear-gradient(135deg, #009999, #33b3b3)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(0,153,153,0.3)" }}>
                         {savingProfile ? "Saving..." : <>Next: Job Preferences <IconArrowRight size={15} /></>}
                       </button>
                     </div>
@@ -877,7 +877,7 @@ export default function DashboardClient({
                           <div className="flex flex-wrap gap-1.5">
                             {parsedResume.skills.slice(0, 15).map((s) => (
                               <span key={s} className="px-2 py-0.5 rounded-full text-[0.65rem]"
-                                style={{ background: "rgba(99,102,241,0.1)", color: "var(--accent)", border: "1px solid rgba(99,102,241,0.2)", fontFamily: "var(--font-dm-sans)" }}>{s}</span>
+                                style={{ background: "rgba(0,153,153,0.1)", color: "var(--teal)", border: "1px solid rgba(0,153,153,0.2)", fontFamily: "var(--font-dm-sans)" }}>{s}</span>
                             ))}
                           </div>
                         </div>
@@ -928,7 +928,7 @@ export default function DashboardClient({
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {preferences.target_roles.map((role) => (
                               <span key={role} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs"
-                                style={{ background: "rgba(99,102,241,0.12)", color: "var(--accent)", border: "1px solid rgba(99,102,241,0.3)", fontFamily: "var(--font-dm-sans)" }}>
+                                style={{ background: "rgba(0,153,153,0.12)", color: "var(--teal)", border: "1px solid rgba(0,153,153,0.3)", fontFamily: "var(--font-dm-sans)" }}>
                                 {role}
                                 <button onClick={() => setPreferences((p) => ({ ...p, target_roles: p.target_roles.filter((r) => r !== role) }))}
                                   className="hover:text-[#ef4444]"><IconX size={10} /></button>
@@ -945,7 +945,7 @@ export default function DashboardClient({
                             .filter((r) => !roleSearch || r.toLowerCase().includes(roleSearch.toLowerCase()))
                             .map((role) => (
                               <button key={role} onClick={() => { setPreferences((p) => ({ ...p, target_roles: [...p.target_roles, role] })); setRoleSearch(""); }}
-                                className="px-2.5 py-1 rounded-full text-xs transition-all hover:border-[var(--accent)]"
+                                className="px-2.5 py-1 rounded-full text-xs transition-all hover:border-[var(--teal)]"
                                 style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
                                 {role}
                               </button>
@@ -981,9 +981,9 @@ export default function DashboardClient({
                               }}
                                 className="px-2.5 py-1 rounded-full text-xs transition-all"
                                 style={{
-                                  background: selected ? "rgba(99,102,241,0.12)" : "var(--surface)",
-                                  border: selected ? "1px solid rgba(99,102,241,0.3)" : "1px solid var(--border)",
-                                  color: selected ? "var(--accent)" : "var(--muted2)",
+                                  background: selected ? "rgba(0,153,153,0.12)" : "var(--surface)",
+                                  border: selected ? "1px solid rgba(0,153,153,0.3)" : "1px solid var(--border)",
+                                  color: selected ? "var(--teal)" : "var(--muted2)",
                                   fontFamily: "var(--font-dm-sans)",
                                 }}>
                                 {selected && <IconCheck size={10} className="inline mr-1" />}{c}
@@ -999,9 +999,9 @@ export default function DashboardClient({
                             <button key={m} onClick={() => setPreferences({ ...preferences, work_mode: m })}
                               className="px-3 py-1.5 rounded-[8px] text-xs font-medium transition-all"
                               style={{
-                                background: preferences.work_mode === m ? "rgba(99,102,241,0.12)" : "var(--surface)",
-                                border: preferences.work_mode === m ? "1px solid rgba(99,102,241,0.3)" : "1px solid var(--border)",
-                                color: preferences.work_mode === m ? "var(--accent)" : "var(--muted2)",
+                                background: preferences.work_mode === m ? "rgba(0,153,153,0.12)" : "var(--surface)",
+                                border: preferences.work_mode === m ? "1px solid rgba(0,153,153,0.3)" : "1px solid var(--border)",
+                                color: preferences.work_mode === m ? "var(--teal)" : "var(--muted2)",
                                 fontFamily: "var(--font-dm-sans)",
                               }}>{m}</button>
                           ))}
@@ -1027,7 +1027,7 @@ export default function DashboardClient({
                       </button>
                       <button onClick={handleFinishOnboarding} disabled={savingProfile || preferences.target_roles.length === 0}
                         className="flex-1 py-3 rounded-[10px] text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
-                        style={{ background: "linear-gradient(135deg, var(--accent), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(108,99,255,0.3)" }}>
+                        style={{ background: "linear-gradient(135deg, #009999, #33b3b3)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(0,153,153,0.3)" }}>
                         {savingProfile ? "Saving..." : <>Find My Jobs <IconSparkles size={15} /></>}
                       </button>
                       {preferences.target_roles.length === 0 && (
@@ -1102,7 +1102,7 @@ export default function DashboardClient({
               {resumes.length < 3 && (
                 <button onClick={() => setShowUploadPanel(!showUploadPanel)}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] text-[0.65rem] font-medium text-white"
-                  style={{ background: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
+                  style={{ background: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
                   <IconUpload size={11} />{resumes.length > 0 ? "Add" : "Upload"}
                 </button>
               )}
@@ -1122,14 +1122,14 @@ export default function DashboardClient({
                 <button key={tab} onClick={() => setActiveTab(tab)}
                   className="px-4 py-1.5 rounded-[8px] text-xs font-medium transition-all relative"
                   style={{
-                    background: activeTab === tab ? "var(--accent)" : "transparent",
+                    background: activeTab === tab ? "var(--teal)" : "transparent",
                     color: activeTab === tab ? "white" : "var(--muted2)",
                     fontFamily: "var(--font-dm-sans)",
                   }}>
                   {labels[tab]}
                   {tab === "matches" && newMatchCount > 0 && activeTab !== "matches" && (
                     <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[0.55rem] font-bold"
-                      style={{ background: "#10b981", color: "white" }}>
+                      style={{ background: "#009999", color: "white" }}>
                       {newMatchCount} new
                     </span>
                   )}
@@ -1144,9 +1144,9 @@ export default function DashboardClient({
               {resumes.map((r) => (
                 <div key={r.id} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.6rem] cursor-pointer transition-all"
                   style={{
-                    background: r.id === selectedResumeId ? "rgba(99,102,241,0.12)" : "var(--surface)",
-                    border: r.id === selectedResumeId ? "1px solid rgba(99,102,241,0.25)" : "1px solid var(--border)",
-                    color: r.id === selectedResumeId ? "var(--accent)" : "var(--muted2)", fontFamily: "var(--font-dm-sans)",
+                    background: r.id === selectedResumeId ? "rgba(0,153,153,0.12)" : "var(--surface)",
+                    border: r.id === selectedResumeId ? "1px solid rgba(0,153,153,0.25)" : "1px solid var(--border)",
+                    color: r.id === selectedResumeId ? "var(--teal)" : "var(--muted2)", fontFamily: "var(--font-dm-sans)",
                   }} onClick={() => handleResumeChange(r.id)}>
                   <IconFile size={9} />{r.label}
                   <button onClick={(e) => { e.stopPropagation(); handleDeleteResume(r.id); }} className="ml-0.5 hover:text-[#ef4444]"><IconTrash size={9} /></button>
@@ -1163,12 +1163,12 @@ export default function DashboardClient({
                   <div className="mb-3">
                     <input type="text" value={resumeLabel} onChange={(e) => setResumeLabel(e.target.value)}
                       placeholder={`Resume name (e.g. "ML-focused", "Razorpay-tailored")`}
-                      className="w-full px-3 py-2 rounded-[8px] text-xs text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                      className="w-full px-3 py-2 rounded-[8px] text-xs text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--teal)]"
                       style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }} />
                   </div>
-                  <div onClick={() => uploadRef.current?.click()} className="py-7 rounded-[8px] text-center cursor-pointer transition-all hover:border-[var(--accent)]" style={{ border: "2px dashed var(--border)" }}>
+                  <div onClick={() => uploadRef.current?.click()} className="py-7 rounded-[8px] text-center cursor-pointer transition-all hover:border-[var(--teal)]" style={{ border: "2px dashed var(--border)" }}>
                     {uploading ? (
-                      <motion.div className="w-7 h-7 rounded-full border-2 mx-auto" style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }}
+                      <motion.div className="w-7 h-7 rounded-full border-2 mx-auto" style={{ borderColor: "var(--border)", borderTopColor: "var(--teal)" }}
                         animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
                     ) : (
                       <><IconUpload size={20} className="mx-auto mb-1.5" style={{ color: "var(--muted)" }} />
@@ -1204,7 +1204,7 @@ export default function DashboardClient({
               {matchesLoading ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 mb-2">
-                    <motion.div className="w-5 h-5 rounded-full border-2" style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }}
+                    <motion.div className="w-5 h-5 rounded-full border-2" style={{ borderColor: "var(--border)", borderTopColor: "var(--teal)" }}
                       animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
                     <p className="text-sm text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>Finding your best matches...</p>
                   </div>
@@ -1226,12 +1226,12 @@ export default function DashboardClient({
               ) : resumes.length === 0 ? (
                 <div className="p-16 rounded-[16px] text-center" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
                   <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
-                    style={{ background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.2)" }}>
-                    <IconUpload size={24} style={{ color: "var(--accent)" }} />
+                    style={{ background: "rgba(0,153,153,0.1)", border: "1px solid rgba(0,153,153,0.2)" }}>
+                    <IconUpload size={24} style={{ color: "var(--teal)" }} />
                   </div>
                   <p className="text-[var(--text)] text-base font-medium mb-1" style={{ fontFamily: "var(--font-dm-sans)" }}>Upload a resume to see your matches</p>
                   <button onClick={() => setShowUploadPanel(true)} className="mt-3 px-5 py-2.5 rounded-[10px] text-sm font-medium text-white"
-                    style={{ background: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>Upload Resume</button>
+                    style={{ background: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>Upload Resume</button>
                 </div>
               ) : null}
             </>
@@ -1349,7 +1349,7 @@ function TailorPanel({ job, token, resumeText, parsedResume, onClose }: {
               <div className="flex flex-wrap gap-1 mt-2">
                 {job.skills.slice(0, 8).map((s) => (
                   <span key={s} className="px-2 py-0.5 rounded-full text-[0.6rem]"
-                    style={{ background: "rgba(99,102,241,0.1)", color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
+                    style={{ background: "rgba(0,153,153,0.1)", color: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
                     {s}
                   </span>
                 ))}
@@ -1366,7 +1366,7 @@ function TailorPanel({ job, token, resumeText, parsedResume, onClose }: {
                 onClick={handleTailor}
                 disabled={loading}
                 className="w-full py-3 rounded-[10px] text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110 disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, var(--accent), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(108,99,255,0.3)" }}
+                style={{ background: "linear-gradient(135deg, #009999, #33b3b3)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(0,153,153,0.3)" }}
               >
                 {loading ? (
                   <><motion.div className="w-4 h-4 rounded-full border-2" style={{ borderColor: "rgba(255,255,255,0.3)", borderTopColor: "white" }}
@@ -1396,7 +1396,7 @@ function TailorPanel({ job, token, resumeText, parsedResume, onClose }: {
               ))}
               <a
                 href={`/resume-builder?job_title=${encodeURIComponent(job.title)}&company=${encodeURIComponent(job.company)}`}
-                className="block w-full py-2.5 rounded-[10px] text-center text-xs font-medium text-[var(--accent)] transition-colors hover:bg-[var(--surface)]"
+                className="block w-full py-2.5 rounded-[10px] text-center text-xs font-medium text-[var(--teal)] transition-colors hover:bg-[var(--surface)]"
                 style={{ border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }}
               >
                 Open in Resume Builder for Full Edit
@@ -1518,12 +1518,12 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
         </button>
         <div className="flex items-center gap-2">
           <button onClick={handleSave} className="p-2 rounded-[8px] hover:bg-[var(--surface)] transition-colors">
-            {isSaved ? <IconBookmarkFilled size={18} style={{ color: "var(--accent)" }} /> : <IconBookmark size={18} style={{ color: "var(--muted)" }} />}
+            {isSaved ? <IconBookmarkFilled size={18} style={{ color: "var(--teal)" }} /> : <IconBookmark size={18} style={{ color: "var(--muted)" }} />}
           </button>
           {job.apply_url && (
             <a href={job.apply_url} target="_blank" rel="noopener noreferrer"
               className="px-5 py-2 rounded-[10px] text-xs font-semibold text-white transition-all hover:brightness-110"
-              style={{ background: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
+              style={{ background: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
               APPLY NOW <IconExternalLink size={12} className="inline ml-1" />
             </a>
           )}
@@ -1564,7 +1564,7 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
                     {job.city && <span className="flex items-center gap-1"><IconMapPin size={13} style={{ color: "var(--muted)" }} />{job.city}</span>}
                     <span className="flex items-center gap-1"><IconBriefcase size={13} style={{ color: "var(--muted)" }} />Full-time</span>
                     <span className="px-2 py-0.5 rounded text-[0.55rem] font-medium uppercase"
-                      style={{ background: workType === "Remote" ? "rgba(16,185,129,0.12)" : workType === "Hybrid" ? "rgba(245,158,11,0.12)" : "rgba(99,102,241,0.1)", color: workType === "Remote" ? "#10b981" : workType === "Hybrid" ? "#f59e0b" : "var(--accent)" }}>
+                      style={{ background: workType === "Remote" ? "rgba(0,153,153,0.12)" : workType === "Hybrid" ? "rgba(245,158,11,0.12)" : "rgba(0,153,153,0.1)", color: workType === "Remote" ? "#009999" : workType === "Hybrid" ? "#f59e0b" : "var(--teal)" }}>
                       {workType}
                     </span>
                     {detail?.role?.level && (
@@ -1609,7 +1609,7 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
                   <div className="flex flex-wrap gap-1.5">
                     {job.skills.map((s) => (
                       <span key={s} className="px-2.5 py-1 rounded-full text-[0.65rem]"
-                        style={{ background: "rgba(99,102,241,0.1)", color: "var(--accent)", border: "1px solid rgba(99,102,241,0.15)", fontFamily: "var(--font-dm-sans)" }}>
+                        style={{ background: "rgba(0,153,153,0.1)", color: "var(--teal)", border: "1px solid rgba(0,153,153,0.15)", fontFamily: "var(--font-dm-sans)" }}>
                         {s}
                       </span>
                     ))}
@@ -1673,7 +1673,7 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
                     { label: "Original Post", url: detail.source_url || detail.apply_url || job.apply_url },
                   ].filter(l => l.url).map((link) => (
                     <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] text-[0.65rem] font-medium transition-colors hover:text-[var(--accent)]"
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] text-[0.65rem] font-medium transition-colors hover:text-[var(--teal)]"
                       style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
                       {link.label} <IconExternalLink size={10} />
                     </a>
@@ -1717,7 +1717,7 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
 
             <button onClick={() => onTailor(job)}
               className="w-full text-left p-3 rounded-[12px] transition-colors hover:brightness-110"
-              style={{ background: "linear-gradient(135deg, var(--accent), #7c3aed)", border: "none" }}>
+              style={{ background: "linear-gradient(135deg, #009999, #33b3b3)", border: "none" }}>
               <p className="text-xs font-semibold text-white" style={{ fontFamily: "var(--font-dm-sans)" }}>Customize Resume</p>
               <p className="text-[0.6rem] text-white/70 mt-0.5" style={{ fontFamily: "var(--font-dm-sans)" }}>Tailor to this job</p>
             </button>
@@ -1795,7 +1795,7 @@ function JobDetailView({ job, token, resumeText, parsedResume, saved, cache, onB
             <div className="flex items-center gap-2">
               <button onClick={async () => { await navigator.clipboard.writeText(coverLetter.replace(/\*\*/g, "")); }}
                 className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-[0.65rem] hover:bg-[var(--surface)] transition-colors"
-                style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
+                style={{ color: "var(--teal)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
                 <IconCopy size={11} /> Copy
               </button>
             </div>
@@ -1851,8 +1851,8 @@ function BgGradient({ subtle }: { subtle?: boolean }) {
   return (
     <div className="fixed inset-0 pointer-events-none" style={{
       background: subtle
-        ? "radial-gradient(ellipse 50% 40% at 30% 0%, rgba(99,102,241,0.04) 0%, transparent 60%)"
-        : "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(99,102,241,0.07) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 20%, rgba(139,92,246,0.05) 0%, transparent 60%)",
+        ? "radial-gradient(ellipse 50% 40% at 30% 0%, rgba(0,153,153,0.04) 0%, transparent 60%)"
+        : "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,153,153,0.07) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 80% 20%, rgba(0,153,153,0.05) 0%, transparent 60%)",
     }} />
   );
 }
@@ -1869,7 +1869,7 @@ function FField({ label, children }: { label: string; children: React.ReactNode 
 function FInput({ value, onChange, placeholder, className }: { value: string; onChange: (v: string) => void; placeholder?: string; className?: string }) {
   return (
     <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-      className={`w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--accent)] ${className || ""}`}
+      className={`w-full px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--teal)] ${className || ""}`}
       style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }} />
   );
 }
@@ -1892,16 +1892,16 @@ function EmptyFilters({ onClear }: { onClear: () => void }) {
     <div className="p-12 rounded-[16px] text-center" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
       <IconMapPin size={28} className="mx-auto mb-3" style={{ color: "var(--muted)" }} />
       <p className="text-sm text-[var(--muted2)] mb-1" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>No matches for these filters</p>
-      <button onClick={onClear} className="mt-2 text-xs font-medium" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>Clear filters</button>
+      <button onClick={onClear} className="mt-2 text-xs font-medium" style={{ color: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>Clear filters</button>
     </div>
   );
 }
 
 const STATUS_COLORS: Record<string, { bg: string; color: string; border: string }> = {
-  queued: { bg: "rgba(99,102,241,0.1)", color: "var(--accent)", border: "rgba(99,102,241,0.2)" },
+  queued: { bg: "rgba(0,153,153,0.1)", color: "var(--teal)", border: "rgba(0,153,153,0.2)" },
   applied: { bg: "rgba(59,130,246,0.1)", color: "#3b82f6", border: "rgba(59,130,246,0.2)" },
   interview: { bg: "rgba(245,158,11,0.1)", color: "#f59e0b", border: "rgba(245,158,11,0.2)" },
-  offer: { bg: "rgba(16,185,129,0.1)", color: "#10b981", border: "rgba(16,185,129,0.2)" },
+  offer: { bg: "rgba(0,153,153,0.1)", color: "#009999", border: "rgba(0,153,153,0.2)" },
   rejected: { bg: "rgba(239,68,68,0.1)", color: "#ef4444", border: "rgba(239,68,68,0.2)" },
 };
 const STATUS_ORDER: ApplicationStatus[] = ["queued", "applied", "interview", "offer", "rejected"];
@@ -1915,10 +1915,10 @@ function PipelineStats({ applications }: { applications: Application[] }) {
   const interviewRate = applied > 0 ? Math.round((interviews / applied) * 100) : 0;
 
   const stats = [
-    { label: "Total", value: total, color: "var(--accent)" },
+    { label: "Total", value: total, color: "var(--teal)" },
     { label: "Applied", value: applied, color: "#3b82f6" },
     { label: "Interviews", value: interviews, color: "#f59e0b" },
-    { label: "Offers", value: offers, color: "#10b981" },
+    { label: "Offers", value: offers, color: "#009999" },
     { label: "Interview Rate", value: `${interviewRate}%`, color: "#8b5cf6" },
   ];
 
@@ -1971,8 +1971,8 @@ function PipelineView({
             <button key={s} onClick={() => onFilterChange(s)}
               className="px-3 py-1 rounded-full text-xs font-medium transition-all"
               style={{
-                background: filter === s ? (s === "all" ? "var(--accent)" : STATUS_COLORS[s]?.bg) : "var(--surface)",
-                border: filter === s ? `1px solid ${s === "all" ? "var(--accent)" : STATUS_COLORS[s]?.border}` : "1px solid var(--border)",
+                background: filter === s ? (s === "all" ? "var(--teal)" : STATUS_COLORS[s]?.bg) : "var(--surface)",
+                border: filter === s ? `1px solid ${s === "all" ? "var(--teal)" : STATUS_COLORS[s]?.border}` : "1px solid var(--border)",
                 color: filter === s ? (s === "all" ? "white" : STATUS_COLORS[s]?.color) : "var(--muted2)",
                 fontFamily: "var(--font-dm-sans)",
               }}>
@@ -2035,7 +2035,7 @@ function PipelineView({
                     {app.apply_url && (
                       <a href={app.apply_url} target="_blank" rel="noopener noreferrer"
                         className="p-1.5 rounded-[6px] hover:bg-[var(--surface)] transition-colors"
-                        style={{ color: "var(--accent)" }}>
+                        style={{ color: "var(--teal)" }}>
                         <IconExternalLink size={13} />
                       </a>
                     )}
@@ -2084,12 +2084,12 @@ function PipelineView({
                             <textarea value={noteInput} onChange={(e) => setNoteInput(e.target.value)}
                               placeholder="Add notes about this application..."
                               rows={2}
-                              className="flex-1 px-3 py-2 rounded-[8px] text-xs text-[var(--text)] outline-none resize-none focus:ring-1 focus:ring-[var(--accent)]"
+                              className="flex-1 px-3 py-2 rounded-[8px] text-xs text-[var(--text)] outline-none resize-none focus:ring-1 focus:ring-[var(--teal)]"
                               style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }}
                               onClick={(e) => e.stopPropagation()} />
                             <button onClick={(e) => { e.stopPropagation(); handleSaveNote(app.id); }}
                               className="px-3 self-end rounded-[8px] text-[0.65rem] font-medium text-white py-2"
-                              style={{ background: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
+                              style={{ background: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
                               Save
                             </button>
                           </div>
@@ -2134,7 +2134,7 @@ function SavedJobsView({
           transition={{ delay: i * 0.03 }}
           className="p-4 rounded-[14px] flex items-center gap-4"
           style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
-          <IconBookmarkFilled size={16} style={{ color: "var(--accent)" }} className="flex-shrink-0" />
+          <IconBookmarkFilled size={16} style={{ color: "var(--teal)" }} className="flex-shrink-0" />
 
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-[var(--text)] truncate" style={{ fontFamily: "var(--font-dm-sans)" }}>
@@ -2150,7 +2150,7 @@ function SavedJobsView({
               {new Date(job.created_at).toLocaleDateString()}
             </span>
             <button onClick={() => onQueue(job)}
-              className="px-2 py-1 rounded-[6px] text-[0.6rem] font-medium transition-colors hover:text-white hover:bg-[var(--accent)]"
+              className="px-2 py-1 rounded-[6px] text-[0.6rem] font-medium transition-colors hover:text-white hover:bg-[var(--teal)]"
               style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
               + Queue
             </button>
@@ -2171,7 +2171,7 @@ function AutoApplyStatus({ enabled, maxPerDay, appliedToday }: { enabled: boolea
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       className="p-3 rounded-[12px] mb-4 flex items-center gap-3"
       style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
-      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: enabled ? "#10b981" : "var(--muted)" }} />
+      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: enabled ? "#009999" : "var(--muted)" }} />
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
           Auto-Apply: {enabled ? "Active" : "Paused"}
@@ -2181,7 +2181,7 @@ function AutoApplyStatus({ enabled, maxPerDay, appliedToday }: { enabled: boolea
         </p>
       </div>
       <Link href="/profile" className="text-[0.65rem] font-medium px-2.5 py-1 rounded-[6px] transition-colors hover:bg-[var(--surface)]"
-        style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
+        style={{ color: "var(--teal)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
         Settings
       </Link>
     </motion.div>
@@ -2205,12 +2205,12 @@ function ProfileCompletionBar({ fields, score }: { fields: Record<string, boolea
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="p-4 rounded-[14px] mb-4 cursor-pointer transition-all hover:brightness-105"
-        style={{ background: "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.04))", border: "1px solid rgba(99,102,241,0.15)" }}>
+        style={{ background: "linear-gradient(135deg, rgba(0,153,153,0.06), rgba(0,153,153,0.04))", border: "1px solid rgba(0,153,153,0.15)" }}>
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
             Profile {score}% complete
           </p>
-          <span className="text-[0.65rem] font-medium" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)" }}>
+          <span className="text-[0.65rem] font-medium" style={{ color: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
             Complete Profile
           </span>
         </div>
@@ -2220,7 +2220,7 @@ function ProfileCompletionBar({ fields, score }: { fields: Record<string, boolea
             animate={{ width: `${score}%` }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="h-full rounded-full"
-            style={{ background: score >= 80 ? "#10b981" : score >= 50 ? "#f59e0b" : "#ef4444" }}
+            style={{ background: score >= 80 ? "#009999" : score >= 50 ? "#f59e0b" : "#ef4444" }}
           />
         </div>
         <p className="text-[0.6rem] text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>

@@ -109,7 +109,7 @@ export default function TryIt() {
         {/* Upload area */}
         {results.length === 0 && !loading && (
           <div
-            className={`py-12 rounded-[16px] text-center cursor-pointer transition-all duration-200 hover:border-[var(--accent)] anim-base anim-fade-up ${inView ? "in-view" : ""}`}
+            className={`py-12 rounded-[16px] text-center cursor-pointer transition-all duration-200 hover:border-[var(--teal)] anim-base anim-fade-up ${inView ? "in-view" : ""}`}
             style={{
               background: "var(--card)",
               border: "2px dashed var(--border)",
@@ -153,7 +153,7 @@ export default function TryIt() {
               className="w-10 h-10 rounded-full border-2 mx-auto mb-4 spinner"
               style={{
                 borderColor: "var(--border)",
-                borderTopColor: "var(--accent)",
+                borderTopColor: "var(--teal)",
               }}
             />
             <p
@@ -190,7 +190,7 @@ export default function TryIt() {
                 style={{ fontFamily: "var(--font-dm-sans)" }}
               >
                 Your top match is{" "}
-                <span className="font-semibold" style={{ color: "var(--accent)" }}>
+                <span className="font-semibold" style={{ color: "var(--teal)" }}>
                   {topScore}%
                 </span>
                 {isSignedIn
@@ -211,8 +211,8 @@ export default function TryIt() {
                   onClick={handleGoToDashboard}
                   className="px-6 py-3 rounded-[12px] text-sm font-medium text-white hover-scale"
                   style={{
-                    background: "var(--accent)",
-                    boxShadow: "0 0 24px rgba(108,99,255,0.35)",
+                    background: "var(--teal)",
+                    boxShadow: "0 0 24px rgba(0,153,153,0.35)",
                     fontFamily: "var(--font-dm-sans)",
                     transition: "transform 0.15s ease",
                   }}

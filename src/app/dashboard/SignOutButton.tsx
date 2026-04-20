@@ -22,7 +22,7 @@ export default function SignOutButton({ name }: { name?: string }) {
         <div
           className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-white flex-shrink-0"
           style={{
-            background: "var(--accent)",
+            background: "var(--teal)",
             fontFamily: "var(--font-dm-sans)",
           }}
         >

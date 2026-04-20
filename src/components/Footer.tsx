@@ -58,7 +58,7 @@ export default function Footer() {
       <div
         className={`absolute top-0 left-0 right-0 h-px anim-base anim-scale-x ${inView ? "in-view" : ""}`}
         style={{
-          background: "linear-gradient(90deg, transparent 10%, var(--accent) 30%, var(--teal) 70%, transparent 90%)",
+          background: "linear-gradient(90deg, transparent 10%, var(--teal) 30%, var(--teal) 70%, transparent 90%)",
           opacity: 0.2,
           transformOrigin: "center",
         }}

@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useInView, useReducedMotion, AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { useInView, usePrefersReducedMotion } from "@/hooks/useInView";
 import CodeEditor from "../shared/CodeEditor";
 
 const stacks = [
@@ -120,78 +120,68 @@ const fileMap: Record<string, string> = {
 };
 
 export default function HirerInterviewConfig() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const reducedMotion = useReducedMotion();
+  const { ref, inView } = useInView<HTMLElement>({ once: true, margin: "-80px" });
+  const reducedMotion = usePrefersReducedMotion();
   const [selectedStack, setSelectedStack] = useState("Python");
   const [selectedDifficulty, setSelectedDifficulty] = useState("Senior");
   const [depth, setDepth] = useState(75);
 
+  const animBase = reducedMotion ? "" : "anim-base";
+  const show = inView ? "in-view" : "";
+
   return (
     <section className="relative z-10 py-20 px-6" ref={ref}>
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
-          className="mb-12"
-        >
-          <motion.span
-            className="text-xs tracking-[0.2em] text-[var(--muted)] mb-4 block"
+        <div className={`mb-12 ${animBase} anim-fade-up ${show}`}>
+          <span
+            className={`text-xs tracking-[0.2em] text-[var(--muted)] mb-4 block ${animBase} anim-fade-left ${show}`}
             style={{
               fontFamily: "var(--font-dm-mono)",
               textTransform: "uppercase",
+              transitionDelay: "0s",
             }}
-            initial={reducedMotion ? false : { opacity: 0, x: -15 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.4 }}
           >
             YOUR WEAPON
-          </motion.span>
+          </span>
           <div className="overflow-hidden">
-            <motion.h2
+            <h2
+              className={`${animBase} anim-reveal-up ${show}`}
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
                 lineHeight: 1.08,
                 letterSpacing: "-0.025em",
+                transitionDelay: "0.1s",
               }}
-              initial={reducedMotion ? false : { y: "100%", rotateX: -15 }}
-              animate={inView ? { y: 0, rotateX: 0 } : {}}
-              transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
             >
               Build the interview no one can BS.
               <br />
               <span className="text-[var(--muted2)]">In under 60 seconds.</span>
-            </motion.h2>
+            </h2>
           </div>
-          <motion.p
-            className="mt-4 text-[var(--muted2)] max-w-lg"
+          <p
+            className={`mt-4 text-[var(--muted2)] max-w-lg ${animBase} anim-fade-up ${show}`}
             style={{
               fontFamily: "var(--font-dm-sans)",
               fontWeight: 300,
               lineHeight: 1.6,
+              transitionDelay: "0.2s",
             }}
-            initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.2 }}
           >
             Pick the stack. Crank the difficulty. Add follow-up depth so deep
             that tutorial-memorizers crumble. This is what separates real
             engineers from resume artists.
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Config panel */}
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 30, scale: 0.97 }}
-            animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.33, 1, 0.68, 1] }}
-            className="p-6 rounded-[16px]"
+          <div
+            className={`p-6 rounded-[16px] ${animBase} anim-fade-up ${show}`}
             style={{
               background: "var(--card)",
               border: "1px solid var(--border)",
+              transitionDelay: "0.1s",
             }}
           >
             {/* Stack selector — colored pills */}
@@ -209,30 +199,21 @@ export default function HirerInterviewConfig() {
                 {stacks.map((s) => {
                   const active = selectedStack === s.name;
                   return (
-                    <motion.button
+                    <button
                       key={s.name}
                       onClick={() => setSelectedStack(s.name)}
-                      whileHover={reducedMotion ? {} : { scale: 1.08, y: -2 }}
-                      whileTap={{ scale: 0.92 }}
-                      animate={
-                        active && !reducedMotion
-                          ? { boxShadow: `0 0 20px ${s.color}40` }
-                          : { boxShadow: "0 0 0px transparent" }
-                      }
-                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                      className="px-4 py-2 rounded-[10px] text-xs font-medium relative overflow-hidden"
+                      className="px-4 py-2 rounded-[10px] text-xs font-medium relative overflow-hidden hover-scale transition-all duration-200"
                       style={{
                         fontFamily: "var(--font-dm-sans)",
-                        background: active
-                          ? s.color
-                          : "var(--surface)",
+                        background: active ? s.color : "var(--surface)",
                         color: active ? "#080810" : "var(--muted2)",
                         border: `1px solid ${active ? s.color : "var(--border)"}`,
                         fontWeight: active ? 500 : 400,
+                        boxShadow: active ? `0 0 20px ${s.color}40` : "0 0 0px transparent",
                       }}
                     >
                       {s.name}
-                    </motion.button>
+                    </button>
                   );
                 })}
               </div>
@@ -251,37 +232,28 @@ export default function HirerInterviewConfig() {
               </label>
               <div className="flex gap-1 p-1 rounded-[10px]" style={{ background: "var(--surface)" }}>
                 {difficulties.map((d) => (
-                  <motion.button
+                  <button
                     key={d}
                     onClick={() => setSelectedDifficulty(d)}
-                    whileHover={reducedMotion ? {} : { scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex-1 px-3 py-2 rounded-[8px] text-xs font-medium relative"
+                    className="flex-1 px-3 py-2 rounded-[8px] text-xs font-medium relative hover-scale transition-all duration-200"
                     style={{
                       fontFamily: "var(--font-dm-sans)",
                       background:
                         selectedDifficulty === d
-                          ? "var(--accent)"
+                          ? "var(--teal)"
                           : "transparent",
                       color:
                         selectedDifficulty === d
                           ? "white"
                           : "var(--muted2)",
+                      boxShadow:
+                        selectedDifficulty === d
+                          ? "0 0 15px rgba(0,153,153,0.3)"
+                          : "none",
                     }}
                   >
-                    {selectedDifficulty === d && (
-                      <motion.div
-                        layoutId="difficulty-active"
-                        className="absolute inset-0 rounded-[8px]"
-                        style={{
-                          background: "var(--accent)",
-                          boxShadow: "0 0 15px rgba(108,99,255,0.3)",
-                        }}
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                      />
-                    )}
-                    <span className="relative z-10">{d}</span>
-                  </motion.button>
+                    {d}
+                  </button>
                 ))}
               </div>
             </div>
@@ -304,39 +276,22 @@ export default function HirerInterviewConfig() {
                   "Algorithms",
                   "API Design",
                 ].map((t, i) => (
-                  <motion.span
+                  <span
                     key={t}
-                    className="px-3 py-1.5 rounded-[8px] text-xs cursor-pointer"
+                    className={`px-3 py-1.5 rounded-[8px] text-xs cursor-pointer hover-scale transition-all duration-200 ${animBase} anim-fade-up ${show}`}
                     style={{
                       fontFamily: "var(--font-dm-sans)",
                       background:
                         i < 2
-                          ? "rgba(108,99,255,0.1)"
+                          ? "rgba(0,153,153,0.1)"
                           : "var(--surface)",
-                      border: `1px solid ${i < 2 ? "rgba(108,99,255,0.2)" : "var(--border)"}`,
+                      border: `1px solid ${i < 2 ? "rgba(0,153,153,0.2)" : "var(--border)"}`,
                       color: i < 2 ? "var(--accent2)" : "var(--muted2)",
-                    }}
-                    whileHover={
-                      reducedMotion
-                        ? {}
-                        : {
-                            scale: 1.08,
-                            y: -2,
-                            borderColor: "rgba(108,99,255,0.4)",
-                          }
-                    }
-                    whileTap={{ scale: 0.95 }}
-                    initial={reducedMotion ? false : { opacity: 0, scale: 0.8 }}
-                    animate={inView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 20,
-                      delay: 0.4 + i * 0.08,
+                      transitionDelay: `${0.4 + i * 0.08}s`,
                     }}
                   >
                     {t}
-                  </motion.span>
+                  </span>
                 ))}
               </div>
             </div>
@@ -353,16 +308,12 @@ export default function HirerInterviewConfig() {
                 >
                   Follow-up depth
                 </label>
-                <motion.span
-                  className="text-xs text-[var(--accent2)]"
+                <span
+                  className="text-xs text-[var(--accent2)] transition-transform duration-200"
                   style={{ fontFamily: "var(--font-dm-mono)" }}
-                  key={depth}
-                  initial={reducedMotion ? false : { scale: 1.3, color: "var(--accent)" }}
-                  animate={{ scale: 1, color: "var(--accent2)" }}
-                  transition={{ type: "spring", stiffness: 500 }}
                 >
                   {depth}%
-                </motion.span>
+                </span>
               </div>
               <div className="relative">
                 <input
@@ -373,48 +324,45 @@ export default function HirerInterviewConfig() {
                   onChange={(e) => setDepth(Number(e.target.value))}
                   className="w-full h-2 rounded-full appearance-none cursor-pointer"
                   style={{
-                    background: `linear-gradient(90deg, var(--accent) 0%, var(--teal) ${depth}%, var(--surface) ${depth}%)`,
+                    background: `linear-gradient(90deg, var(--teal) 0%, var(--teal) ${depth}%, var(--surface) ${depth}%)`,
                   }}
                 />
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Live preview */}
-          <motion.div
-            initial={reducedMotion ? false : { opacity: 0, y: 30, scale: 0.97 }}
-            animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.33, 1, 0.68, 1] }}
+          <div
+            className={`${animBase} anim-fade-up ${show}`}
+            style={{ transitionDelay: "0.2s" }}
           >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={selectedStack}
-                initial={reducedMotion ? false : { opacity: 0, y: 10, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={reducedMotion ? {} : { opacity: 0, y: -10, scale: 0.98 }}
-                transition={{ duration: 0.3 }}
-                className="scanlines rounded-[12px]"
-              >
-                <CodeEditor
-                  codeLines={codeMap[selectedStack] || pythonCode}
-                  aiQuestions={[
-                    "What is the time complexity of this approach?",
-                    "Can you optimize the space usage here?",
-                    "How would this handle edge cases with empty input?",
-                  ]}
-                  fileName={fileMap[selectedStack] || "interview.py"}
-                />
-              </motion.div>
-            </AnimatePresence>
-            <motion.p
+            <div
+              key={selectedStack}
+              className="scanlines rounded-[12px]"
+              style={{
+                animation: reducedMotion ? "none" : "css-fade-in 0.3s ease-out",
+              }}
+            >
+              <CodeEditor
+                codeLines={codeMap[selectedStack] || pythonCode}
+                aiQuestions={[
+                  "What is the time complexity of this approach?",
+                  "Can you optimize the space usage here?",
+                  "How would this handle edge cases with empty input?",
+                ]}
+                fileName={fileMap[selectedStack] || "interview.py"}
+              />
+            </div>
+            <p
               className="mt-3 text-center text-[0.7rem] text-[var(--muted)]"
-              style={{ fontFamily: "var(--font-dm-mono)" }}
-              animate={reducedMotion ? {} : { opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              style={{
+                fontFamily: "var(--font-dm-mono)",
+                animation: reducedMotion ? "none" : "pulse-opacity 2s infinite",
+              }}
             >
               Live preview · {selectedStack} / {selectedDifficulty}
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
         </div>
       </div>
     </section>

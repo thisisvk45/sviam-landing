@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   IconBookmark,
   IconBookmarkFilled,
@@ -19,9 +18,10 @@ import {
 } from "@tabler/icons-react";
 import type { MatchResult } from "@/lib/api";
 import { createApplicationFromApply } from "@/lib/api";
+import { getResourcesForSkills } from "@/lib/learning-resources";
 
 function scoreColor(score: number) {
-  if (score >= 75) return "#10b981";
+  if (score >= 75) return "#009999";
   if (score >= 55) return "#f59e0b";
   return "#ef4444";
 }
@@ -178,14 +178,16 @@ export default function JobCard({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.05 }}
-      whileHover={{ y: -2, boxShadow: "0 12px 40px rgba(0,0,0,0.2)" }}
+    <div
       onClick={handleCardClick}
-      className="rounded-[16px] cursor-pointer overflow-hidden"
-      style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "0 2px 12px rgba(0,0,0,0.1)" }}
+      className="rounded-[16px] cursor-pointer overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(0,0,0,0.2)]"
+      style={{
+        background: "var(--card)",
+        border: "1px solid var(--border)",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
+        animation: `fadeInUp 0.35s ease both`,
+        animationDelay: `${index * 0.05}s`,
+      }}
     >
       <div className="p-5 sm:p-6 flex gap-5">
         <div className="flex-1 min-w-0">
@@ -201,8 +203,8 @@ export default function JobCard({
             )}
             <span className="px-1.5 py-0.5 rounded text-[0.55rem] font-medium uppercase tracking-wide"
               style={{
-                background: workType === "Remote" ? "rgba(16,185,129,0.12)" : workType === "Hybrid" ? "rgba(245,158,11,0.12)" : "rgba(99,102,241,0.1)",
-                color: workType === "Remote" ? "#10b981" : workType === "Hybrid" ? "#f59e0b" : "var(--accent)",
+                background: workType === "Remote" ? "rgba(0,153,153,0.12)" : workType === "Hybrid" ? "rgba(245,158,11,0.12)" : "rgba(99,102,241,0.1)",
+                color: workType === "Remote" ? "#009999" : workType === "Hybrid" ? "#f59e0b" : "var(--teal)",
                 fontFamily: "var(--font-dm-sans)",
               }}>
               {workType}
@@ -210,7 +212,7 @@ export default function JobCard({
             <div className="ml-auto flex items-center gap-1">
               {(onSave || onUnsave) && (
                 <button onClick={handleSaveToggle} className="p-1 rounded-md hover:bg-[var(--surface)] transition-colors">
-                  {isSaved ? <IconBookmarkFilled size={16} style={{ color: "var(--accent)" }} /> : <IconBookmark size={16} style={{ color: "var(--muted)" }} />}
+                  {isSaved ? <IconBookmarkFilled size={16} style={{ color: "var(--teal)" }} /> : <IconBookmark size={16} style={{ color: "var(--muted)" }} />}
                 </button>
               )}
               {onDismiss && (
@@ -245,7 +247,7 @@ export default function JobCard({
               ))}
               {job.skills.length > 5 && (
                 <span className="px-2 py-0.5 rounded-full text-[0.65rem]"
-                  style={{ background: "var(--surface)", color: "var(--accent)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }}>
+                  style={{ background: "var(--surface)", color: "var(--teal)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }}>
                   +{job.skills.length - 5} more
                 </span>
               )}
@@ -254,24 +256,29 @@ export default function JobCard({
 
           {/* Sub-scores */}
           {job.sub_scores && (
-            <div className="flex flex-wrap gap-3 mb-3">
-              {[
-                { label: "Skills", value: job.sub_scores.skill_match, color: "#14b8a6" },
-                { label: "Experience", value: job.sub_scores.experience_match, color: "#6366f1" },
-                { label: "Location", value: job.sub_scores.location_match, color: "#f59e0b" },
-              ].map((s) => (
-                <div key={s.label} className="flex-1 min-w-[80px]">
-                  <div className="flex justify-between text-[0.6rem] mb-0.5" style={{ fontFamily: "var(--font-dm-sans)", color: "var(--muted2)" }}>
-                    <span>{s.label}</span>
-                    <span style={{ color: s.color }}>{Math.round(s.value)}%</span>
+            <div className="space-y-2 mb-3">
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { label: "Skills", value: job.sub_scores.skill_match, color: "#14b8a6" },
+                  { label: "Experience", value: job.sub_scores.experience_match, color: "#6366f1" },
+                  { label: "Location", value: job.sub_scores.location_match, color: "#f59e0b" },
+                ].map((s) => (
+                  <div key={s.label} className="flex-1 min-w-[80px]">
+                    <div className="flex justify-between text-[0.6rem] mb-0.5" style={{ fontFamily: "var(--font-dm-sans)", color: "var(--muted2)" }}>
+                      <span>{s.label}</span>
+                      <span style={{ color: s.color }}>{Math.round(s.value)}%</span>
+                    </div>
+                    <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--surface)" }}>
+                      <div className="h-full rounded-full transition-all duration-600 ease-out"
+                        style={{ background: s.color, width: `${s.value}%`, animation: "scaleXGrow 0.6s ease both 0.2s", transformOrigin: "left" }} />
+                    </div>
                   </div>
-                  <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--surface)" }}>
-                    <motion.div className="h-full rounded-full" style={{ background: s.color }}
-                      initial={{ width: 0 }} animate={{ width: `${s.value}%` }}
-                      transition={{ duration: 0.6, delay: 0.2 }} />
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              {/* Gap analysis with learning resources */}
+              {job.match_score < 75 && job.sub_scores.skill_match < 70 && job.skills.length > 0 && (
+                <SkillGapHint skills={job.skills} />
+              )}
             </div>
           )}
 
@@ -284,13 +291,13 @@ export default function JobCard({
                   if (token) createApplicationFromApply(token, job.job_id).catch(() => {});
                 }}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-xs font-semibold text-white transition-all hover:brightness-110"
-                style={{ background: "var(--accent)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 0 12px rgba(108,99,255,0.2)" }}>
+                style={{ background: "var(--teal)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 0 12px rgba(0,153,153,0.2)" }}>
                 APPLY NOW <IconExternalLink size={12} />
               </a>
             )}
             {onTailor && (
               <button onClick={(e) => { e.stopPropagation(); onTailor(job); }}
-                className="inline-flex items-center gap-1 px-3 py-2 rounded-[10px] text-xs font-medium transition-colors hover:text-[var(--accent)]"
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-[10px] text-xs font-medium transition-colors hover:text-[var(--teal)]"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
                 <IconFileText size={12} /> Tailor Resume
               </button>
@@ -298,28 +305,26 @@ export default function JobCard({
             {onCoverLetter && (
               <div className="relative">
                 <button onClick={handleCoverLetterClick} disabled={coverLetterLoading}
-                  className="inline-flex items-center gap-1 px-3 py-2 rounded-[10px] text-xs font-medium transition-colors hover:text-[var(--accent)]"
-                  style={{ background: coverLetter ? "rgba(99,102,241,0.1)" : "var(--surface)", border: `1px solid ${coverLetter ? "rgba(99,102,241,0.2)" : "var(--border)"}`, color: coverLetter ? "var(--accent)" : "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-[10px] text-xs font-medium transition-colors hover:text-[var(--teal)]"
+                  style={{ background: coverLetter ? "rgba(99,102,241,0.1)" : "var(--surface)", border: `1px solid ${coverLetter ? "rgba(99,102,241,0.2)" : "var(--border)"}`, color: coverLetter ? "var(--teal)" : "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
                   {coverLetterLoading ? <IconLoader2 size={12} className="animate-spin" /> : <IconFileText size={12} />}
                   {coverLetter ? "View Letter" : "Cover Letter"}
                 </button>
-                <AnimatePresence>
-                  {showToneSelector && (
-                    <motion.div initial={{ opacity: 0, y: -4, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                      className="absolute left-0 top-full mt-1 z-50 rounded-[10px] p-1.5 min-w-[160px]"
-                      style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}
-                      onClick={(e) => e.stopPropagation()}>
-                      <p className="text-[0.55rem] text-[var(--muted)] uppercase tracking-wider px-2 py-1" style={{ fontFamily: "var(--font-dm-mono)" }}>Tone</p>
-                      <button onClick={() => handleGenerateWithTone("formal")} className="w-full text-left px-2.5 py-2 rounded-[6px] text-xs text-[var(--text)] hover:bg-[var(--surface)] transition-colors" style={{ fontFamily: "var(--font-dm-sans)" }}>Professional</button>
-                      <button onClick={() => handleGenerateWithTone("creative")} className="w-full text-left px-2.5 py-2 rounded-[6px] text-xs text-[var(--text)] hover:bg-[var(--surface)] transition-colors" style={{ fontFamily: "var(--font-dm-sans)" }}>Creative</button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {showToneSelector && (
+                  <div
+                    className="absolute left-0 top-full mt-1 z-50 rounded-[10px] p-1.5 min-w-[160px] dropdown-enter"
+                    style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}
+                    onClick={(e) => e.stopPropagation()}>
+                    <p className="text-[0.55rem] text-[var(--muted)] uppercase tracking-wider px-2 py-1" style={{ fontFamily: "var(--font-dm-mono)" }}>Tone</p>
+                    <button onClick={() => handleGenerateWithTone("formal")} className="w-full text-left px-2.5 py-2 rounded-[6px] text-xs text-[var(--text)] hover:bg-[var(--surface)] transition-colors" style={{ fontFamily: "var(--font-dm-sans)" }}>Professional</button>
+                    <button onClick={() => handleGenerateWithTone("creative")} className="w-full text-left px-2.5 py-2 rounded-[6px] text-xs text-[var(--text)] hover:bg-[var(--surface)] transition-colors" style={{ fontFamily: "var(--font-dm-sans)" }}>Creative</button>
+                  </div>
+                )}
               </div>
             )}
             {onQueue && (
               <button onClick={(e) => { e.stopPropagation(); onQueue(job); }}
-                className="inline-flex items-center gap-1 px-3 py-2 rounded-[10px] text-xs font-medium transition-colors hover:text-[var(--accent)]"
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-[10px] text-xs font-medium transition-colors hover:text-[var(--teal)]"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
                 <IconPlayerPlay size={12} /> Add to Queue
               </button>
@@ -333,32 +338,54 @@ export default function JobCard({
       </div>
 
       {/* Cover letter inline */}
-      <AnimatePresence>
-        {coverLetter && showCoverLetter && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="px-6 pb-5 pt-3" style={{ borderTop: "1px solid var(--border)" }} onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>Cover Letter</span>
-                <div className="flex items-center gap-2">
-                  <button onClick={handleCopy} className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-[0.65rem] hover:bg-[var(--surface)] transition-colors" style={{ color: "var(--accent)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
-                    {copied ? <><IconCheck size={11} /> Copied</> : <><IconCopy size={11} /> Copy</>}
-                  </button>
-                  <button onClick={handleDownloadPdf} className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-[0.65rem] hover:bg-[var(--surface)] transition-colors" style={{ color: "var(--muted2)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
-                    <IconDownload size={11} /> PDF
-                  </button>
-                  <button onClick={handleDownloadDocx} className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-[0.65rem] hover:bg-[var(--surface)] transition-colors" style={{ color: "var(--muted2)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
-                    <IconDownload size={11} /> Word
-                  </button>
-                </div>
-              </div>
-              <div className="text-sm text-[var(--muted2)] whitespace-pre-line leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
-                <RichText text={coverLetter} />
+      <div className="accordion-content" style={coverLetter && showCoverLetter ? { gridTemplateRows: "1fr" } : undefined}>
+        <div className="overflow-hidden">
+          <div className="px-6 pb-5 pt-3" style={{ borderTop: "1px solid var(--border)" }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>Cover Letter</span>
+              <div className="flex items-center gap-2">
+                <button onClick={handleCopy} className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-[0.65rem] hover:bg-[var(--surface)] transition-colors" style={{ color: "var(--teal)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
+                  {copied ? <><IconCheck size={11} /> Copied</> : <><IconCopy size={11} /> Copy</>}
+                </button>
+                <button onClick={handleDownloadPdf} className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-[0.65rem] hover:bg-[var(--surface)] transition-colors" style={{ color: "var(--muted2)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
+                  <IconDownload size={11} /> PDF
+                </button>
+                <button onClick={handleDownloadDocx} className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-[0.65rem] hover:bg-[var(--surface)] transition-colors" style={{ color: "var(--muted2)", fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
+                  <IconDownload size={11} /> Word
+                </button>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+            <div className="text-sm text-[var(--muted2)] whitespace-pre-line leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+              <RichText text={coverLetter} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkillGapHint({ skills }: { skills: string[] }) {
+  const resources = getResourcesForSkills(skills.slice(0, 3));
+  if (resources.length === 0) return null;
+
+  return (
+    <div className="p-2 rounded-[8px] text-[0.6rem]" style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.1)" }}>
+      <p className="font-medium mb-1" style={{ color: "#f59e0b", fontFamily: "var(--font-dm-sans)" }}>
+        Bridge the gap — learn these skills:
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {resources.slice(0, 3).map(({ skill, resources: res }) => (
+          <a key={skill} href={res[0].url} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] hover:text-[var(--teal)] transition-colors"
+            style={{ background: "var(--surface)", color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}
+            onClick={(e) => e.stopPropagation()}>
+            {skill}
+            <svg width="8" height="8" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H6M12 4V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -369,7 +396,7 @@ function freshnessDotColor(dateStr: string): string | null {
     const diffMs = Date.now() - posted.getTime();
     if (diffMs < 0) return null;
     const diffHours = diffMs / (1000 * 60 * 60);
-    if (diffHours < 24) return "#10b981"; // green
+    if (diffHours < 24) return "#009999"; // green
     if (diffHours < 72) return "#14b8a6"; // teal
     if (diffHours < 168) return "#f59e0b"; // amber
     return null;

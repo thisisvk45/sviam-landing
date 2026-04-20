@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  motion,
-  useInView,
-  AnimatePresence,
-  useReducedMotion,
-} from "framer-motion";
 import { useRef, useState, FormEvent } from "react";
+import { useInView, usePrefersReducedMotion } from "@/hooks/useInView";
 import confetti from "canvas-confetti";
 import AuthButton from "./AuthButton";
 
@@ -51,10 +46,9 @@ const companyLevels = [
 ];
 
 export default function Waitlist() {
-  const ref = useRef(null);
+  const { ref, inView } = useInView<HTMLElement>({ margin: "-80px" });
   const btnRef = useRef<HTMLButtonElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = usePrefersReducedMotion();
 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -117,7 +111,7 @@ export default function Waitlist() {
   };
 
   const inputClass =
-    "w-full px-4 py-3 rounded-[10px] text-sm text-[var(--text)] placeholder:text-[var(--muted)] outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--accent)] focus:ring-opacity-30";
+    "w-full px-4 py-3 rounded-[10px] text-sm text-[var(--text)] placeholder:text-[var(--muted)] outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--teal)] focus:ring-opacity-30";
   const inputStyle = {
     background: "var(--surface)",
     border: "1px solid var(--border)",
@@ -136,7 +130,7 @@ export default function Waitlist() {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px]"
           style={{
             background:
-              "conic-gradient(from 0deg, rgba(99,102,241,0.1), rgba(16,185,129,0.08), rgba(129,140,248,0.06), rgba(99,102,241,0.1))",
+              "conic-gradient(from 0deg, rgba(99,102,241,0.1), rgba(0,153,153,0.08), rgba(129,140,248,0.06), rgba(99,102,241,0.1))",
             borderRadius: "50%",
             filter: "blur(80px)",
             animation: reducedMotion ? "none" : "aurora 15s linear infinite",
@@ -146,7 +140,7 @@ export default function Waitlist() {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px]"
           style={{
             background:
-              "conic-gradient(from 180deg, rgba(16,185,129,0.08), rgba(99,102,241,0.1), rgba(16,185,129,0.06), rgba(16,185,129,0.08))",
+              "conic-gradient(from 180deg, rgba(0,153,153,0.08), rgba(99,102,241,0.1), rgba(0,153,153,0.06), rgba(0,153,153,0.08))",
             borderRadius: "50%",
             filter: "blur(60px)",
             animation: reducedMotion
@@ -160,14 +154,8 @@ export default function Waitlist() {
         {/* Headline */}
         <div className="text-center mb-10">
           <div className="overflow-hidden mb-2">
-            <motion.h2
-              initial={
-                reducedMotion ? false : { y: "100%", rotateX: -30, filter: "blur(6px)" }
-              }
-              animate={
-                inView ? { y: 0, rotateX: 0, filter: "blur(0px)" } : {}
-              }
-              transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
+            <h2
+              className={`anim-base anim-reveal-up ${inView ? "in-view" : ""}`}
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2.4rem, 5vw, 3.6rem)",
@@ -178,21 +166,11 @@ export default function Waitlist() {
               }}
             >
               The old way is dying.
-            </motion.h2>
+            </h2>
           </div>
           <div className="overflow-hidden mb-8">
-            <motion.h2
-              initial={
-                reducedMotion ? false : { y: "100%", rotateX: -30, filter: "blur(6px)" }
-              }
-              animate={
-                inView ? { y: 0, rotateX: 0, filter: "blur(0px)" } : {}
-              }
-              transition={{
-                duration: 0.7,
-                delay: 0.15,
-                ease: [0.33, 1, 0.68, 1],
-              }}
+            <h2
+              className={`anim-base anim-reveal-up ${inView ? "in-view" : ""}`}
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2.4rem, 5vw, 3.6rem)",
@@ -200,107 +178,143 @@ export default function Waitlist() {
                 letterSpacing: "-0.03em",
                 fontWeight: 700,
                 transformOrigin: "bottom",
+                animationDelay: "0.15s",
               }}
             >
               Be first in line.
-            </motion.h2>
+            </h2>
           </div>
 
-          <motion.p
-            initial={reducedMotion ? false : { opacity: 0, y: 15 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-[var(--muted2)]"
+          <p
+            className={`text-[var(--muted2)] anim-base anim-fade-up ${inView ? "in-view" : ""}`}
             style={{
               fontFamily: "var(--font-dm-sans)",
               fontWeight: 300,
               lineHeight: 1.6,
+              animationDelay: "0.4s",
             }}
           >
             SViam is in private beta. We&apos;re letting people in wave by wave.
             <br />
             Tell us about yourself. One email when it&apos;s your turn.
-          </motion.p>
+          </p>
         </div>
 
         {/* Form */}
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 20, scale: 0.95 }}
-          animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.5, type: "spring", stiffness: 200 }}
+        <div
+          className={`anim-base anim-fade-scale ${inView ? "in-view" : ""}`}
+          style={{ animationDelay: "0.5s" }}
         >
-          <AnimatePresence mode="wait">
-            {!submitted ? (
-              <motion.form
-                key="form"
-                onSubmit={handleSubmit}
-                exit={reducedMotion ? {} : { opacity: 0, scale: 0.9, y: 10 }}
-                transition={{ duration: 0.3 }}
-                className="p-6 sm:p-8 rounded-[20px] space-y-5"
-                style={{
-                  background: "var(--card)",
-                  border: "1px solid var(--border)",
-                  boxShadow: "0 20px 60px rgba(0,0,0,0.2), 0 0 40px rgba(99,102,241,0.05)",
-                }}
-              >
-                {/* User type toggle */}
+          {!submitted ? (
+            <form
+              onSubmit={handleSubmit}
+              className="p-6 sm:p-8 rounded-[20px] space-y-5"
+              style={{
+                background: "var(--card)",
+                border: "1px solid var(--border)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.2), 0 0 40px rgba(99,102,241,0.05)",
+              }}
+            >
+              {/* User type toggle */}
+              <div>
+                <label
+                  className="text-[0.65rem] text-[var(--muted)] block mb-3 tracking-[0.15em]"
+                  style={{
+                    fontFamily: "var(--font-dm-mono)",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  I am a
+                </label>
+                <div
+                  className="flex gap-1 p-1 rounded-[12px]"
+                  style={{ background: "var(--surface)" }}
+                >
+                  {(["candidate", "company"] as const).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setUserType(type)}
+                      className="flex-1 px-4 py-3 rounded-[10px] text-sm font-medium relative transition-all duration-300"
+                      style={{
+                        fontFamily: "var(--font-dm-sans)",
+                        color:
+                          userType === type
+                            ? "white"
+                            : "var(--muted2)",
+                        background:
+                          userType === type
+                            ? type === "candidate"
+                              ? "var(--teal)"
+                              : "var(--teal)"
+                            : "transparent",
+                        boxShadow:
+                          userType === type
+                            ? type === "candidate"
+                              ? "0 0 20px rgba(99,102,241,0.3)"
+                              : "0 0 20px rgba(0,153,153,0.3)"
+                            : "none",
+                      }}
+                    >
+                      {type === "candidate" ? "Candidate" : "Company"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Name + Email row */}
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label
-                    className="text-[0.65rem] text-[var(--muted)] block mb-3 tracking-[0.15em]"
+                    className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
                     style={{
                       fontFamily: "var(--font-dm-mono)",
                       textTransform: "uppercase",
                     }}
                   >
-                    I am a
+                    Full name *
                   </label>
-                  <div
-                    className="flex gap-1 p-1 rounded-[12px]"
-                    style={{ background: "var(--surface)" }}
-                  >
-                    {(["candidate", "company"] as const).map((type) => (
-                      <motion.button
-                        key={type}
-                        type="button"
-                        onClick={() => setUserType(type)}
-                        whileHover={reducedMotion ? {} : { scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="flex-1 px-4 py-3 rounded-[10px] text-sm font-medium relative"
-                        style={{
-                          fontFamily: "var(--font-dm-sans)",
-                          color:
-                            userType === type
-                              ? "white"
-                              : "var(--muted2)",
-                        }}
-                      >
-                        {userType === type && (
-                          <motion.div
-                            layoutId="type-active"
-                            className="absolute inset-0 rounded-[10px]"
-                            style={{
-                              background:
-                                type === "candidate"
-                                  ? "var(--accent)"
-                                  : "var(--teal)",
-                              boxShadow:
-                                type === "candidate"
-                                  ? "0 0 20px rgba(99,102,241,0.3)"
-                                  : "0 0 20px rgba(16,185,129,0.3)",
-                            }}
-                            transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                          />
-                        )}
-                        <span className="relative z-10">
-                          {type === "candidate" ? "Candidate" : "Company"}
-                        </span>
-                      </motion.button>
-                    ))}
-                  </div>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Vikas Kumar"
+                    required
+                    className={inputClass}
+                    style={inputStyle}
+                  />
                 </div>
+                <div>
+                  <label
+                    className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
+                    style={{
+                      fontFamily: "var(--font-dm-mono)",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder=""
+                    required
+                    className={inputClass}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
 
-                {/* Name + Email row */}
-                <div className="grid sm:grid-cols-2 gap-4">
+              {/* Conditional fields - Company */}
+              <div
+                className="overflow-hidden transition-all duration-300 ease-in-out"
+                style={{
+                  maxHeight: userType === "company" ? "600px" : "0",
+                  opacity: userType === "company" ? 1 : 0,
+                }}
+              >
+                <div className="space-y-5">
                   <div>
                     <label
                       className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
@@ -309,14 +323,13 @@ export default function Waitlist() {
                         textTransform: "uppercase",
                       }}
                     >
-                      Full name *
+                      Company name
                     </label>
                     <input
                       type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Vikas Kumar"
-                      required
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="Razorpay"
                       className={inputClass}
                       style={inputStyle}
                     />
@@ -329,410 +342,320 @@ export default function Waitlist() {
                         textTransform: "uppercase",
                       }}
                     >
-                      Email *
+                      Hiring for
                     </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder=""
-                      required
-                      className={inputClass}
-                      style={inputStyle}
-                    />
+                    <div className="flex flex-wrap gap-2">
+                      {roles.map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() =>
+                            setHiringRoles((prev) =>
+                              prev.includes(role)
+                                ? prev.filter((r) => r !== role)
+                                : [...prev, role]
+                            )
+                          }
+                          className="px-3 py-1.5 rounded-full text-xs transition-all duration-200 hover-scale"
+                          style={{
+                            fontFamily: "var(--font-dm-sans)",
+                            fontWeight: 500,
+                            background:
+                              hiringRoles.includes(role)
+                                ? "var(--teal)"
+                                : "var(--surface)",
+                            color:
+                              hiringRoles.includes(role)
+                                ? "white"
+                                : "var(--muted2)",
+                            border:
+                              hiringRoles.includes(role)
+                                ? "1px solid var(--teal)"
+                                : "1px solid var(--border)",
+                            boxShadow:
+                              hiringRoles.includes(role)
+                                ? "0 0 12px rgba(0,153,153,0.25)"
+                                : "none",
+                          }}
+                        >
+                          {role}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
+                      style={{
+                        fontFamily: "var(--font-dm-mono)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Experience level needed
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {companyLevels.map((level) => (
+                        <button
+                          key={level}
+                          type="button"
+                          onClick={() =>
+                            setHiringLevel(
+                              hiringLevel === level ? "" : level
+                            )
+                          }
+                          className="px-3 py-1.5 rounded-full text-xs transition-all duration-200 hover-scale"
+                          style={{
+                            fontFamily: "var(--font-dm-sans)",
+                            fontWeight: 500,
+                            background:
+                              hiringLevel === level
+                                ? "var(--teal)"
+                                : "var(--surface)",
+                            color:
+                              hiringLevel === level
+                                ? "white"
+                                : "var(--muted2)",
+                            border:
+                              hiringLevel === level
+                                ? "1px solid var(--teal)"
+                                : "1px solid var(--border)",
+                            boxShadow:
+                              hiringLevel === level
+                                ? "0 0 12px rgba(0,153,153,0.25)"
+                                : "none",
+                          }}
+                        >
+                          {level}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Conditional fields */}
-                <AnimatePresence mode="wait">
-                  {userType === "company" && (
-                    <motion.div
-                      key="company-fields"
-                      initial={reducedMotion ? false : { opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="space-y-5 overflow-hidden"
-                    >
-                      <div>
-                        <label
-                          className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
-                          style={{
-                            fontFamily: "var(--font-dm-mono)",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Company name
-                        </label>
-                        <input
-                          type="text"
-                          value={companyName}
-                          onChange={(e) => setCompanyName(e.target.value)}
-                          placeholder="Razorpay"
-                          className={inputClass}
-                          style={inputStyle}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
-                          style={{
-                            fontFamily: "var(--font-dm-mono)",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Hiring for
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {roles.map((role) => (
-                            <motion.button
-                              key={role}
-                              type="button"
-                              onClick={() =>
-                                setHiringRoles((prev) =>
-                                  prev.includes(role)
-                                    ? prev.filter((r) => r !== role)
-                                    : [...prev, role]
-                                )
-                              }
-                              whileHover={reducedMotion ? {} : { scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="px-3 py-1.5 rounded-full text-xs transition-all duration-200"
-                              style={{
-                                fontFamily: "var(--font-dm-sans)",
-                                fontWeight: 500,
-                                background:
-                                  hiringRoles.includes(role)
-                                    ? "var(--teal)"
-                                    : "var(--surface)",
-                                color:
-                                  hiringRoles.includes(role)
-                                    ? "white"
-                                    : "var(--muted2)",
-                                border:
-                                  hiringRoles.includes(role)
-                                    ? "1px solid var(--teal)"
-                                    : "1px solid var(--border)",
-                                boxShadow:
-                                  hiringRoles.includes(role)
-                                    ? "0 0 12px rgba(16,185,129,0.25)"
-                                    : "none",
-                              }}
-                            >
-                              {role}
-                            </motion.button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <label
-                          className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
-                          style={{
-                            fontFamily: "var(--font-dm-mono)",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Experience level needed
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {companyLevels.map((level) => (
-                            <motion.button
-                              key={level}
-                              type="button"
-                              onClick={() =>
-                                setHiringLevel(
-                                  hiringLevel === level ? "" : level
-                                )
-                              }
-                              whileHover={reducedMotion ? {} : { scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="px-3 py-1.5 rounded-full text-xs transition-all duration-200"
-                              style={{
-                                fontFamily: "var(--font-dm-sans)",
-                                fontWeight: 500,
-                                background:
-                                  hiringLevel === level
-                                    ? "var(--teal)"
-                                    : "var(--surface)",
-                                color:
-                                  hiringLevel === level
-                                    ? "white"
-                                    : "var(--muted2)",
-                                border:
-                                  hiringLevel === level
-                                    ? "1px solid var(--teal)"
-                                    : "1px solid var(--border)",
-                                boxShadow:
-                                  hiringLevel === level
-                                    ? "0 0 12px rgba(16,185,129,0.25)"
-                                    : "none",
-                              }}
-                            >
-                              {level}
-                            </motion.button>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {userType === "candidate" && (
-                    <motion.div
-                      key="candidate-fields"
-                      initial={reducedMotion ? false : { opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="space-y-5 overflow-hidden"
-                    >
-                      <div>
-                        <label
-                          className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
-                          style={{
-                            fontFamily: "var(--font-dm-mono)",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          What role are you looking for?
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {roles.map((role) => (
-                            <motion.button
-                              key={role}
-                              type="button"
-                              onClick={() =>
-                                setLookingFor((prev) =>
-                                  prev.includes(role)
-                                    ? prev.filter((r) => r !== role)
-                                    : [...prev, role]
-                                )
-                              }
-                              whileHover={reducedMotion ? {} : { scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="px-3 py-1.5 rounded-full text-xs transition-all duration-200"
-                              style={{
-                                fontFamily: "var(--font-dm-sans)",
-                                fontWeight: 500,
-                                background:
-                                  lookingFor.includes(role)
-                                    ? "var(--accent)"
-                                    : "var(--surface)",
-                                color:
-                                  lookingFor.includes(role)
-                                    ? "white"
-                                    : "var(--muted2)",
-                                border:
-                                  lookingFor.includes(role)
-                                    ? "1px solid var(--accent)"
-                                    : "1px solid var(--border)",
-                                boxShadow:
-                                  lookingFor.includes(role)
-                                    ? "0 0 12px rgba(99,102,241,0.25)"
-                                    : "none",
-                              }}
-                            >
-                              {role}
-                            </motion.button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <label
-                          className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
-                          style={{
-                            fontFamily: "var(--font-dm-mono)",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Experience level
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {candidateLevels.map((level) => (
-                            <motion.button
-                              key={level}
-                              type="button"
-                              onClick={() =>
-                                setExperienceLevel(
-                                  experienceLevel === level ? "" : level
-                                )
-                              }
-                              whileHover={reducedMotion ? {} : { scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="px-3 py-1.5 rounded-full text-xs transition-all duration-200"
-                              style={{
-                                fontFamily: "var(--font-dm-sans)",
-                                fontWeight: 500,
-                                background:
-                                  experienceLevel === level
-                                    ? "var(--accent)"
-                                    : "var(--surface)",
-                                color:
-                                  experienceLevel === level
-                                    ? "white"
-                                    : "var(--muted2)",
-                                border:
-                                  experienceLevel === level
-                                    ? "1px solid var(--accent)"
-                                    : "1px solid var(--border)",
-                                boxShadow:
-                                  experienceLevel === level
-                                    ? "0 0 12px rgba(99,102,241,0.25)"
-                                    : "none",
-                              }}
-                            >
-                              {level}
-                            </motion.button>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Error */}
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-sm text-[var(--orange)]"
-                    style={{ fontFamily: "var(--font-dm-sans)" }}
-                  >
-                    {error}
-                  </motion.p>
-                )}
-
-                {/* Submit */}
-                <motion.button
-                  ref={btnRef}
-                  type="submit"
-                  disabled={!name || !email || !userType || submitting}
-                  className="w-full py-4 rounded-[12px] text-sm font-medium text-white relative overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--accent), var(--accent2))",
-                    boxShadow: "0 0 30px rgba(99,102,241,0.3)",
-                    fontFamily: "var(--font-dm-sans)",
-                  }}
-                  whileHover={
-                    reducedMotion || submitting
-                      ? {}
-                      : {
-                          scale: 1.02,
-                          boxShadow: "0 0 50px rgba(99,102,241,0.5)",
-                        }
-                  }
-                  whileTap={submitting ? {} : { scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                >
-                  {!reducedMotion && !submitting && (
-                    <motion.span
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        background:
-                          "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)",
-                      }}
-                      animate={{ x: ["-100%", "200%"] }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        repeatDelay: 2,
-                      }}
-                    />
-                  )}
-                  <span className="relative z-10">
-                    {submitting ? "Joining..." : "Get Early Access"}
-                  </span>
-                </motion.button>
-
-                <p
-                  className="text-center text-[var(--muted)]"
-                  style={{ fontFamily: "var(--font-dm-mono)", fontSize: "0.65rem" }}
-                >
-                  No spam. One email when you&apos;re in.
-                </p>
-
-                {/* Divider */}
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-                  <span
-                    className="text-[var(--muted)] text-xs"
-                    style={{ fontFamily: "var(--font-dm-mono)" }}
-                  >
-                    or
-                  </span>
-                  <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-                </div>
-
-                <AuthButton />
-              </motion.form>
-            ) : (
-              <motion.div
-                key="success"
-                initial={reducedMotion ? false : { opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.6, type: "spring", stiffness: 200 }}
-                className="p-8 rounded-[20px] text-center"
+              {/* Conditional fields - Candidate */}
+              <div
+                className="overflow-hidden transition-all duration-300 ease-in-out"
                 style={{
-                  background: "var(--card)",
-                  border: "1px solid var(--border)",
-                  boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+                  maxHeight: userType === "candidate" ? "600px" : "0",
+                  opacity: userType === "candidate" ? 1 : 0,
                 }}
               >
-                <motion.div
-                  className="w-16 h-16 rounded-full bg-[var(--green)] flex items-center justify-center mx-auto mb-5"
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 15,
-                    delay: 0.1,
-                  }}
+                <div className="space-y-5">
+                  <div>
+                    <label
+                      className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
+                      style={{
+                        fontFamily: "var(--font-dm-mono)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      What role are you looking for?
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {roles.map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() =>
+                            setLookingFor((prev) =>
+                              prev.includes(role)
+                                ? prev.filter((r) => r !== role)
+                                : [...prev, role]
+                            )
+                          }
+                          className="px-3 py-1.5 rounded-full text-xs transition-all duration-200 hover-scale"
+                          style={{
+                            fontFamily: "var(--font-dm-sans)",
+                            fontWeight: 500,
+                            background:
+                              lookingFor.includes(role)
+                                ? "var(--teal)"
+                                : "var(--surface)",
+                            color:
+                              lookingFor.includes(role)
+                                ? "white"
+                                : "var(--muted2)",
+                            border:
+                              lookingFor.includes(role)
+                                ? "1px solid var(--teal)"
+                                : "1px solid var(--border)",
+                            boxShadow:
+                              lookingFor.includes(role)
+                                ? "0 0 12px rgba(99,102,241,0.25)"
+                                : "none",
+                          }}
+                        >
+                          {role}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label
+                      className="text-[0.65rem] text-[var(--muted)] block mb-2 tracking-[0.15em]"
+                      style={{
+                        fontFamily: "var(--font-dm-mono)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Experience level
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {candidateLevels.map((level) => (
+                        <button
+                          key={level}
+                          type="button"
+                          onClick={() =>
+                            setExperienceLevel(
+                              experienceLevel === level ? "" : level
+                            )
+                          }
+                          className="px-3 py-1.5 rounded-full text-xs transition-all duration-200 hover-scale"
+                          style={{
+                            fontFamily: "var(--font-dm-sans)",
+                            fontWeight: 500,
+                            background:
+                              experienceLevel === level
+                                ? "var(--teal)"
+                                : "var(--surface)",
+                            color:
+                              experienceLevel === level
+                                ? "white"
+                                : "var(--muted2)",
+                            border:
+                              experienceLevel === level
+                                ? "1px solid var(--teal)"
+                                : "1px solid var(--border)",
+                            boxShadow:
+                              experienceLevel === level
+                                ? "0 0 12px rgba(99,102,241,0.25)"
+                                : "none",
+                          }}
+                        >
+                          {level}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <p
+                  className="text-sm text-[var(--orange)]"
+                  style={{ fontFamily: "var(--font-dm-sans)" }}
                 >
-                  <motion.svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                  >
-                    <motion.path
-                      d="M3 8.5l3 3 7-7"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.5, delay: 0.3 }}
-                    />
-                  </motion.svg>
-                </motion.div>
-                <motion.h3
-                  className="text-xl font-medium text-[var(--text)] mb-2"
-                  style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
-                  initial={reducedMotion ? false : { opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
+                  {error}
+                </p>
+              )}
+
+              {/* Submit */}
+              <button
+                ref={btnRef}
+                type="submit"
+                disabled={!name || !email || !userType || submitting}
+                className="w-full py-4 rounded-[12px] text-sm font-medium text-white relative overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed btn-shimmer hover-scale"
+                style={{
+                  background:
+                    "linear-gradient(135deg, var(--teal), var(--accent2))",
+                  boxShadow: "0 0 30px rgba(99,102,241,0.3)",
+                  fontFamily: "var(--font-dm-sans)",
+                }}
+              >
+                <span className="relative z-10">
+                  {submitting ? "Joining..." : "Get Early Access"}
+                </span>
+              </button>
+
+              <p
+                className="text-center text-[var(--muted)]"
+                style={{ fontFamily: "var(--font-dm-mono)", fontSize: "0.65rem" }}
+              >
+                No spam. One email when you&apos;re in.
+              </p>
+
+              {/* Divider */}
+              <div className="flex items-center gap-4">
+                <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                <span
+                  className="text-[var(--muted)] text-xs"
+                  style={{ fontFamily: "var(--font-dm-mono)" }}
                 >
-                  You&apos;re on the list!
-                </motion.h3>
-                <motion.p
-                  className="text-sm text-[var(--muted2)]"
-                  style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}
-                  initial={reducedMotion ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  We&apos;ll reach out when your spot opens up.
-                  <br />
-                  Keep an eye on your inbox.
-                </motion.p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+                  or
+                </span>
+                <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+              </div>
+
+              <AuthButton />
+            </form>
+          ) : (
+            <div
+              className="p-8 rounded-[20px] text-center"
+              style={{
+                background: "var(--card)",
+                border: "1px solid var(--border)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+                animation: reducedMotion ? "none" : "fadeInScale 0.6s ease forwards",
+              }}
+            >
+              <div
+                className="w-16 h-16 rounded-full bg-[var(--green)] flex items-center justify-center mx-auto mb-5"
+                style={{
+                  animation: reducedMotion ? "none" : "fadeInScale 0.4s ease 0.1s both",
+                }}
+              >
+                <svg width="28" height="28" viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M3 8.5l3 3 7-7"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                      strokeDasharray: 20,
+                      strokeDashoffset: reducedMotion ? 0 : 20,
+                      animation: reducedMotion ? "none" : "checkDraw 0.5s ease 0.3s forwards",
+                    }}
+                  />
+                </svg>
+              </div>
+              <h3
+                className="text-xl font-medium text-[var(--text)] mb-2"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 600,
+                  animation: reducedMotion ? "none" : "fadeInUp 0.4s ease 0.4s both",
+                }}
+              >
+                You&apos;re on the list!
+              </h3>
+              <p
+                className="text-sm text-[var(--muted2)]"
+                style={{
+                  fontFamily: "var(--font-dm-sans)",
+                  fontWeight: 300,
+                  animation: reducedMotion ? "none" : "fadeInUp 0.4s ease 0.6s both",
+                }}
+              >
+                We&apos;ll reach out when your spot opens up.
+                <br />
+                Keep an eye on your inbox.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Inline keyframe for checkmark draw - not available in globals.css */}
+      <style jsx>{`
+        @keyframes checkDraw {
+          to {
+            stroke-dashoffset: 0;
+          }
+        }
+      `}</style>
     </section>
   );
 }

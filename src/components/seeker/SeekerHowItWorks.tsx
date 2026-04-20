@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "framer-motion";
 import { useRef, useEffect } from "react";
+import { useInView, usePrefersReducedMotion } from "@/hooks/useInView";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -18,7 +18,7 @@ const steps = [
   {
     num: "02",
     title: "See real matches",
-    desc: "Not job board spam. Ranked roles with fit scores you can trust. One-click apply. Referral contacts surface automatically.",
+    desc: "Not job board spam. Ranked roles with fit scores you can trust. Tailor your resume, generate a cover letter, and apply with confidence.",
   },
   {
     num: "03",
@@ -27,31 +27,10 @@ const steps = [
   },
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.2, delayChildren: 0.3 },
-  },
-};
-
-const stepVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.9 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.6,
-      ease: [0.33, 1, 0.68, 1] as const,
-    },
-  },
-};
-
 export default function SeekerHowItWorks() {
-  const ref = useRef(null);
   const pathRef = useRef<SVGPathElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-100px" });
-  const reducedMotion = useReducedMotion();
+  const { ref, inView } = useInView<HTMLElement>({ once: true, margin: "-100px" });
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     if (typeof window === "undefined" || reducedMotion || !pathRef.current)
@@ -76,35 +55,30 @@ export default function SeekerHowItWorks() {
     return () => {
       tween.kill();
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, ref]);
 
   return (
     <section className="relative z-10 py-24 px-6" ref={ref}>
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+        <div
+          className={`text-center mb-16 anim-base anim-fade-up ${inView ? "in-view" : ""}`}
         >
           <div className="overflow-hidden">
-            <motion.h2
+            <h2
+              className={`anim-base anim-reveal-up ${inView ? "in-view" : ""}`}
               style={{
                 fontFamily: "var(--font-display)",
                 fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
                 lineHeight: 1.08,
                 letterSpacing: "-0.025em",
               }}
-              initial={reducedMotion ? false : { y: "100%", rotateX: -20 }}
-              animate={inView ? { y: 0, rotateX: 0 } : {}}
-              transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
             >
               Three steps. No busywork.
               <br />
               No 45-minute onboarding.
-            </motion.h2>
+            </h2>
           </div>
-        </motion.div>
+        </div>
 
         <div className="relative">
           {/* SVG connecting line */}
@@ -117,7 +91,7 @@ export default function SeekerHowItWorks() {
             <path
               ref={pathRef}
               d="M100 10 Q400 10 600 10 Q800 10 1100 10"
-              stroke="var(--accent)"
+              stroke="var(--teal)"
               strokeWidth="2"
               strokeDasharray="8 6"
               fill="none"
@@ -125,52 +99,27 @@ export default function SeekerHowItWorks() {
             />
           </svg>
 
-          <motion.div
-            className="grid md:grid-cols-3 gap-10"
-            variants={reducedMotion ? undefined : containerVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-          >
+          <div className="grid md:grid-cols-3 gap-10">
             {steps.map((step, i) => (
-              <motion.div
+              <div
                 key={step.num}
-                variants={reducedMotion ? undefined : stepVariants}
-                className="text-center group"
-                whileHover={reducedMotion ? {} : { y: -8 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className={`text-center group hover-lift anim-base anim-fade-up stagger-${i * 2 + 1} ${inView ? "in-view" : ""}`}
               >
-                <motion.div
-                  className="w-14 h-14 rounded-full mx-auto mb-6 flex items-center justify-center relative"
+                <div
+                  className="w-14 h-14 rounded-full mx-auto mb-6 flex items-center justify-center relative hover-scale"
                   style={{
                     background: "var(--card)",
-                    border: "2px solid var(--accent)",
-                    boxShadow: "0 0 20px rgba(108,99,255,0.2)",
+                    border: "2px solid var(--teal)",
+                    boxShadow: "0 0 20px rgba(0,153,153,0.2)",
                   }}
-                  whileHover={
-                    reducedMotion
-                      ? {}
-                      : {
-                          scale: 1.15,
-                          boxShadow: "0 0 40px rgba(108,99,255,0.4)",
-                          rotate: 10,
-                        }
-                  }
-                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
                 >
                   {/* Pulse ring behind circle */}
                   {!reducedMotion && (
-                    <motion.div
+                    <div
                       className="absolute inset-0 rounded-full"
-                      style={{ border: "2px solid var(--accent)" }}
-                      animate={{
-                        scale: [1, 1.6, 1],
-                        opacity: [0.4, 0, 0.4],
-                      }}
-                      transition={{
-                        duration: 2.5,
-                        repeat: Infinity,
-                        delay: i * 0.5,
-                        ease: "easeOut",
+                      style={{
+                        border: "2px solid var(--teal)",
+                        animation: `pulseRing 2.5s ease-out ${i * 0.5}s infinite`,
                       }}
                     />
                   )}
@@ -180,14 +129,13 @@ export default function SeekerHowItWorks() {
                   >
                     {step.num}
                   </span>
-                </motion.div>
-                <motion.h3
+                </div>
+                <h3
                   className="text-lg text-[var(--text)] mb-2"
                   style={{ fontFamily: "var(--font-display)" }}
-                  whileHover={reducedMotion ? {} : { scale: 1.05 }}
                 >
                   {step.title}
-                </motion.h3>
+                </h3>
                 <p
                   className="text-sm text-[var(--muted)] leading-relaxed max-w-xs mx-auto"
                   style={{
@@ -197,9 +145,9 @@ export default function SeekerHowItWorks() {
                 >
                   {step.desc}
                 </p>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

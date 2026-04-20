@@ -1,58 +1,48 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "framer-motion";
-import { useRef } from "react";
+import { useInView } from "@/hooks/useInView";
 
 export default function FounderStory() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const reducedMotion = useReducedMotion();
+  const { ref, inView } = useInView<HTMLElement>({ margin: "-80px" });
 
   return (
     <section className="relative z-10 py-24 px-6" ref={ref}>
       <div className="max-w-3xl mx-auto">
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
-          className="p-8 sm:p-12 rounded-[24px] relative overflow-hidden"
+        <div
+          className={`p-8 sm:p-12 rounded-[24px] relative overflow-hidden anim-base anim-fade-up ${inView ? "in-view" : ""}`}
           style={{
             background: "var(--card)",
             border: "1px solid var(--border)",
+            animationDuration: "0.7s",
           }}
         >
           {/* Accent glow */}
           <div
             className="absolute top-0 left-0 w-60 h-60 pointer-events-none"
             style={{
-              background:
-                "radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%)",
             }}
           />
 
           {/* Quote mark */}
-          <motion.span
-            className="block mb-6 text-[var(--accent)]"
+          <span
+            className={`block mb-6 text-[var(--teal)] anim-base anim-fade-scale ${inView ? "in-view" : ""}`}
             style={{
               fontFamily: "var(--font-display)",
               fontSize: "4rem",
               lineHeight: 0.8,
               fontWeight: 700,
-              opacity: 0.15,
+              opacity: inView ? 0.15 : 0,
+              animationDelay: "0.2s",
             }}
-            initial={reducedMotion ? false : { opacity: 0, scale: 0.5 }}
-            animate={inView ? { opacity: 0.15, scale: 1 } : {}}
-            transition={{ duration: 0.5, delay: 0.2 }}
           >
             &ldquo;
-          </motion.span>
+          </span>
 
           {/* Story */}
-          <motion.blockquote
-            className="relative"
-            initial={reducedMotion ? false : { opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
+          <blockquote
+            className={`relative anim-base anim-fade-up ${inView ? "in-view" : ""}`}
+            style={{ animationDelay: "0.3s" }}
           >
             <p
               className="text-[var(--text)] mb-6"
@@ -96,17 +86,14 @@ export default function FounderStory() {
             </p>
 
             {/* Attribution */}
-            <motion.div
-              className="flex items-center gap-4"
-              initial={reducedMotion ? false : { opacity: 0, x: -15 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.6 }}
+            <div
+              className={`flex items-center gap-4 anim-base anim-fade-left ${inView ? "in-view" : ""}`}
+              style={{ animationDelay: "0.6s" }}
             >
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
                 style={{
-                  background:
-                    "linear-gradient(135deg, var(--accent), var(--teal))",
+                  background: "linear-gradient(135deg, var(--teal), var(--teal))",
                   fontFamily: "var(--font-display)",
                   fontSize: "0.9rem",
                 }}
@@ -127,9 +114,9 @@ export default function FounderStory() {
                   Founder, SViam
                 </p>
               </div>
-            </motion.div>
-          </motion.blockquote>
-        </motion.div>
+            </div>
+          </blockquote>
+        </div>
       </div>
     </section>
   );

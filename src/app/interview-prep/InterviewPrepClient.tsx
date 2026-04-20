@@ -15,14 +15,14 @@ import { getApplications, generateInterviewQuestions } from "@/lib/api";
 import type { Application, InterviewQuestion } from "@/lib/api";
 
 const CATEGORY_COLORS: Record<string, { bg: string; color: string }> = {
-  technical: { bg: "rgba(99,102,241,0.1)", color: "var(--accent)" },
-  behavioral: { bg: "rgba(16,185,129,0.1)", color: "#10b981" },
+  technical: { bg: "rgba(99,102,241,0.1)", color: "var(--teal)" },
+  behavioral: { bg: "rgba(0,153,153,0.1)", color: "#009999" },
   situational: { bg: "rgba(245,158,11,0.1)", color: "#f59e0b" },
   "company-specific": { bg: "rgba(139,92,246,0.1)", color: "#8b5cf6" },
 };
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  easy: "#10b981",
+  easy: "#009999",
   medium: "#f59e0b",
   hard: "#ef4444",
 };
@@ -112,7 +112,7 @@ export default function InterviewPrepClient({ token, email }: { token: string; e
                     style={{
                       background: selectedApp?.id === app.id ? "rgba(99,102,241,0.12)" : "var(--surface)",
                       border: selectedApp?.id === app.id ? "1px solid rgba(99,102,241,0.3)" : "1px solid var(--border)",
-                      color: selectedApp?.id === app.id ? "var(--accent)" : "var(--muted2)",
+                      color: selectedApp?.id === app.id ? "var(--teal)" : "var(--muted2)",
                       fontFamily: "var(--font-dm-sans)",
                     }}>
                     {app.title} @ {app.company}
@@ -130,11 +130,11 @@ export default function InterviewPrepClient({ token, email }: { token: string; e
             <div className="grid sm:grid-cols-2 gap-2.5">
               <input value={customTitle} onChange={(e) => { setCustomTitle(e.target.value); setSelectedApp(null); }}
                 placeholder="Job title (e.g. Frontend Developer)"
-                className="px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                className="px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--teal)]"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }} />
               <input value={customCompany} onChange={(e) => { setCustomCompany(e.target.value); setSelectedApp(null); }}
                 placeholder="Company (optional)"
-                className="px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                className="px-3 py-2 rounded-[8px] text-sm text-[var(--text)] outline-none focus:ring-1 focus:ring-[var(--teal)]"
                 style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }} />
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function InterviewPrepClient({ token, email }: { token: string; e
           <button onClick={handleGenerate}
             disabled={generating || (!selectedApp && !customTitle.trim())}
             className="mt-4 w-full py-3 rounded-[10px] text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:brightness-110 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, var(--accent), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(108,99,255,0.3)" }}>
+            style={{ background: "linear-gradient(135deg, var(--teal), #7c3aed)", fontFamily: "var(--font-dm-sans)", boxShadow: "0 4px 20px rgba(0,153,153,0.3)" }}>
             {generating ? <><IconLoader2 size={16} className="animate-spin" /> Generating...</> : <><IconSparkles size={16} /> Generate Practice Questions</>}
           </button>
           {error && <p className="mt-2 text-xs text-red-400 text-center" style={{ fontFamily: "var(--font-dm-sans)" }}>{error}</p>}
