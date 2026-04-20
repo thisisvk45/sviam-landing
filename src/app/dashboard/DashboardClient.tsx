@@ -367,10 +367,10 @@ export default function DashboardClient({
       }
     } catch { /* ignore */ }
 
-    // ── New user fast path: no cache = first visit, show role picker instantly ──
+    // ── No cached state: keep showing loading until API responds ──
+    // Don't flash role picker — wait for profile check to confirm it's needed
     if (!hasCachedState) {
-      setNeedsRoleSelection(true);
-      setInitialLoading(false);
+      setInitialLoading(true);
     }
 
     // ── Background refresh from API ──
@@ -392,14 +392,17 @@ export default function DashboardClient({
         // Check if role is set — if not, show role selection
         const prefs = (profile.job_preferences || {}) as Record<string, unknown>;
         const role = prefs.role as string | undefined;
-        if (!role) {
-          setNeedsRoleSelection(true);
-        } else if (role === "company") {
+        const userType = (profile as Record<string, unknown>).user_type as string | undefined;
+        const onboardingDone = prefs.onboarding_completed as boolean | undefined;
+
+        if (role === "company" || userType === "hirer") {
           router.push("/company-coming-soon");
           return;
-        } else {
-          // User already has a role — dismiss any early role selection gate
+        } else if (role || userType === "seeker" || onboardingDone) {
+          // User already identified as seeker — no need to ask again
           setNeedsRoleSelection(false);
+        } else {
+          setNeedsRoleSelection(true);
         }
       } else {
         // New user with no profile — show role selection
