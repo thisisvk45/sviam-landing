@@ -36,9 +36,8 @@ export async function GET(req: NextRequest) {
   }
 
   // Check user type (seeker vs hirer) from cookie set during registration
-  const userType = req.cookies.get("sviam_user_type")?.value;
+  const userTypeCookie = req.cookies.get("sviam_user_type")?.value;
 
-  // Check if user has completed onboarding (has a profile with preferences)
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -53,11 +52,6 @@ export async function GET(req: NextRequest) {
     return resp;
   };
 
-  // Hirers go to company-coming-soon
-  if (userType === "hirer") {
-    return makeRedirect("/company-coming-soon");
-  }
-
   if (session?.access_token) {
     try {
       const controller = new AbortController();
@@ -67,18 +61,47 @@ export async function GET(req: NextRequest) {
         signal: controller.signal,
       });
       clearTimeout(timeout);
+
       if (profileRes.ok) {
         const profile = await profileRes.json();
-        // If profile has no resume and no city set, they're new — send to onboarding
+        const savedUserType = profile.user_type;
+
+        // New signup with cookie — persist user_type to profile
+        if (userTypeCookie && !savedUserType) {
+          fetch(`${API_URL}/profile/me`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ user_type: userTypeCookie }),
+          }).catch(() => {});
+        }
+
+        const effectiveUserType = savedUserType || userTypeCookie;
+
+        // Hirers go to company-coming-soon
+        if (effectiveUserType === "hirer") {
+          return makeRedirect("/company-coming-soon");
+        }
+
+        // Seekers: check if onboarding is complete
         if (!profile.resume_text && !profile.city) {
           return makeRedirect("/onboarding");
         }
       } else if (profileRes.status === 404) {
-        // No profile at all — new user, go to onboarding
+        // No profile at all — new user
+        // Hirers go to company-coming-soon
+        if (userTypeCookie === "hirer") {
+          return makeRedirect("/company-coming-soon");
+        }
         return makeRedirect("/onboarding");
       }
     } catch {
-      // If profile check fails, default to dashboard
+      // If profile check fails, fall back to cookie for new signups
+      if (userTypeCookie === "hirer") {
+        return makeRedirect("/company-coming-soon");
+      }
     }
   }
 
