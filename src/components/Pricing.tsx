@@ -1,8 +1,12 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Link from "next/link";
+import { createBrowserClient } from "@supabase/ssr";
 import { IconCheck, IconX, IconSparkles, IconBuildingBank, IconArrowRight } from "@tabler/icons-react";
 import { useInView } from "@/hooks/useInView";
+import { createOrder, verifyPayment } from "@/lib/api";
+import { useRazorpay } from "@/hooks/useRazorpay";
 
 const tiers = [
   {
@@ -11,7 +15,7 @@ const tiers = [
     period: "forever",
     desc: "Get started with AI job matching",
     cta: "Start Free",
-    href: "/register",
+    tier: null as null,
     highlight: false,
     features: [
       { text: "3 resume tailors / month", ok: true },
@@ -28,7 +32,7 @@ const tiers = [
     period: "/mo",
     desc: "For serious job seekers",
     cta: "Upgrade to Pro",
-    href: "/register",
+    tier: "pro" as const,
     highlight: true,
     features: [
       { text: "100 resume tailors / month", ok: true },
@@ -45,7 +49,7 @@ const tiers = [
     period: "/mo",
     desc: "Everything, no limits",
     cta: "Go Unlimited",
-    href: "/register",
+    tier: "unlimited" as const,
     highlight: false,
     features: [
       { text: "Unlimited everything", ok: true },
@@ -60,6 +64,62 @@ const tiers = [
 
 export default function Pricing() {
   const { ref, inView } = useInView();
+  const [loading, setLoading] = useState<string | null>(null);
+  const { openCheckout } = useRazorpay();
+
+  const supabase = useMemo(
+    () =>
+      createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      ),
+    []
+  );
+
+  const handleUpgrade = async (tier: "pro" | "unlimited") => {
+    setLoading(tier);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        window.location.href = "/register";
+        return;
+      }
+      const token = session.access_token;
+      const { data: { user } } = await supabase.auth.getUser();
+      const order = await createOrder(token, tier);
+
+      openCheckout({
+        keyId: order.key_id,
+        orderId: order.order_id,
+        amount: order.amount,
+        currency: order.currency,
+        tier,
+        userName: user?.user_metadata?.full_name || "",
+        userEmail: user?.email || "",
+        onSuccess: async (response) => {
+          try {
+            const { data: { session: fresh } } = await supabase.auth.getSession();
+            if (!fresh?.access_token) throw new Error("Session expired");
+            await verifyPayment(fresh.access_token, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              tier,
+            });
+            window.location.href = "/dashboard";
+          } catch {
+            // verification failed — user can retry
+          }
+          setLoading(null);
+        },
+        onError: () => {
+          setLoading(null);
+        },
+      });
+    } catch {
+      setLoading(null);
+    }
+  };
 
   return (
     <section
@@ -168,18 +228,34 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <Link
-                href={tier.href}
-                className="w-full text-center py-2.5 rounded-[10px] text-sm font-semibold transition-all hover:brightness-110"
-                style={{
-                  background: tier.highlight ? "var(--teal)" : "var(--surface)",
-                  color: tier.highlight ? "white" : "var(--text)",
-                  border: tier.highlight ? "none" : "1px solid var(--border)",
-                  fontFamily: "var(--font-dm-sans)",
-                }}
-              >
-                {tier.cta}
-              </Link>
+              {tier.tier ? (
+                <button
+                  onClick={() => handleUpgrade(tier.tier!)}
+                  disabled={!!loading}
+                  className="w-full text-center py-2.5 rounded-[10px] text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-60"
+                  style={{
+                    background: tier.highlight ? "var(--teal)" : "var(--surface)",
+                    color: tier.highlight ? "white" : "var(--text)",
+                    border: tier.highlight ? "none" : "1px solid var(--border)",
+                    fontFamily: "var(--font-dm-sans)",
+                  }}
+                >
+                  {loading === tier.tier ? "Processing..." : tier.cta}
+                </button>
+              ) : (
+                <Link
+                  href="/register"
+                  className="w-full text-center py-2.5 rounded-[10px] text-sm font-semibold transition-all hover:brightness-110"
+                  style={{
+                    background: "var(--surface)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    fontFamily: "var(--font-dm-sans)",
+                  }}
+                >
+                  {tier.cta}
+                </Link>
+              )}
             </div>
           ))}
         </div>
