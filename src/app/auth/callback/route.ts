@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const { data: { session } } = await supabase.auth.getSession();
 
+
   // Helper to create redirect with cookies
   const makeRedirect = (path: string) => {
     const resp = NextResponse.redirect(`${origin}${path}`);
@@ -98,7 +99,7 @@ export async function GET(req: NextRequest) {
         return makeRedirect("/onboarding");
       }
     } catch {
-      // If profile check fails, fall back to cookie for new signups
+      // If profile check fails, fall back to cookie
       if (userTypeCookie === "hirer") {
         return makeRedirect("/company-coming-soon");
       }

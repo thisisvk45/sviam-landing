@@ -52,7 +52,7 @@ export default function RegisterPage() {
   const handleGoogle = () => {
     // Store the user type as a cookie so the server callback can route correctly
     if (userType) {
-      document.cookie = `sviam_user_type=${userType};path=/;max-age=300;SameSite=Lax`;
+      document.cookie = `sviam_user_type=${userType};path=/;max-age=1800;SameSite=Lax`;
     }
     supabase.auth.signInWithOAuth({
       provider: "google",

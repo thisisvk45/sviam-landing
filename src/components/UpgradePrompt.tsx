@@ -35,7 +35,10 @@ export default function UpgradePrompt({ show, onClose, feature, limit, onUpgrade
 
     try {
       const token = await getToken();
-      if (!token) throw new Error("Please sign in first");
+      if (!token) {
+        window.location.href = "/signin";
+        return;
+      }
 
       const { data: { user } } = await supabase.auth.getUser();
       const order = await createOrder(token, tier);
