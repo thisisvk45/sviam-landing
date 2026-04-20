@@ -60,9 +60,13 @@ export async function GET(req: NextRequest) {
 
   if (session?.access_token) {
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       const profileRes = await fetch(`${API_URL}/profile/me`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       if (profileRes.ok) {
         const profile = await profileRes.json();
         // If profile has no resume and no city set, they're new — send to onboarding
