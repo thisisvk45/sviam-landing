@@ -452,14 +452,15 @@ body {
   transition: background-color 0.3s ease, backdrop-filter 0.3s ease, border-color 0.3s ease;
 }
 .navbar-glass.scrolled {
-  background-color: color-mix(in srgb, var(--bg) 88%, transparent);
+  background-color: color-mix(in srgb, var(--bg) 95%, transparent);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
 }
 .navbar-glass:not(.scrolled) {
-  background-color: transparent;
-  backdrop-filter: none;
+  background-color: color-mix(in srgb, var(--bg) 70%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid transparent;
 }
 

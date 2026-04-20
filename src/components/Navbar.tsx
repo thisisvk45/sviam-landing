@@ -138,8 +138,8 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-[var(--muted2)] hover:text-[var(--text)] transition-colors"
-                style={{ fontFamily: "var(--font-dm-sans)" }}
+                className="text-sm text-[var(--text)] hover:text-[var(--teal)] transition-colors"
+                style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 500 }}
               >
                 {link.label}
               </Link>
