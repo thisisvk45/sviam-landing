@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { createBrowserClient } from "@supabase/ssr";
 import { useFork } from "./fork/ForkContext";
 import { usePrefersReducedMotion } from "@/hooks/useInView";
 
@@ -33,6 +35,23 @@ export default function Hero() {
   const reducedMotion = usePrefersReducedMotion();
   const { setPath } = useFork();
   const heroRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  const supabase = useMemo(
+    () =>
+      createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      ),
+    []
+  );
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setIsSignedIn(true);
+    });
+  }, [supabase]);
 
   // Vanilla scroll-driven parallax
   useEffect(() => {
@@ -236,8 +255,12 @@ export default function Hero() {
         >
           <button
             onClick={() => {
-              setPath("seeker");
-              document.getElementById("fork")?.scrollIntoView({ behavior: "smooth" });
+              if (isSignedIn) {
+                router.push("/dashboard");
+              } else {
+                setPath("seeker");
+                document.getElementById("fork")?.scrollIntoView({ behavior: "smooth" });
+              }
             }}
             className="group relative px-8 py-4 rounded-[14px] text-white font-medium overflow-hidden min-w-[220px] btn-shimmer hover-scale"
             style={{
@@ -248,11 +271,12 @@ export default function Hero() {
             }}
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              Find me a job
+              {isSignedIn ? "Go to Dashboard" : "Find me a job"}
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </span>
           </button>
 
+          {!isSignedIn && (
           <button
             onClick={() => {
               setPath("hirer");
@@ -273,6 +297,7 @@ export default function Hero() {
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0l-4-4m4 4l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </span>
           </button>
+          )}
         </div>
 
         {/* Floating dashboard preview */}
