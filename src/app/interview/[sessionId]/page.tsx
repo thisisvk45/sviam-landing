@@ -1,4 +1,4 @@
-import InterviewRoom from "./InterviewRoom";
+import InterviewGate from "./InterviewGate";
 
 export const metadata = {
   title: "AI Interview | SViam",
@@ -10,9 +10,9 @@ type Props = { params: Promise<{ sessionId: string }> };
 export default async function InterviewPage({ params }: Props) {
   const { sessionId } = await params;
 
-  // Validate session server-side
+  // Check if session exists server-side
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  let sessionData = null;
+  let publicData = null;
   let error = null;
 
   try {
@@ -25,7 +25,7 @@ export default async function InterviewPage({ params }: Props) {
     clearTimeout(timeout);
 
     if (res.ok) {
-      sessionData = await res.json();
+      publicData = await res.json();
     } else if (res.status === 404) {
       error = "not_found";
     } else {
@@ -53,7 +53,7 @@ export default async function InterviewPage({ params }: Props) {
     );
   }
 
-  if (sessionData?.status === "completed") {
+  if (publicData?.status === "completed") {
     return (
       <main className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
         <div className="text-center max-w-md px-6">
@@ -71,5 +71,11 @@ export default async function InterviewPage({ params }: Props) {
     );
   }
 
-  return <InterviewRoom sessionId={sessionId} sessionData={sessionData} />;
+  return (
+    <InterviewGate
+      sessionId={sessionId}
+      candidateName={publicData?.candidate_name || ""}
+      configName={publicData?.config_name || "Technical Interview"}
+    />
+  );
 }

@@ -10,6 +10,7 @@ import {
   IconEye,
   IconBrowserCheck,
   IconClock,
+  IconShieldCheck,
 } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 
@@ -39,7 +40,14 @@ type SessionDetail = {
   scorecard: Scorecard | null;
   transcript: TranscriptEntry[];
   events: { type: string; timestamp: string; data?: Record<string, unknown> }[];
-  config: { name: string; topics: string[]; difficulty: string; duration_minutes: number; question_count: number };
+  config: { name: string; topics: string[]; difficulty: string; duration_minutes: number; question_count: number; persona?: string };
+  integrity_signals?: {
+    typing_analysis?: { ai_signal_score: number; paste_events: number; suspicious_segments: { type: string; length: number; avg_delta_ms: number }[] };
+    ip_check?: { ip: string; city: string; country: string; org: string; is_vpn_or_datacenter: boolean; checked_at: string };
+    violations?: { action: string; target: string; timestamp: string }[];
+    violation_count?: number;
+    screenshot_count?: number;
+  };
   started_at: string | null;
   ended_at: string | null;
   created_at: string;
@@ -52,7 +60,7 @@ export default function SessionDetailPage() {
   const [session, setSession] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"scorecard" | "transcript" | "events">("scorecard");
+  const [activeTab, setActiveTab] = useState<"scorecard" | "transcript" | "events" | "integrity">("scorecard");
 
   const supabase = useMemo(
     () => createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!),
@@ -192,7 +200,7 @@ export default function SessionDetailPage() {
 
           {/* Tabs */}
           <div className="flex gap-1 mb-5 p-1 rounded-[10px] w-fit" style={{ background: "var(--surface)" }}>
-            {(["scorecard", "transcript", "events"] as const).map((t) => (
+            {(["scorecard", "transcript", "events", "integrity"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setActiveTab(t)}
@@ -351,6 +359,151 @@ export default function SessionDetailPage() {
                   </div>
                 ))
               )}
+            </div>
+          )}
+
+          {/* Integrity Signals */}
+          {activeTab === "integrity" && (
+            <div className="space-y-4">
+              {/* IP Check */}
+              <div className="p-5 rounded-[14px]" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <IconShieldCheck size={16} style={{ color: "var(--teal)" }} />
+                  <h3 className="text-sm font-semibold text-[var(--text)]" style={{ fontFamily: "var(--font-display)" }}>IP &amp; Network Check</h3>
+                </div>
+                {session.integrity_signals?.ip_check ? (
+                  <div className="space-y-2">
+                    {[
+                      { label: "IP Address", value: session.integrity_signals.ip_check.ip },
+                      { label: "Location", value: `${session.integrity_signals.ip_check.city}, ${session.integrity_signals.ip_check.country}` },
+                      { label: "Organization", value: session.integrity_signals.ip_check.org },
+                      {
+                        label: "VPN / Datacenter",
+                        value: session.integrity_signals.ip_check.is_vpn_or_datacenter ? "DETECTED" : "No",
+                        highlight: session.integrity_signals.ip_check.is_vpn_or_datacenter,
+                      },
+                    ].map((row) => (
+                      <div key={row.label} className="flex items-center justify-between">
+                        <span className="text-[0.65rem] text-[var(--muted)] uppercase tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          {row.label}
+                        </span>
+                        <span
+                          className="text-xs font-medium"
+                          style={{
+                            color: (row as { highlight?: boolean }).highlight ? "#ef4444" : "var(--text)",
+                            fontFamily: "var(--font-dm-sans)",
+                          }}
+                        >
+                          {row.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)" }}>No IP check data available.</p>
+                )}
+              </div>
+
+              {/* Typing Analysis */}
+              <div className="p-5 rounded-[14px]" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+                <h3 className="text-sm font-semibold text-[var(--text)] mb-3" style={{ fontFamily: "var(--font-display)" }}>Typing Cadence Analysis</h3>
+                {session.integrity_signals?.typing_analysis ? (() => {
+                  const ta = session.integrity_signals.typing_analysis;
+                  const scoreColor = ta.ai_signal_score >= 50 ? "#ef4444" : ta.ai_signal_score >= 20 ? "#eab308" : "var(--teal)";
+                  return (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[0.65rem] text-[var(--muted)] uppercase tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          AI Signal Score
+                        </span>
+                        <span className="text-lg font-bold" style={{ color: scoreColor, fontFamily: "var(--font-display)" }}>
+                          {ta.ai_signal_score}/100
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--surface)" }}>
+                        <div className="h-full rounded-full transition-all" style={{ width: `${ta.ai_signal_score}%`, background: scoreColor }} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[0.65rem] text-[var(--muted)] uppercase tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          Paste Events
+                        </span>
+                        <span className="text-xs font-medium" style={{ color: ta.paste_events > 0 ? "#ef4444" : "var(--text)", fontFamily: "var(--font-dm-sans)" }}>
+                          {ta.paste_events}
+                        </span>
+                      </div>
+                      {ta.suspicious_segments.length > 0 && (
+                        <div>
+                          <p className="text-[0.6rem] text-[var(--muted)] uppercase tracking-wider mb-1.5" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                            Suspicious Segments
+                          </p>
+                          <div className="space-y-1">
+                            {ta.suspicious_segments.map((seg, i) => (
+                              <div key={i} className="flex items-center gap-2 px-2 py-1 rounded-[6px]" style={{ background: "var(--surface)" }}>
+                                <span
+                                  className="w-1.5 h-1.5 rounded-full"
+                                  style={{ background: seg.type === "ai_assisted" ? "#ef4444" : "#eab308" }}
+                                />
+                                <span className="text-[0.6rem] text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                  {seg.type.replace(/_/g, " ")} · {seg.length} keystrokes · avg {seg.avg_delta_ms}ms
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })() : (
+                  <p className="text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)" }}>No typing analysis data available.</p>
+                )}
+              </div>
+
+              {/* Violations */}
+              <div className="p-5 rounded-[14px]" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+                <h3 className="text-sm font-semibold text-[var(--text)] mb-3" style={{ fontFamily: "var(--font-display)" }}>
+                  Violations &amp; Anti-Cheat Log
+                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[0.65rem] text-[var(--muted)] uppercase tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                    Total Violations
+                  </span>
+                  <span
+                    className="text-sm font-bold"
+                    style={{
+                      color: (session.integrity_signals?.violation_count || 0) > 3 ? "#ef4444" : (session.integrity_signals?.violation_count || 0) > 0 ? "#eab308" : "var(--teal)",
+                      fontFamily: "var(--font-display)",
+                    }}
+                  >
+                    {session.integrity_signals?.violation_count || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[0.65rem] text-[var(--muted)] uppercase tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                    Screenshots Captured
+                  </span>
+                  <span className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                    {session.integrity_signals?.screenshot_count || 0}
+                  </span>
+                </div>
+                {session.integrity_signals?.violations && session.integrity_signals.violations.length > 0 ? (
+                  <div className="space-y-1 mt-2">
+                    {session.integrity_signals.violations.map((v, i) => (
+                      <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-[6px]" style={{ background: "var(--surface)" }}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                        <span className="text-[0.6rem] text-[var(--muted2)] flex-1" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          {v.action.replace(/_/g, " ")}
+                          {v.target ? ` (${v.target})` : ""}
+                        </span>
+                        <span className="text-[0.55rem] text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          {new Date(v.timestamp).toLocaleTimeString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-[var(--teal)]" style={{ fontFamily: "var(--font-dm-sans)" }}>No violations detected.</p>
+                )}
+              </div>
             </div>
           )}
         </motion.div>

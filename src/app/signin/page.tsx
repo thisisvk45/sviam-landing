@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import { IconBrandGoogle } from "@tabler/icons-react";
+import { IconBrandGoogle, IconMail, IconLock } from "@tabler/icons-react";
 
 export default function SignInPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const supabase = useMemo(
     () =>
@@ -32,6 +36,26 @@ export default function SignInPage() {
         queryParams: { prompt: "select_account" },
       },
     });
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+    setLoading(true);
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setLoading(false);
+    if (authError) {
+      setError(authError.message);
+    } else {
+      router.replace("/dashboard");
+    }
   };
 
   return (
@@ -95,6 +119,90 @@ export default function SignInPage() {
           >
             Sign in to your SViam account
           </p>
+
+          {/* Email/Password form */}
+          <form onSubmit={handleEmailLogin} className="space-y-3 mb-4">
+            <div className="relative">
+              <IconMail
+                size={16}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                style={{ color: "var(--muted)" }}
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full py-3 pl-10 pr-4 rounded-[12px] text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--teal)]"
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  fontFamily: "var(--font-dm-sans)",
+                  color: "var(--text)",
+                }}
+              />
+            </div>
+            <div className="relative">
+              <IconLock
+                size={16}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                style={{ color: "var(--muted)" }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full py-3 pl-10 pr-4 rounded-[12px] text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--teal)]"
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  fontFamily: "var(--font-dm-sans)",
+                  color: "var(--text)",
+                }}
+              />
+            </div>
+
+            {error && (
+              <p
+                className="text-xs text-red-400 text-center"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-[12px] text-sm font-medium text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+              style={{
+                background: "var(--teal)",
+                fontFamily: "var(--font-dm-sans)",
+                boxShadow: "0 0 20px rgba(0,153,153,0.25)",
+              }}
+            >
+              {loading ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="flex-1 h-px"
+              style={{ background: "var(--border)" }}
+            />
+            <span
+              className="text-[0.6rem] text-[var(--muted)] uppercase tracking-wider"
+              style={{ fontFamily: "var(--font-dm-mono)" }}
+            >
+              or
+            </span>
+            <div
+              className="flex-1 h-px"
+              style={{ background: "var(--border)" }}
+            />
+          </div>
 
           <button
             onClick={handleGoogle}

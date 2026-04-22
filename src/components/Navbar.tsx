@@ -235,16 +235,6 @@ export default function Navbar() {
             /* Auth CTAs for guests */
             <>
               <Link
-                href="/company"
-                className="px-4 py-2 text-sm font-medium rounded-[10px] transition-colors hover:text-[var(--text)]"
-                style={{
-                  color: "var(--muted2)",
-                  fontFamily: "var(--font-dm-sans)",
-                }}
-              >
-                For Companies
-              </Link>
-              <Link
                 href="/signin"
                 className="px-4 py-2 text-sm font-medium rounded-[10px] transition-colors hover:text-[var(--text)]"
                 style={{

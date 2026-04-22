@@ -30,6 +30,8 @@ export type MatchResult = {
   skills: string[];
   source: string;
   sub_scores?: SubScores;
+  ats_score?: number;
+  ats_tips?: string[];
 };
 
 export type MatchResponse = {
@@ -86,6 +88,10 @@ export type Application = {
   applied_at: string | null;
   created_at: string;
   updated_at: string;
+  outcome?: ApplicationOutcome;
+  salary_offered?: number;
+  feedback?: string;
+  outcome_date?: string;
 };
 
 export type AtsProfile = {
@@ -869,6 +875,149 @@ export async function listJobs(params?: {
   if (params?.skip) qs.set("skip", String(params.skip));
   const res = await fetch(`${API_URL}/jobs?${qs}`);
   if (!res.ok) return { jobs: [], total: 0, count: 0, skip: 0, limit: 20 };
+  return res.json();
+}
+
+// ─── Intelligence Layer Types ───────────────────────────────────────────────
+
+export type ApplicationOutcome = "hired" | "rejected_resume" | "rejected_interview" | "ghosted" | "withdrew" | "offer_declined";
+
+// Extend Application type - already has id, user_id, job_id, status, etc.
+// The new fields are: outcome, salary_offered, feedback, outcome_date
+
+export type ApplicationStats = {
+  total: number;
+  by_status: Record<string, number>;
+  by_outcome: Record<string, number>;
+  response_rate: number;
+  avg_days_to_response: number;
+};
+
+export type SviamScore = {
+  score: number;
+  breakdown: { profile: number; resume: number; activity: number; outcomes: number };
+  tips: string[];
+};
+
+export type NegotiationResult = {
+  market_range: { min: number; max: number; median: number };
+  talking_points: string[];
+  counter_suggestion: number | null;
+  risk_level: "low" | "medium" | "high";
+  script: string;
+};
+
+export type CompanyReview = {
+  id: string;
+  company_name: string;
+  rating: number;
+  interview_difficulty: number | null;
+  offer_received: boolean | null;
+  pros: string | null;
+  cons: string | null;
+  anonymous: boolean;
+  created_at: string;
+};
+
+export type CompanyReviewSummary = {
+  company_name: string;
+  avg_rating: number;
+  review_count: number;
+  offer_rate: number | null;
+  avg_difficulty: number | null;
+};
+
+// ─── Intelligence Layer API Calls ───────────────────────────────────────────
+
+export async function updateOutcome(
+  token: string,
+  appId: string,
+  data: { outcome: ApplicationOutcome; salary_offered?: number; feedback?: string; outcome_date?: string }
+): Promise<Application> {
+  const res = await fetch(`${API_URL}/applications/${appId}/outcome`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to update outcome");
+  }
+  return res.json();
+}
+
+export async function getApplicationStats(token: string): Promise<ApplicationStats> {
+  const res = await fetch(`${API_URL}/applications/stats`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { total: 0, by_status: {}, by_outcome: {}, response_rate: 0, avg_days_to_response: 0 };
+  return res.json();
+}
+
+export async function getSviamScore(token: string): Promise<SviamScore> {
+  const res = await fetch(`${API_URL}/profile/sviam-score`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { score: 0, breakdown: { profile: 0, resume: 0, activity: 0, outcomes: 0 }, tips: [] };
+  return res.json();
+}
+
+export async function negotiateSalary(
+  token: string,
+  data: { job_id: string; current_ctc?: number; expected_ctc?: number; offer_amount?: number; experience_years?: number }
+): Promise<NegotiationResult> {
+  const res = await fetch(`${API_URL}/match/negotiate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new ApiError(err.detail || "Failed to get negotiation advice", res.status);
+  }
+  return res.json();
+}
+
+export async function createReview(
+  token: string,
+  data: { company_name: string; rating: number; interview_difficulty?: number; offer_received?: boolean; pros?: string; cons?: string; anonymous?: boolean }
+): Promise<CompanyReview> {
+  const res = await fetch(`${API_URL}/reviews`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to create review");
+  }
+  return res.json();
+}
+
+export async function getCompanyReviews(companyName: string): Promise<{ reviews: CompanyReview[] }> {
+  const res = await fetch(`${API_URL}/reviews/${encodeURIComponent(companyName)}`);
+  if (!res.ok) return { reviews: [] };
+  return res.json();
+}
+
+export async function getCompanyReviewSummary(companyName: string): Promise<CompanyReviewSummary> {
+  const res = await fetch(`${API_URL}/reviews/${encodeURIComponent(companyName)}/summary`);
+  if (!res.ok) return { company_name: companyName, avg_rating: 0, review_count: 0, offer_rate: null, avg_difficulty: null };
+  return res.json();
+}
+
+export async function compareInterviews(
+  token: string,
+  sessionIds: string[]
+): Promise<{ candidates: Array<{ name: string; overall_score: number; verdict: string; strengths: string[]; weaknesses: string[]; ai_signal_score: number | null; duration_minutes: number | null }> }> {
+  const params = new URLSearchParams({ session_ids: sessionIds.join(",") });
+  const res = await fetch(`${API_URL}/interviews/compare?${params}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to compare interviews");
+  }
   return res.json();
 }
 

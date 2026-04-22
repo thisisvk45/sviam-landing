@@ -12,6 +12,9 @@ import {
   IconRocket,
   IconUsers,
   IconBriefcase,
+  IconMail,
+  IconLock,
+  IconUser,
 } from "@tabler/icons-react";
 
 type UserType = "seeker" | "hirer" | null;
@@ -33,6 +36,12 @@ const HIRER_BENEFITS = [
 export default function RegisterPage() {
   const router = useRouter();
   const [userType, setUserType] = useState<UserType>(null);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [confirmSent, setConfirmSent] = useState(false);
 
   const supabase = useMemo(
     () =>
@@ -61,6 +70,41 @@ export default function RegisterPage() {
         queryParams: { prompt: "select_account" },
       },
     });
+  };
+
+  const handleEmailSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!fullName.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (userType) {
+      document.cookie = `sviam_user_type=${userType};path=/;max-age=1800;SameSite=Lax`;
+    }
+    setLoading(true);
+    const { error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName.trim(), user_type: userType },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    setLoading(false);
+    if (authError) {
+      setError(authError.message);
+    } else {
+      setConfirmSent(true);
+    }
   };
 
   const benefits = userType === "hirer" ? HIRER_BENEFITS : SEEKER_BENEFITS;
@@ -278,19 +322,117 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          {/* Google sign-up — only show after role selected */}
-          {userType && (
-            <>
+          {/* Sign-up options — only show after role selected */}
+          {userType && !confirmSent && (
+            <div style={{ animation: "fadeInUp 0.3s ease forwards" }}>
+              {/* Email/Password form */}
+              <form onSubmit={handleEmailSignup} className="space-y-3 mb-4">
+                <div className="relative">
+                  <IconUser
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                    style={{ color: "var(--muted)" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Full name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full py-3 pl-10 pr-4 rounded-[12px] text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--teal)]"
+                    style={{
+                      background: "var(--surface)",
+                      border: "1px solid var(--border)",
+                      fontFamily: "var(--font-dm-sans)",
+                      color: "var(--text)",
+                    }}
+                  />
+                </div>
+                <div className="relative">
+                  <IconMail
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                    style={{ color: "var(--muted)" }}
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full py-3 pl-10 pr-4 rounded-[12px] text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--teal)]"
+                    style={{
+                      background: "var(--surface)",
+                      border: "1px solid var(--border)",
+                      fontFamily: "var(--font-dm-sans)",
+                      color: "var(--text)",
+                    }}
+                  />
+                </div>
+                <div className="relative">
+                  <IconLock
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                    style={{ color: "var(--muted)" }}
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password (min 6 characters)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full py-3 pl-10 pr-4 rounded-[12px] text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--teal)]"
+                    style={{
+                      background: "var(--surface)",
+                      border: "1px solid var(--border)",
+                      fontFamily: "var(--font-dm-sans)",
+                      color: "var(--text)",
+                    }}
+                  />
+                </div>
+
+                {error && (
+                  <p
+                    className="text-xs text-red-400 text-center"
+                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                  >
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-[12px] text-sm font-medium text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+                  style={{
+                    background: "var(--teal)",
+                    fontFamily: "var(--font-dm-sans)",
+                    boxShadow: userType === "hirer"
+                      ? "0 0 24px rgba(0,153,153,0.3)"
+                      : "0 0 24px rgba(108,99,255,0.3)",
+                  }}
+                >
+                  {loading ? "Creating account..." : "Create account"}
+                </button>
+              </form>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                <span
+                  className="text-[0.6rem] text-[var(--muted)] uppercase tracking-wider"
+                  style={{ fontFamily: "var(--font-dm-mono)" }}
+                >
+                  or
+                </span>
+                <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+              </div>
+
               <button
                 onClick={handleGoogle}
-                className="w-full py-3.5 rounded-[12px] text-sm font-medium flex items-center justify-center gap-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] mb-6 text-white"
+                className="w-full py-3.5 rounded-[12px] text-sm font-medium flex items-center justify-center gap-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] mb-6"
                 style={{
-                  background: userType === "hirer" ? "var(--teal)" : "var(--teal)",
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
                   fontFamily: "var(--font-dm-sans)",
-                  boxShadow: userType === "hirer"
-                    ? "0 0 24px rgba(0,153,153,0.3)"
-                    : "0 0 24px rgba(108,99,255,0.3)",
-                  animation: "fadeInUp 0.3s ease forwards",
+                  color: "var(--text)",
                 }}
               >
                 <IconBrandGoogle size={18} />
@@ -351,7 +493,33 @@ export default function RegisterPage() {
                   </p>
                 </div>
               )}
-            </>
+            </div>
+          )}
+
+          {/* Confirmation sent message */}
+          {confirmSent && (
+            <div
+              className="p-6 rounded-[14px] mb-6 text-center"
+              style={{
+                background: "rgba(0,153,153,0.06)",
+                border: "1px solid rgba(0,153,153,0.2)",
+                animation: "fadeInUp 0.3s ease forwards",
+              }}
+            >
+              <p
+                className="text-sm font-semibold text-[var(--text)] mb-2"
+                style={{ fontFamily: "var(--font-dm-sans)" }}
+              >
+                Check your email
+              </p>
+              <p
+                className="text-xs text-[var(--muted2)]"
+                style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}
+              >
+                We sent a confirmation link to <strong className="text-[var(--text)]">{email}</strong>.
+                Click it to activate your account, then sign in.
+              </p>
+            </div>
           )}
 
           {/* Divider */}

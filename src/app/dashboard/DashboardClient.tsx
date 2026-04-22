@@ -54,9 +54,13 @@ import {
   getSimilarJobs,
   getTrendingJobs,
   getBillingStatus,
+  getSviamScore,
+  updateOutcome,
+  getApplicationStats,
   ApiError,
+  createReview,
 } from "@/lib/api";
-import type { MatchResult, UserResume, ResumeData, Application, ApplicationStatus, SavedJob, TailorChange, JobDetail, SubscriptionStatus } from "@/lib/api";
+import type { MatchResult, UserResume, ResumeData, Application, ApplicationStatus, ApplicationOutcome, SavedJob, TailorChange, JobDetail, SubscriptionStatus, SviamScore, ApplicationStats } from "@/lib/api";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { ScoreRing } from "@/components/JobCard";
 
@@ -238,6 +242,11 @@ export default function DashboardClient({
   const [billingStatus, setBillingStatus] = useState<SubscriptionStatus>({ tier: "free", subscription_id: null, valid_until: null });
   const [upgradePrompt, setUpgradePrompt] = useState<{ show: boolean; feature: string; limit: string }>({ show: false, feature: "", limit: "" });
 
+  // SViam Score
+  const [sviamScore, setSviamScore] = useState<SviamScore | null>(null);
+  // Application Stats
+  const [appStats, setAppStats] = useState<ApplicationStats | null>(null);
+
   const firstName = capitalize(userName?.split(" ")[0] || "");
   const isNewUser = !initialLoading && resumes.length === 0 && matches.length === 0;
 
@@ -365,7 +374,7 @@ export default function DashboardClient({
           cachedRole = prefs.role as string | undefined;
           // If cached profile says company, redirect immediately
           if (cachedRole === "company") {
-            router.push("/company-coming-soon");
+            router.push("/company");
             return;
           }
         }
@@ -391,6 +400,8 @@ export default function DashboardClient({
     const appsPromise = fetchApplications();
     // Fetch billing status in parallel (non-blocking)
     getBillingStatus(token).then(setBillingStatus).catch(() => {});
+    getSviamScore(token).then(setSviamScore).catch(() => {});
+    getApplicationStats(token).then(setAppStats).catch(() => {});
 
     // Resume + profile drive match loading
     Promise.all([resumePromise, profilePromise, savedPromise, appsPromise]).then(async ([resumeRes, profile, saved]) => {
@@ -405,7 +416,7 @@ export default function DashboardClient({
         const onboardingDone = prefs.onboarding_completed as boolean | undefined;
 
         if (role === "company" || userType === "hirer") {
-          router.push("/company-coming-soon");
+          router.push("/company");
           return;
         } else if (role || userType === "seeker" || onboardingDone) {
           // User already identified as seeker — no need to ask again
@@ -686,7 +697,7 @@ export default function DashboardClient({
     const handleRoleSelect = (role: "candidate" | "company") => {
       if (role === "company") {
         updateProfile(token, { job_preferences: { role: "company" } }).catch(() => {});
-        router.push("/company-coming-soon");
+        router.push("/company");
         return;
       }
       // Optimistic — dismiss immediately, save in background
@@ -1162,6 +1173,11 @@ export default function DashboardClient({
             })}
           </div>
 
+          {/* SViam Score Card */}
+          {sviamScore && sviamScore.score > 0 && (
+            <SviamScoreCard score={sviamScore} />
+          )}
+
           {/* Resume pills */}
           {resumes.length > 1 && (
             <div className="flex flex-wrap items-center gap-1.5 mb-3">
@@ -1267,6 +1283,14 @@ export default function DashboardClient({
               onUpdateStatus={handleUpdateStatus}
               onRemove={handleRemoveApplication}
               onUpdateNotes={handleUpdateNotes}
+              onUpdateOutcome={async (id, outcome) => {
+                try {
+                  await updateOutcome(token, id, { outcome });
+                  setApplications((prev) => prev.map((a) => a.id === id ? { ...a, outcome } : a));
+                } catch { /* ignore */ }
+              }}
+              stats={appStats}
+              token={token}
             />
           ) : (
             <SavedJobsView
@@ -1980,25 +2004,28 @@ const STATUS_COLORS: Record<string, { bg: string; color: string; border: string 
 };
 const STATUS_ORDER: ApplicationStatus[] = ["queued", "applied", "interview", "offer", "rejected"];
 
-function PipelineStats({ applications }: { applications: Application[] }) {
+function PipelineStats({ applications, stats }: { applications: Application[]; stats?: ApplicationStats | null }) {
   if (applications.length === 0) return null;
   const total = applications.length;
   const applied = applications.filter((a) => a.status !== "queued").length;
   const interviews = applications.filter((a) => a.status === "interview").length;
   const offers = applications.filter((a) => a.status === "offer").length;
-  const interviewRate = applied > 0 ? Math.round((interviews / applied) * 100) : 0;
+  const hired = applications.filter((a) => a.outcome === "hired").length;
+  const ghosted = applications.filter((a) => a.outcome === "ghosted").length;
+  const responseRate = stats?.response_rate ?? (applied > 0 ? Math.round(((interviews + offers) / applied) * 100) : 0);
 
-  const stats = [
+  const statItems = [
     { label: "Total", value: total, color: "var(--teal)" },
     { label: "Applied", value: applied, color: "#3b82f6" },
     { label: "Interviews", value: interviews, color: "#f59e0b" },
-    { label: "Offers", value: offers, color: "#009999" },
-    { label: "Interview Rate", value: `${interviewRate}%`, color: "#8b5cf6" },
+    { label: "Hired", value: hired, color: "#009999" },
+    { label: "Response Rate", value: `${responseRate}%`, color: "#8b5cf6" },
+    { label: "Ghosted", value: ghosted, color: "#ef4444" },
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-2 mb-4">
-      {stats.map((s) => (
+    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
+      {statItems.map((s) => (
         <div key={s.label} className="p-2.5 rounded-[10px] text-center" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
           <p className="text-lg font-bold" style={{ color: s.color, fontFamily: "var(--font-dm-sans)" }}>{s.value}</p>
           <p className="text-[0.55rem] text-[var(--muted)] uppercase tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>{s.label}</p>
@@ -2009,7 +2036,7 @@ function PipelineStats({ applications }: { applications: Application[] }) {
 }
 
 function PipelineView({
-  applications, filter, onFilterChange, onUpdateStatus, onRemove, onUpdateNotes,
+  applications, filter, onFilterChange, onUpdateStatus, onRemove, onUpdateNotes, onUpdateOutcome, stats, token,
 }: {
   applications: Application[];
   filter: ApplicationStatus | "all";
@@ -2017,9 +2044,18 @@ function PipelineView({
   onUpdateStatus: (id: string, status: ApplicationStatus) => void;
   onRemove: (id: string) => void;
   onUpdateNotes: (id: string, notes: string) => void;
+  onUpdateOutcome: (id: string, outcome: ApplicationOutcome) => void;
+  stats?: ApplicationStats | null;
+  token: string;
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [noteInput, setNoteInput] = useState("");
+  const [reviewingApp, setReviewingApp] = useState<string | null>(null);
+  const [reviewRating, setReviewRating] = useState(4);
+  const [reviewPros, setReviewPros] = useState("");
+  const [reviewCons, setReviewCons] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewDone, setReviewDone] = useState<Set<string>>(new Set());
   const filtered = filter === "all" ? applications : applications.filter((a) => a.status === filter);
 
   const toggleExpand = (id: string) => {
@@ -2035,7 +2071,7 @@ function PipelineView({
 
   return (
     <div>
-      <PipelineStats applications={applications} />
+      <PipelineStats applications={applications} stats={stats} />
 
       {/* Filter tabs */}
       <div className="flex flex-wrap gap-1.5 mb-4">
@@ -2105,6 +2141,20 @@ function PipelineView({
                       style={{ background: "var(--surface)", border: "1px solid var(--border)", fontFamily: "var(--font-dm-sans)" }}>
                       {STATUS_ORDER.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
                     </select>
+                    {(app.status === "offer" || app.status === "rejected") && (
+                      <select value={app.outcome || ""}
+                        onChange={(e) => { if (e.target.value) onUpdateOutcome(app.id, e.target.value as ApplicationOutcome); }}
+                        className="px-2 py-1 rounded-[6px] text-[0.6rem] text-[var(--text)] outline-none cursor-pointer"
+                        style={{ background: "rgba(0,153,153,0.05)", border: "1px solid rgba(0,153,153,0.2)", fontFamily: "var(--font-dm-sans)" }}>
+                        <option value="">Outcome...</option>
+                        <option value="hired">Hired</option>
+                        <option value="rejected_resume">Rejected (Resume)</option>
+                        <option value="rejected_interview">Rejected (Interview)</option>
+                        <option value="ghosted">Ghosted</option>
+                        <option value="withdrew">Withdrew</option>
+                        <option value="offer_declined">Offer Declined</option>
+                      </select>
+                    )}
 
                     {app.apply_url && (
                       <a href={app.apply_url} target="_blank" rel="noopener noreferrer"
@@ -2168,6 +2218,58 @@ function PipelineView({
                             </button>
                           </div>
                         </div>
+
+                        {/* Review prompt */}
+                        {(app.status === "offer" || app.status === "rejected") &&
+                         (Date.now() - new Date(app.created_at).getTime() > 7 * 24 * 60 * 60 * 1000) &&
+                         !reviewDone.has(app.id) && (
+                          <div className="p-3 rounded-[8px]" style={{ background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.1)" }}>
+                            {reviewingApp !== app.id ? (
+                              <button onClick={(e) => { e.stopPropagation(); setReviewingApp(app.id); }}
+                                className="text-xs font-medium" style={{ color: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
+                                How was your experience with {app.company}? Leave a review →
+                              </button>
+                            ) : (
+                              <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                                <p className="text-[0.6rem] uppercase tracking-wider text-[var(--muted)]" style={{ fontFamily: "var(--font-dm-mono)" }}>Review {app.company}</p>
+                                <div className="flex gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <button key={star} onClick={() => setReviewRating(star)}
+                                      className="text-lg" style={{ color: star <= reviewRating ? "#f59e0b" : "var(--muted)" }}>
+                                      ★
+                                    </button>
+                                  ))}
+                                </div>
+                                <input value={reviewPros} onChange={(e) => setReviewPros(e.target.value)} placeholder="Pros (optional)"
+                                  className="w-full px-2 py-1.5 rounded-[6px] text-xs outline-none"
+                                  style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-dm-sans)" }} />
+                                <input value={reviewCons} onChange={(e) => setReviewCons(e.target.value)} placeholder="Cons (optional)"
+                                  className="w-full px-2 py-1.5 rounded-[6px] text-xs outline-none"
+                                  style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-dm-sans)" }} />
+                                <div className="flex gap-2">
+                                  <button onClick={async () => {
+                                    setReviewSubmitting(true);
+                                    try {
+                                      await createReview(token, { company_name: app.company, rating: reviewRating, pros: reviewPros || undefined, cons: reviewCons || undefined });
+                                      setReviewDone((prev) => new Set(prev).add(app.id));
+                                      setReviewingApp(null);
+                                    } catch { /* ignore */ }
+                                    setReviewSubmitting(false);
+                                  }} disabled={reviewSubmitting}
+                                    className="px-3 py-1.5 rounded-[6px] text-[0.65rem] font-medium text-white disabled:opacity-50"
+                                    style={{ background: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
+                                    {reviewSubmitting ? "Submitting..." : "Submit Review"}
+                                  </button>
+                                  <button onClick={() => setReviewingApp(null)}
+                                    className="px-3 py-1.5 rounded-[6px] text-[0.65rem] text-[var(--muted2)]"
+                                    style={{ fontFamily: "var(--font-dm-sans)", border: "1px solid var(--border)" }}>
+                                    Skip
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -2302,5 +2404,54 @@ function ProfileCompletionBar({ fields, score }: { fields: Record<string, boolea
         </p>
       </motion.div>
     </Link>
+  );
+}
+
+function SviamScoreCard({ score: data }: { score: SviamScore }) {
+  const [showTips, setShowTips] = useState(false);
+
+  const bars = [
+    { label: "Profile", value: data.breakdown.profile, max: 25, color: "#6366f1" },
+    { label: "Resume", value: data.breakdown.resume, max: 25, color: "#14b8a6" },
+    { label: "Activity", value: data.breakdown.activity, max: 25, color: "#f59e0b" },
+    { label: "Outcomes", value: data.breakdown.outcomes, max: 25, color: "#8b5cf6" },
+  ];
+
+  return (
+    <div className="p-4 rounded-[14px] mb-4" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
+      <div className="flex items-center gap-4">
+        <ScoreRing score={data.score} size={64} />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-[var(--text)] mb-2" style={{ fontFamily: "var(--font-dm-sans)" }}>SViam Score</p>
+          <div className="space-y-1.5">
+            {bars.map((b) => (
+              <div key={b.label} className="flex items-center gap-2">
+                <span className="text-[0.55rem] w-14 text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)" }}>{b.label}</span>
+                <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: "var(--surface)" }}>
+                  <div className="h-full rounded-full" style={{ background: b.color, width: `${(b.value / b.max) * 100}%`, transition: "width 0.6s ease" }} />
+                </div>
+                <span className="text-[0.55rem] w-6 text-right" style={{ color: b.color, fontFamily: "var(--font-dm-mono)" }}>{b.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {data.tips.length > 0 && (
+        <div className="mt-3">
+          <button onClick={() => setShowTips(!showTips)} className="text-[0.6rem] font-medium hover:underline" style={{ color: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
+            {showTips ? "Hide tips" : "Improve your score →"}
+          </button>
+          {showTips && (
+            <ul className="mt-1.5 space-y-1">
+              {data.tips.map((tip, i) => (
+                <li key={i} className="text-[0.6rem] text-[var(--muted2)] flex items-start gap-1" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  <span style={{ color: "var(--teal)" }}>•</span> {tip}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   IconBookmark,
   IconBookmarkFilled,
@@ -16,8 +16,8 @@ import {
   IconPlayerPlay,
   IconDownload,
 } from "@tabler/icons-react";
-import type { MatchResult } from "@/lib/api";
-import { createApplicationFromApply } from "@/lib/api";
+import type { MatchResult, NegotiationResult, CompanyReviewSummary } from "@/lib/api";
+import { createApplicationFromApply, negotiateSalary, getCompanyReviewSummary } from "@/lib/api";
 import { getResourcesForSkills } from "@/lib/learning-resources";
 
 function scoreColor(score: number) {
@@ -102,6 +102,21 @@ export default function JobCard({
   const [copied, setCopied] = useState(false);
   const [showToneSelector, setShowToneSelector] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
+  const [showAtsTips, setShowAtsTips] = useState(false);
+  const [showNegotiateModal, setShowNegotiateModal] = useState(false);
+  const [negotiateLoading, setNegotiateLoading] = useState(false);
+  const [negotiateResult, setNegotiateResult] = useState<NegotiationResult | null>(null);
+  const [negotiateCtc, setNegotiateCtc] = useState("");
+  const [negotiateExpected, setNegotiateExpected] = useState("");
+  const [reviewSummary, setReviewSummary] = useState<CompanyReviewSummary | null>(null);
+
+  useEffect(() => {
+    if (job.company) {
+      getCompanyReviewSummary(job.company).then((s) => {
+        if (s.review_count >= 3) setReviewSummary(s);
+      }).catch(() => {});
+    }
+  }, [job.company]);
 
   const workType = job.work_type || (job.remote ? "Remote" : "Onsite");
 
@@ -177,6 +192,26 @@ export default function JobCard({
     a.click(); URL.revokeObjectURL(url);
   };
 
+  const handleNegotiate = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (negotiateResult) { setShowNegotiateModal(!showNegotiateModal); return; }
+    setShowNegotiateModal(true);
+  };
+
+  const handleNegotiateSubmit = async () => {
+    if (!token) return;
+    setNegotiateLoading(true);
+    try {
+      const result = await negotiateSalary(token, {
+        job_id: job.job_id,
+        current_ctc: negotiateCtc ? parseInt(negotiateCtc) : undefined,
+        expected_ctc: negotiateExpected ? parseInt(negotiateExpected) : undefined,
+      });
+      setNegotiateResult(result);
+    } catch (err) { console.error("Negotiation failed:", err); }
+    finally { setNegotiateLoading(false); }
+  };
+
   return (
     <div
       onClick={handleCardClick}
@@ -232,6 +267,15 @@ export default function JobCard({
           {/* Company + location */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-xs text-[var(--muted2)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
             <span className="flex items-center gap-1"><IconBuilding size={12} style={{ color: "var(--muted)" }} />{job.company}</span>
+            {reviewSummary && (
+              <span className="flex items-center gap-0.5 text-[0.6rem] font-medium" style={{
+                color: reviewSummary.avg_rating >= 4.0 ? "#009999" : reviewSummary.avg_rating >= 3.0 ? "#f59e0b" : "#ef4444",
+                fontFamily: "var(--font-dm-sans)",
+              }}>
+                ★ {reviewSummary.avg_rating.toFixed(1)}
+                <span className="text-[var(--muted)]">({reviewSummary.review_count})</span>
+              </span>
+            )}
             {job.city && <span className="flex items-center gap-1"><IconMapPin size={12} style={{ color: "var(--muted)" }} />{job.city}</span>}
             <span className="flex items-center gap-1"><IconBriefcase size={12} style={{ color: "var(--muted)" }} />Full-time</span>
           </div>
@@ -278,6 +322,33 @@ export default function JobCard({
               {/* Gap analysis with learning resources */}
               {job.match_score < 75 && job.sub_scores.skill_match < 70 && job.skills.length > 0 && (
                 <SkillGapHint skills={job.skills} />
+              )}
+            </div>
+          )}
+
+          {/* ATS Score Badge */}
+          {job.ats_score !== undefined && (
+            <div className="mb-3">
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowAtsTips(!showAtsTips); }}
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[0.6rem] font-semibold transition-all hover:brightness-110"
+                style={{
+                  background: job.ats_score >= 80 ? "rgba(0,153,153,0.1)" : job.ats_score >= 60 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)",
+                  color: job.ats_score >= 80 ? "#009999" : job.ats_score >= 60 ? "#f59e0b" : "#ef4444",
+                  border: `1px solid ${job.ats_score >= 80 ? "rgba(0,153,153,0.2)" : job.ats_score >= 60 ? "rgba(245,158,11,0.2)" : "rgba(239,68,68,0.2)"}`,
+                  fontFamily: "var(--font-dm-sans)",
+                }}
+              >
+                ATS {job.ats_score}%
+              </button>
+              {showAtsTips && job.ats_tips && job.ats_tips.length > 0 && (
+                <div className="mt-1.5 p-2 rounded-[8px] text-[0.6rem] space-y-1" style={{ background: "var(--surface)", border: "1px solid var(--border)" }} onClick={(e) => e.stopPropagation()}>
+                  {job.ats_tips.map((tip, i) => (
+                    <p key={i} className="flex items-start gap-1" style={{ color: "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
+                      <span style={{ color: "var(--teal)" }}>•</span> {tip}
+                    </p>
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -329,6 +400,13 @@ export default function JobCard({
                 <IconPlayerPlay size={12} /> Add to Queue
               </button>
             )}
+            {token && (
+              <button onClick={handleNegotiate}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-[10px] text-xs font-medium transition-colors hover:text-[var(--teal)]"
+                style={{ background: negotiateResult ? "rgba(99,102,241,0.1)" : "var(--surface)", border: `1px solid ${negotiateResult ? "rgba(99,102,241,0.2)" : "var(--border)"}`, color: negotiateResult ? "var(--teal)" : "var(--muted2)", fontFamily: "var(--font-dm-sans)" }}>
+                {negotiateResult ? "View Advice" : "Negotiate"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -361,6 +439,67 @@ export default function JobCard({
           </div>
         </div>
       </div>
+
+      {/* Negotiate inline */}
+      {showNegotiateModal && (
+        <div className="px-6 pb-5 pt-3" style={{ borderTop: "1px solid var(--border)" }} onClick={(e) => e.stopPropagation()}>
+          {!negotiateResult ? (
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>Salary Negotiation Coach</p>
+              <div className="grid grid-cols-2 gap-2">
+                <input value={negotiateCtc} onChange={(e) => setNegotiateCtc(e.target.value)} placeholder="Current CTC (LPA)" type="number"
+                  className="px-3 py-2 rounded-[8px] text-xs outline-none" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-dm-sans)" }} />
+                <input value={negotiateExpected} onChange={(e) => setNegotiateExpected(e.target.value)} placeholder="Expected CTC (LPA)" type="number"
+                  className="px-3 py-2 rounded-[8px] text-xs outline-none" style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-dm-sans)" }} />
+              </div>
+              <button onClick={handleNegotiateSubmit} disabled={negotiateLoading}
+                className="px-4 py-2 rounded-[8px] text-xs font-medium text-white disabled:opacity-50"
+                style={{ background: "var(--teal)", fontFamily: "var(--font-dm-sans)" }}>
+                {negotiateLoading ? "Analyzing..." : "Get Negotiation Advice"}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>Negotiation Advice</p>
+                <span className="px-2 py-0.5 rounded-full text-[0.55rem] font-semibold"
+                  style={{
+                    background: negotiateResult.risk_level === "low" ? "rgba(0,153,153,0.1)" : negotiateResult.risk_level === "medium" ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)",
+                    color: negotiateResult.risk_level === "low" ? "#009999" : negotiateResult.risk_level === "medium" ? "#f59e0b" : "#ef4444",
+                    fontFamily: "var(--font-dm-sans)",
+                  }}>
+                  {negotiateResult.risk_level} risk
+                </span>
+              </div>
+              <div className="p-2.5 rounded-[8px]" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                <p className="text-[0.6rem] uppercase tracking-wider text-[var(--muted)] mb-1" style={{ fontFamily: "var(--font-dm-mono)" }}>Market Range</p>
+                <p className="text-sm font-semibold text-[var(--text)]" style={{ fontFamily: "var(--font-dm-sans)" }}>
+                  ₹{negotiateResult.market_range.min} - ₹{negotiateResult.market_range.max} LPA
+                  <span className="text-xs text-[var(--muted2)] font-normal ml-2">(median: ₹{negotiateResult.market_range.median})</span>
+                </p>
+              </div>
+              <div>
+                <p className="text-[0.6rem] uppercase tracking-wider text-[var(--muted)] mb-1" style={{ fontFamily: "var(--font-dm-mono)" }}>Talking Points</p>
+                <ul className="space-y-1">
+                  {negotiateResult.talking_points.map((point, i) => (
+                    <li key={i} className="text-xs text-[var(--muted2)] flex items-start gap-1.5" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+                      <span className="text-[var(--teal)] mt-0.5">•</span> {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {negotiateResult.script && (
+                <div>
+                  <p className="text-[0.6rem] uppercase tracking-wider text-[var(--muted)] mb-1" style={{ fontFamily: "var(--font-dm-mono)" }}>Script</p>
+                  <p className="text-xs text-[var(--muted2)] whitespace-pre-line leading-relaxed" style={{ fontFamily: "var(--font-dm-sans)", fontWeight: 300 }}>
+                    {negotiateResult.script}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
