@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:backend": "cd backend && source venv/bin/activate && uvicorn app.main:app --reload --port 8000",
+    "dev:all": "npm run dev & npm run dev:backend"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.5",

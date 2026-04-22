@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import {
@@ -144,15 +144,19 @@ export default function CompanyDashboard() {
     []
   );
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        router.replace("/signin");
-        return;
-      }
-      setToken(data.session.access_token);
-    });
+  const getFreshToken = useCallback(async (): Promise<string | null> => {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error || !data.session) {
+      router.replace("/signin");
+      return null;
+    }
+    setToken(data.session.access_token);
+    return data.session.access_token;
   }, [supabase, router]);
+
+  useEffect(() => {
+    getFreshToken();
+  }, [getFreshToken]);
 
   useEffect(() => {
     if (!token) return;
@@ -175,8 +179,8 @@ export default function CompanyDashboard() {
         const d = await sessionRes.json();
         setSessions(d.sessions || []);
       }
-    } catch {
-      // silent
+    } catch (e) {
+      console.error("[fetchData] error:", e);
     }
     setLoading(false);
   };
@@ -185,9 +189,11 @@ export default function CompanyDashboard() {
     if (!configName.trim() || !selectedTopics.length) return;
     setSaving(true);
     try {
+      const freshToken = await getFreshToken();
+      if (!freshToken) return;
       const res = await fetch(`${API_URL}/interviews/config`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${freshToken}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           name: configName,
           topics: selectedTopics,
@@ -226,9 +232,11 @@ export default function CompanyDashboard() {
     setGeneratingJd(true);
     setJdError("");
     try {
+      const freshToken = await getFreshToken();
+      if (!freshToken) return;
       const res = await fetch(`${API_URL}/interviews/generate-jd`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${freshToken}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           role: configName,
           experience_level: jdExpLevel,
@@ -254,9 +262,11 @@ export default function CompanyDashboard() {
     if (!newCandidateName.trim() || !newCandidateEmail.trim() || !selectedConfigId) return;
     setCreating(true);
     try {
+      const freshToken = await getFreshToken();
+      if (!freshToken) return;
       const res = await fetch(`${API_URL}/interviews/sessions`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${freshToken}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           config_id: selectedConfigId,
           candidate_email: newCandidateEmail,
